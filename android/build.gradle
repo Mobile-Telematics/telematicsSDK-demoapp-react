@@ -1,0 +1,74 @@
+buildscript {
+    if (project == rootProject) {
+        repositories {
+            google()
+            jcenter()
+        }
+
+        dependencies {
+            classpath 'com.android.tools.build:gradle:3.5.3'
+        }
+    }
+}
+
+apply plugin: 'com.android.library'
+
+def safeExtGet(prop, fallback) {
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+}
+
+android {
+    compileSdkVersion safeExtGet('TelematicsSdk_compileSdkVersion', 30)
+    buildToolsVersion safeExtGet('TelematicsSdk_buildToolsVersion', '30.0.2')
+    defaultConfig {
+        minSdkVersion safeExtGet('TelematicsSdk_minSdkVersion', 21)
+        targetSdkVersion safeExtGet('TelematicsSdk_targetSdkVersion', 30)
+        versionCode 1
+        versionName "1.0"
+            javaCompileOptions {
+                annotationProcessorOptions {
+                includeCompileClasspath = false
+            }
+        }
+    }
+
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    lintOptions {
+        disable 'GradleCompatible'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven {
+            url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/"
+        }
+    }
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+        url("$rootDir/../node_modules/react-native/android")
+    }
+    google()
+    jcenter()
+}
+
+dependencies {
+    //noinspection GradleDynamicVersion
+    implementation "com.facebook.react:react-native:+"  // From node_modules
+    implementation "com.telematicssdk:tracking:2.2.254"  // Telematics sdk
+}
