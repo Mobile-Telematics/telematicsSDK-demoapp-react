@@ -142,6 +142,18 @@ Proper application lifecycle handling is extremely important for the TelematicsS
 }
 ```
 
+Also add the SDK initialization before React Native bridge initialization
+
+``` obj-c
+
+  [RPEntry initializeWithRequestingPermissions:NO];
+  [RPEntry application:application didFinishLaunchingWithOptions:launchOptions];
+
+  // before this line
+  // RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
+
+```
+
 ## React Native wrapper usage
 
 ---
