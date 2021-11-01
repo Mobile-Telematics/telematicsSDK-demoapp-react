@@ -4,6 +4,13 @@ A React Native wrapper for tracking the person's driving behavior such as speedi
 
 Disclaimer: This project uses Telematics SDK which belongs to DATA MOTION PTE. LTD. When using Telematics SDK refer to these [terms of use](https://docs.telematicssdk.com/license)
 
+
+Here you can find short video guides, how to add React Native Telematics SDK to your iOS and Android apps:
+
+[![Watch the video](https://github.com/Mobile-Telematics/telematicsSDK-demoapp-react/blob/main/iOS%20React%20Native%20Telematics%20SDK.png)](https://youtu.be/qHAaAw_-IXI)
+
+[![Watch the video](https://github.com/Mobile-Telematics/telematicsSDK-demoapp-react/blob/main/iOS%20React%20Native%20Telematics%20SDK.png)](https://youtu.be/kZecA6hQi0Q)
+
 ## Example app
 
 ---
