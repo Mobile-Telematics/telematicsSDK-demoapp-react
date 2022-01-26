@@ -16,6 +16,8 @@ Here you can find short video guides, how to add React Native Telematics SDK to 
 ---
 To run a TelematicsSdkExample application make sure that you have Node.js LTS version installed or install it from the official Node.js [site](https://nodejs.org/uk/). Also, make sure that you correctly configured the development environment according to [React Native site](https://reactnative.dev/docs/environment-setup) instructions.
 
+TelematicsSdkExample application is located in example directory
+
 ### Inside the project folder install dependencies 
 
 ```sh
@@ -25,13 +27,23 @@ yarn
 ### To run an Android example
 
 ```sh
-yarn example android 
+yarn example android
+
+     -- or --
+
+cd example
+npx react-native run-android
 ```
 
 ### To run an iOS example
 
 ```sh
 yarn example ios 
+
+     -- or --
+
+cd example
+npx react-native run-ios
 ```
 
 

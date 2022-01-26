@@ -10,7 +10,7 @@ import {
   NativeEventEmitter,
   Alert,
 } from 'react-native';
-import TelematicsSdk from 'react-native-telematics-sdk';
+import TelematicsSdk from 'react-native-telematics';
 
 export default function App() {
   const [deviceToken, setDeviceToken] = React.useState<string>('');
