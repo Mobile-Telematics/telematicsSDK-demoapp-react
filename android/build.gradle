@@ -18,11 +18,11 @@ def safeExtGet(prop, fallback) {
 }
 
 android {
-    compileSdkVersion safeExtGet('TelematicsSdk_compileSdkVersion', 30)
+    compileSdkVersion safeExtGet('TelematicsSdk_compileSdkVersion', 32)
     buildToolsVersion safeExtGet('TelematicsSdk_buildToolsVersion', '30.0.2')
     defaultConfig {
         minSdkVersion safeExtGet('TelematicsSdk_minSdkVersion', 21)
-        targetSdkVersion safeExtGet('TelematicsSdk_targetSdkVersion', 30)
+        targetSdkVersion safeExtGet('TelematicsSdk_targetSdkVersion', 32)
         versionCode 1
         versionName "1.0"
             javaCompileOptions {
@@ -70,5 +70,5 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
-    implementation "com.telematicssdk:tracking:2.2.254"  // Telematics sdk
+    implementation "com.telematicssdk:tracking:2.2.255"  // Telematics sdk
 }
