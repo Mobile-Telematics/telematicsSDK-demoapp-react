@@ -19,7 +19,7 @@ PODS:
     - DoubleConversion
     - glog
   - glog (0.3.5)
-  - RaxelPulse (5.10)
+  - RaxelPulse (5.16)
   - RCTRequired (0.63.4)
   - RCTTypeSafety (0.63.4):
     - FBLazyVector (= 0.63.4)
@@ -186,7 +186,7 @@ PODS:
     - React-cxxreact (= 0.63.4)
     - React-jsi (= 0.63.4)
   - React-jsinspector (0.63.4)
-  - react-native-telematics-sdk (1.0.0):
+  - react-native-telematics-sdk (1.0.2):
     - RaxelPulse
     - React-Core
   - React-RCTActionSheet (0.63.4):
@@ -350,7 +350,7 @@ SPEC CHECKSUMS:
   FBReactNativeSpec: f2c97f2529dd79c083355182cc158c9f98f4bd6e
   Folly: b73c3869541e86821df3c387eb0af5f65addfab4
   glog: 40a13f7840415b9a77023fbcae0f1e6f43192af3
-  RaxelPulse: 7fbbed8ec0d4f01d5e0c22526572ef150ef9782f
+  RaxelPulse: 760e77ad3679ccb16612631336e811ec3927d9d4
   RCTRequired: 082f10cd3f905d6c124597fd1c14f6f2655ff65e
   RCTTypeSafety: 8c9c544ecbf20337d069e4ae7fd9a377aadf504b
   React: b0a957a2c44da4113b0c4c9853d8387f8e64e615
@@ -361,7 +361,7 @@ SPEC CHECKSUMS:
   React-jsi: a0418934cf48f25b485631deb27c64dc40fb4c31
   React-jsiexecutor: 93bd528844ad21dc07aab1c67cb10abae6df6949
   React-jsinspector: 58aef7155bc9a9683f5b60b35eccea8722a4f53a
-  react-native-telematics-sdk: 32dd427ee2f278cae3402f06a382a216545e3370
+  react-native-telematics-sdk: 14facd4a96aea93d5fd297483946d65c26eb02a9
   React-RCTActionSheet: 89a0ca9f4a06c1f93c26067af074ccdce0f40336
   React-RCTAnimation: 1bde3ecc0c104c55df246eda516e0deb03c4e49b
   React-RCTBlob: a97d378b527740cc667e03ebfa183a75231ab0f0
@@ -376,4 +376,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 52dde9e7a1b1927ff86bbde072bc1da94f2c4f51
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.11.3
