@@ -2,11 +2,11 @@ buildscript {
     if (project == rootProject) {
         repositories {
             google()
-            jcenter()
+            mavenCentral()
         }
 
         dependencies {
-            classpath 'com.android.tools.build:gradle:3.5.3'
+            classpath 'com.android.tools.build:gradle:4.2.2'
         }
     }
 }
@@ -23,14 +23,9 @@ android {
     defaultConfig {
         minSdkVersion safeExtGet('TelematicsSdk_minSdkVersion', 21)
         targetSdkVersion safeExtGet('TelematicsSdk_targetSdkVersion', 32)
-        versionCode 1
+        versionCode 2
         versionName "1.0"
-            javaCompileOptions {
-                annotationProcessorOptions {
-                includeCompileClasspath = false
-            }
         }
-    }
 
 
     buildTypes {
@@ -49,8 +44,16 @@ android {
 
 rootProject.allprojects {
     repositories {
+       mavenCentral {
+            // We don't want to fetch react-native from Maven Central as there are
+            // older versions over there.
+            content {
+                excludeGroup "com.facebook.react"
+            }
+        }
+        
         google()
-        jcenter()
+       
         maven {
             url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/"
         }
@@ -58,13 +61,19 @@ rootProject.allprojects {
 }
 
 repositories {
-    mavenLocal()
+    mavenCentral {
+            // We don't want to fetch react-native from Maven Central as there are
+            // older versions over there.
+            content {
+                excludeGroup "com.facebook.react"
+            }
+        }
     maven {
         // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
         url("$rootDir/../node_modules/react-native/android")
     }
     google()
-    jcenter()
+   
 }
 
 dependencies {

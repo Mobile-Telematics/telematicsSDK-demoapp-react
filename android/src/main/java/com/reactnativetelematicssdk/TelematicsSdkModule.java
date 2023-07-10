@@ -51,6 +51,15 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
     }
   }
 
+   @ReactMethod
+    public void addListener(String eventName) {
+    }
+
+    @ReactMethod
+    public void removeListeners(Integer count) {
+
+    }
+
   /**
    * Default Setting constructor
    * Stop tracking time is 5 minute.
