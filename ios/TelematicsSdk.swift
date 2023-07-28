@@ -82,7 +82,9 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
             if let stateDelegate = tagsStateDelegate {
                 stateDelegate.addTagPromise = Promise(resolve:resolve, reject: reject)
             }
-            RPEntry.instance().api.addFutureTrackTag(tagEntity, completion: nil)
+            RPEntry.instance().api.addFutureTrackTag(tagEntity,completion:{status, tag, timestamp in
+                self.tagsStateDelegate?.addFutureTag(status,tag: tag,timestamp: timestamp)
+            })
         }
         
         @objc(removeFutureTrackTag:resolver:rejecter:)
@@ -92,7 +94,7 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
             if let stateDelegate = tagsStateDelegate {
                 stateDelegate.deleteTagPromise = Promise(resolve: resolve, reject: reject)
             }
-            RPEntry.instance().api.removeFutureTrackTag(tagEntity, completion: nil)
+            RPEntry.instance().api.removeFutureTrackTag(tagEntity, completion: {status, tag, timestamp in self.tagsStateDelegate?.removeFutureTrackTag(status ,tag:tag, timestamp:timestamp)})
         }
         
         @objc(removeAllFutureTrackTags:rejecter:)
@@ -100,7 +102,7 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
             if let stateDelegate = tagsStateDelegate {
                 stateDelegate.removeAllPromise = Promise(resolve: resolve, reject: reject)
             }
-            RPEntry.instance().api.removeAllFutureTrackTagsWithСompletion(nil)
+            RPEntry.instance().api.removeAllFutureTrackTagsWithСompletion({status, timestamp in self.tagsStateDelegate?.removeAllFutureTrackTag(status, timestamp: timestamp)})
         }
         
         @objc(getFutureTrackTags:rejecter:)

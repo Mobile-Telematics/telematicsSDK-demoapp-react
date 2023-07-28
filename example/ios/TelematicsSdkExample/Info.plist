@@ -26,7 +26,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -42,18 +42,18 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>We're using Bluetooth services to determine your driving style.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>We're using Bluetooth services to determine your driving style.</string>
+	<string>We&apos;re using Bluetooth services to determine your driving style.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>We&apos;re using Bluetooth services to determine your driving style.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We're using location services to determine your driving style.</string>
+	<string>We&apos;re using location services to determine your driving style.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>We're using location services to determine your driving style.</string>
+	<string>We&apos;re using location services to determine your driving style.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We're using location services to determine your driving style.</string>
+	<string>We&apos;re using location services to determine your driving style.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>We're using location services to determine your driving style.</string>
+	<string>We&apos;re using location services to determine your driving style.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>

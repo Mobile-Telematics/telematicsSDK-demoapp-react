@@ -44,7 +44,7 @@ export default function App() {
     try {
       const isGranted = await TelematicsSdk.requestPermissions();
       if (isGranted) console.log('All permissions granted');
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Error', error.message, [{ text: 'OK' }]);
       console.log(error);
     }
@@ -54,7 +54,7 @@ export default function App() {
     try {
       const isEnabled = await TelematicsSdk.getStatus();
       setSdkStatus(isEnabled);
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
     }
   };
@@ -68,7 +68,7 @@ export default function App() {
         return;
       }
       updateSdkStatus();
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Error', error.message, [{ text: 'OK' }]);
       console.log(error.message);
     }
@@ -85,7 +85,7 @@ export default function App() {
     try {
       const result = await TelematicsSdk.addFutureTrackTag('Some', 'Some');
       setSdkTag(JSON.stringify(result));
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Error', error.message, [{ text: 'OK' }]);
       console.log(error);
     }
@@ -95,7 +95,7 @@ export default function App() {
     try {
       const result = await TelematicsSdk.getFutureTrackTags();
       setSdkTag(JSON.stringify(result));
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Error', error.message, [{ text: 'OK' }]);
       console.log(error);
     }
@@ -105,7 +105,7 @@ export default function App() {
     try {
       const result = await TelematicsSdk.removeAllFutureTrackTags();
       setSdkTag(JSON.stringify(result));
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Error', error.message, [{ text: 'OK' }]);
       console.log(error);
     }
@@ -115,7 +115,7 @@ export default function App() {
     try {
       const result = await TelematicsSdk.removeFutureTrackTag('Some');
       setSdkTag(JSON.stringify(result));
-    } catch (error) {
+    } catch (error: any) {
       Alert.alert('Error', error.message, [{ text: 'OK' }]);
       console.log(error);
     }

@@ -66,5 +66,17 @@ class TagsStateDelegate: NSObject, RPTagsServerStateDelegate {
             promise.resolve(state)
         }
     }
+    
+    func addFutureTag(_ status: RPTagStatus, tag: RPTag, timestamp:Int){
+      
+    }
+    
+    func removeFutureTrackTag(_ status: RPTagStatus, tag: RPTag, timestamp:Int) {
+       
+    }
+    
+    func removeAllFutureTrackTag(_ status: RPTagStatus, timestamp:Int) {
+       
+    }
 }
 

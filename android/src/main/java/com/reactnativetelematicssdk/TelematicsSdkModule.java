@@ -58,6 +58,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
    * Auto start tracking is true.
    * hfOn - true if HIGH FREQUENCY data recording from sensors (acc, gyro) is ON and false otherwise.
    * isElmOn - true if data recording from ELM327 devices is ON and false otherwise.
+   * isAdOn - false to keep accident detection disabled
    */
   public Settings setTelematicsSettings() {
     Settings settings = new Settings(
@@ -65,7 +66,8 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
       Settings.getAccuracyHigh(),
       true,
       true,
-      true
+      true,
+      false
     );
     Log.d(TAG, "setTelematicsSettings");
     return settings;
@@ -74,7 +76,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
   @ReactMethod
   public void requestPermissions(Promise promise) {
     permissionsPromise = promise;
-    if (!api.isAllRequiredPermissionsGranted()) {
+    if (!api.areAllRequiredPermissionsGranted()) {
       this.getReactApplicationContext().
         startActivityForResult(PermissionsWizardActivity.Companion.getStartWizardIntent(
           this.getReactApplicationContext(),
@@ -106,7 +108,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
       promise.reject("Error", "Missing token value");
       return;
     }
-    if (!api.isAllRequiredPermissionsGranted() || !api.isInitialized()) {
+    if (!api.areAllRequiredPermissionsGranted() || !api.isInitialized()) {
       Log.d(TAG, "Failed to start SDK");
       promise.resolve(false);
       return;
