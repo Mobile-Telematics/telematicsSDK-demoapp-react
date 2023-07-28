@@ -51,9 +51,7 @@ rootProject.allprojects {
                 excludeGroup "com.facebook.react"
             }
         }
-        
         google()
-       
         maven {
             url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/"
         }
@@ -73,11 +71,11 @@ repositories {
         url("$rootDir/../node_modules/react-native/android")
     }
     google()
-   
+
 }
 
 dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
-    implementation "com.telematicssdk:tracking:2.2.255"  // Telematics sdk
+    implementation "com.telematicssdk:tracking:2.2.257"  // Telematics sdk
 }
