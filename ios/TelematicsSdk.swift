@@ -94,7 +94,9 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
             if let stateDelegate = tagsStateDelegate {
                 stateDelegate.deleteTagPromise = Promise(resolve: resolve, reject: reject)
             }
-            RPEntry.instance().api.removeFutureTrackTag(tagEntity, completion: {status, tag, timestamp in self.tagsStateDelegate?.removeFutureTrackTag(status ,tag:tag, timestamp:timestamp)})
+            RPEntry.instance().api.removeFutureTrackTag(tagEntity, completion: { [weak self] status, tag, timestamp in
+                guard let self else {return}
+                self.tagsStateDelegate?.removeFutureTrackTag(status ,tag:tag, timestamp:timestamp)})
         }
         
         @objc(removeAllFutureTrackTags:rejecter:)
@@ -102,7 +104,9 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
             if let stateDelegate = tagsStateDelegate {
                 stateDelegate.removeAllPromise = Promise(resolve: resolve, reject: reject)
             }
-            RPEntry.instance().api.removeAllFutureTrackTagsWithСompletion({status, timestamp in self.tagsStateDelegate?.removeAllFutureTrackTag(status, timestamp: timestamp)})
+            RPEntry.instance().api.removeAllFutureTrackTagsWithСompletion({[weak self] status, timestamp in
+                guard let self else {return}
+                self.tagsStateDelegate?.removeAllFutureTrackTag(status, timestamp: timestamp)})
         }
         
         @objc(getFutureTrackTags:rejecter:)
@@ -110,7 +114,8 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
             if let stateDelegate = tagsStateDelegate {
                 stateDelegate.getTagsPromise = Promise(resolve: resolve, reject: reject)
             }
-            RPEntry.instance().api.getFutureTrackTag(0, completion: {status, tags, timestamp in
+            RPEntry.instance().api.getFutureTrackTag(0, completion: {[weak self]status, tags, timestamp in
+                guard let self else {return}
                 self.tagsStateDelegate?.getTags(status, tags: tags, timestamp: timestamp)
             })
         }
