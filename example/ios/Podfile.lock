@@ -11,7 +11,7 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.67.5)
   - fmt (6.2.1)
   - glog (0.3.5)
-  - RaxelPulse (5.17)
+  - RaxelPulse (6.0.0)
   - RCT-Folly (2021.06.28.00-v2):
     - boost
     - DoubleConversion
@@ -210,7 +210,7 @@ PODS:
   - React-jsinspector (0.67.5)
   - React-logger (0.67.5):
     - glog
-  - react-native-telematics-sdk (1.0.6):
+  - react-native-telematics-sdk (1.0.8):
     - RaxelPulse
     - React-Core
   - React-perflogger (0.67.5)
@@ -391,7 +391,7 @@ SPEC CHECKSUMS:
   FBReactNativeSpec: 94da4d84ba3b1acf459103320882daa481a2b62d
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 85ecdd10ee8d8ec362ef519a6a45ff9aa27b2e85
-  RaxelPulse: 34dccc7c068467162e0f554e4aa9fad3b2561089
+  RaxelPulse: 64a3024305d7d628a3fe6a50256349ed709b6fc1
   RCT-Folly: 803a9cfd78114b2ec0f140cfa6fa2a6bafb2d685
   RCTRequired: 412e994c1e570cf35378a32c18fd46e50634938b
   RCTTypeSafety: ef27340c728e6d673af345ed69e479a010c8a2d8
@@ -404,7 +404,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: e9895ccae253323ca70f693945fecbba091f0abd
   React-jsinspector: ec4fe4f65ccf9d67c8429dda955d3412db8a25ef
   React-logger: 85f4ef06b9723714b2dfa5b0e5502b673b271b58
-  react-native-telematics-sdk: 1c1d086116c76189760f957c0657293b901cdaa7
+  react-native-telematics-sdk: d6e9759c6f455a36839b81648ecb3ca156f045c7
   React-perflogger: d32ee13196f4ae2e4098fb7f8e7ed4f864c6fb0f
   React-RCTActionSheet: 81779c09e34a6a3d6b15783407ba9016a774f535
   React-RCTAnimation: b778eaaa42a884abcc5719035a7a0b2f54672658
