@@ -4,7 +4,6 @@ A React Native wrapper for tracking the person's driving behavior such as speedi
 
 Disclaimer: This project uses Telematics SDK which belongs to DATA MOTION PTE. LTD. When using Telematics SDK refer to these [terms of use](https://docs.telematicssdk.com/license)
 
-
 Here you can find short video guides, how to add React Native Telematics SDK to your iOS and Android apps:
 
 [![Watch the video](https://github.com/Mobile-Telematics/telematicsSDK-demoapp-react/blob/main/iOS%20React%20Native%20Telematics%20SDK.png)](https://youtu.be/qHAaAw_-IXI)
@@ -14,11 +13,12 @@ Here you can find short video guides, how to add React Native Telematics SDK to 
 ## Example app
 
 ---
+
 To run a TelematicsSdkExample application make sure that you have Node.js LTS version installed or install it from the official Node.js [site](https://nodejs.org/uk/). Also, make sure that you correctly configured the development environment according to [React Native site](https://reactnative.dev/docs/environment-setup) instructions.
 
 TelematicsSdkExample application is located in example directory
 
-### Inside the project folder install dependencies 
+### Inside the project folder install dependencies
 
 ```sh
 yarn
@@ -38,14 +38,13 @@ npx react-native run-android
 ### To run an iOS example
 
 ```sh
-yarn example ios 
+yarn example ios
 
      -- or --
 
 cd example
 npx react-native run-ios
 ```
-
 
 ## Installation
 
@@ -125,10 +124,10 @@ pod install
 
 ---
 
-Proper application lifecycle handling is extremely important for the TelematicsSdk. In order to use SDK you need to add lifecycle handlers to your application AppDelegate.m:
+Proper application lifecycle handling is extremely important for the TelematicsSdk. In order to use SDK you need to add lifecycle handlers to your application AppDelegate.mm:
 
 ```obj-c
-// AppDelegate.m
+// AppDelegate.mm
 
 #import <RaxelPulse/RaxelPulse.h>
 
@@ -163,7 +162,7 @@ Proper application lifecycle handling is extremely important for the TelematicsS
 
 Also add the SDK initialization before React Native bridge initialization
 
-``` obj-c
+```obj-c
 
   [RPEntry initializeWithRequestingPermissions:NO];
   [RPEntry application:application didFinishLaunchingWithOptions:launchOptions];
@@ -196,7 +195,7 @@ const enabled = await TelematicsSdk.enable('Your device token goes here')
 if(enabled) {
   // SDK is enabled successfully
 } else {
-  // SDK is not enabled 
+  // SDK is not enabled
 }
 await TelematicsSdk.disable();
 
@@ -205,7 +204,7 @@ const isEnabled = await TelematicsSdk.getStatus();
 if(isEnabled) {
   // SDK is enabled
 } else {
-  // SDK is not enabled 
+  // SDK is not enabled
 }
 
 // Future Tags API
@@ -218,7 +217,7 @@ const result = await TelematicsSdk.addFutureTrackTag('Future tag name', 'Future 
     tag: string;
     source?: string;
   }
-} 
+}
 
 // Get all future tags
 const result = await TelematicsSdk.getFutureTrackTags();
@@ -231,14 +230,14 @@ const result = await TelematicsSdk.getFutureTrackTags();
         source?: string;
       }
   ]
-} 
+}
 
 // Remove all future tags
 const result = await TelematicsSdk.removeAllFutureTrackTags();
 // Result object will contain SDK tag status
 {
   status: string;
-} 
+}
 
 // Remove single future tag
 const result = await TelematicsSdk.removeFutureTrackTag('Future tag name');
@@ -249,7 +248,7 @@ const result = await TelematicsSdk.removeFutureTrackTag('Future tag name');
     tag: string;
     source?: string;
   }
-} 
+}
 
 // iOS specific:
 // Get an event for low power mode enabled

@@ -8,8 +8,15 @@ const root = path.resolve(__dirname, '..');
 const modules = Object.keys({
   ...pak.peerDependencies,
 });
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 
-module.exports = {
+const defaultConfig = getDefaultConfig(__dirname);
+
+const {
+  resolver: { sourceExts, assetExts },
+} = getDefaultConfig(__dirname);
+
+const config = {
   projectRoot: __dirname,
   watchFolders: [root],
 
@@ -38,3 +45,4 @@ module.exports = {
     }),
   },
 };
+module.exports = mergeConfig(defaultConfig, config);
