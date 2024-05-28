@@ -6,7 +6,9 @@ buildscript {
         }
 
         dependencies {
-            classpath 'com.android.tools.build:gradle:4.2.2'
+          classpath("com.android.tools.build:gradle")
+          classpath("com.facebook.react:react-native-gradle-plugin")
+          classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
         }
     }
 }
@@ -18,8 +20,9 @@ def safeExtGet(prop, fallback) {
 }
 
 android {
-    compileSdkVersion safeExtGet('TelematicsSdk_compileSdkVersion', 33)
-    buildToolsVersion safeExtGet('TelematicsSdk_buildToolsVersion', '33.0.1')
+  namespace "com.reactnativetelematicssdk"
+    compileSdkVersion safeExtGet('TelematicsSdk_compileSdkVersion', 34)
+    buildToolsVersion safeExtGet('TelematicsSdk_buildToolsVersion', '34.0.0')
     defaultConfig {
         minSdkVersion safeExtGet('TelematicsSdk_minSdkVersion', 21)
         targetSdkVersion safeExtGet('TelematicsSdk_targetSdkVersion', 33)
@@ -44,38 +47,22 @@ android {
 
 rootProject.allprojects {
     repositories {
-       mavenCentral {
-            // We don't want to fetch react-native from Maven Central as there are
-            // older versions over there.
-            content {
-                excludeGroup "com.facebook.react"
-            }
-        }
-        google()
-        maven {
+      google()
+      mavenCentral()
+      maven {
+        url "https://repo1.maven.org/maven2/"
+      }
+      maven {
             url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/"
         }
+
     }
 }
 
-repositories {
-    mavenCentral {
-            // We don't want to fetch react-native from Maven Central as there are
-            // older versions over there.
-            content {
-                excludeGroup "com.facebook.react"
-            }
-        }
-    maven {
-        // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-        url("$rootDir/../node_modules/react-native/android")
-    }
-    google()
 
-}
 
 dependencies {
     //noinspection GradleDynamicVersion
-    implementation "com.facebook.react:react-native:+"  // From node_modules
-    implementation "com.telematicssdk:tracking:2.2.257"  // Telematics sdk
+    implementation("com.facebook.react:react-android:0.73.0")
+    implementation "com.telematicssdk:tracking:2.2.260"  // Telematics sdk
 }

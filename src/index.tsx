@@ -1,4 +1,4 @@
-import { NativeModules, EventSubscriptionVendor } from 'react-native';
+import { NativeModules, EventSubscription } from 'react-native';
 
 interface Tag {
   tag: string;
@@ -25,4 +25,4 @@ interface TelematicsSdkType {
 
 const { TelematicsSdk } = NativeModules;
 
-export default TelematicsSdk as TelematicsSdkType & EventSubscriptionVendor;
+export default TelematicsSdk as TelematicsSdkType & EventSubscription;

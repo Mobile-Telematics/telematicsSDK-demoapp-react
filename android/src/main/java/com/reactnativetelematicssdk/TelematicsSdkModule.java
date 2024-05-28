@@ -8,18 +8,20 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.module.annotations.ReactModule;
+import java.util.Map;
+import java.util.HashMap;
 
 import com.raxeltelematics.v2.sdk.TrackingApi;
 import com.raxeltelematics.v2.sdk.Settings;
 import com.raxeltelematics.v2.sdk.utils.permissions.PermissionsWizardActivity;
 
-@ReactModule(name = TelematicsSdkModule.NAME)
+
 public class TelematicsSdkModule extends ReactContextBaseJavaModule implements PreferenceManager.OnActivityResultListener {
   public static final String NAME = "TelematicsSdk";
   private static final String TAG = "TelematicsSdkModule";

@@ -62,3 +62,5 @@ lib/
 # example app build files
 example/android/app/src/main/assets/index.android.bundle
 example/android/app/src/main/res/raw/app.json
+.yarn/*
+example/.yarn/*
