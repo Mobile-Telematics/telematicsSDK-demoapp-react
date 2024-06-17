@@ -30,9 +30,11 @@
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
 }
+
 - (void)applicationWillEnterForeground:(UIApplication *)application {
   [RPEntry applicationWillEnterForeground:application];
 }
+
 
 - (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(nonnull NSString *)identifier completionHandler:(nonnull void (^)(void))completionHandler {
     [RPEntry application:application handleEventsForBackgroundURLSession:identifier completionHandler:completionHandler];
