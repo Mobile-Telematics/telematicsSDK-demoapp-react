@@ -68,7 +68,6 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
       Settings.getAccuracyHigh(),
       true,
       true,
-      true,
       false
     );
     Log.d(TAG, "setTelematicsSettings");
