@@ -1,6 +1,6 @@
 {
   "name": "react-native-telematics",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "React Native wrapper for Telematics SDK",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
