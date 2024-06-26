@@ -114,6 +114,16 @@ Add permissions in your project's ios/Runner/Info.plist:
 <string>Please, provide permissions for this Demo</string>
 ```
 
+In iOS 13 and later, adding a BGTaskSchedulerPermittedIdentifiers key to the Info.plist disables the application:performFetchWithCompletionHandler: and setMinimumBackgroundFetchInterval: methods.
+
+```xml
+<key>BGTaskSchedulerPermittedIdentifiers</key>
+		<array>
+    	<string>sdk.damoov.apprefreshtaskid</string>
+    	<string>sdk.damoov.appprocessingtaskid</string>
+		</array>
+```
+
 And run in your project ios folder:
 
 ```sh
