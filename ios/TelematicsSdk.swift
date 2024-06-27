@@ -58,7 +58,7 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
         func disable() {
             RPEntry.instance().disableTracking = true
             RPEntry.instance().setDisableWithUpload()
-            RPEntry.instance().removeVirtualDeviceToken()
+            //RPEntry.instance().removeVirtualDeviceToken()
         }
         
         // API Status
