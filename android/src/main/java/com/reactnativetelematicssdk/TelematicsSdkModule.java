@@ -128,8 +128,9 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
       Log.d(TAG, "Failed to stop SDK");
       return;
     }
-    api.setEnableSdk(false);
-    api.clearDeviceID();
+    //api.setEnableSdk(false);
+    //api.clearDeviceID();
+    api.setDisableWithUpload();
     Log.d(TAG, "SDK is stopped");
   }
 
