@@ -182,7 +182,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements A
 
   // Permission wizard result
   @Override
-  public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
+  public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
     if (requestCode == 50005) {
       switch(resultCode) {
         case -1:
