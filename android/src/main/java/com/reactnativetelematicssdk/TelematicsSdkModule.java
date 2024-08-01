@@ -1,6 +1,7 @@
 package com.reactnativetelematicssdk;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -8,6 +9,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -20,7 +22,7 @@ import com.raxeltelematics.v2.sdk.Settings;
 import com.raxeltelematics.v2.sdk.utils.permissions.PermissionsWizardActivity;
 
 @ReactModule(name = TelematicsSdkModule.NAME)
-public class TelematicsSdkModule extends ReactContextBaseJavaModule implements PreferenceManager.OnActivityResultListener {
+public class TelematicsSdkModule extends ReactContextBaseJavaModule implements ActivityEventListener {
   public static final String NAME = "TelematicsSdk";
   private static final String TAG = "TelematicsSdkModule";
 
@@ -31,6 +33,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
 
   public TelematicsSdkModule(ReactApplicationContext reactContext) {
     super(reactContext);
+    reactContext.addActivityEventListener(this);
   }
 
   @Override
@@ -200,5 +203,10 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
       }
     }
     return false;
+  }
+
+  @Override
+  public void onNewIntent(Intent intent) {
+
   }
 }
