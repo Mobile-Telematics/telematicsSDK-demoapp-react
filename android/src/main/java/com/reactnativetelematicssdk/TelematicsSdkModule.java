@@ -202,7 +202,6 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements A
           break;
       }
     }
-    return false;
   }
 
   @Override
