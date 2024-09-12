@@ -35,7 +35,6 @@ class TagsStateDelegate: NSObject, RPTagsServerStateDelegate {
         let json: [String: Any?] = ["status": state, "tag": jsonTag]
         if let promise = addTagPromise {
             promise.resolve(json)
-            addTagPromise = nil
         }
     }
     
@@ -45,7 +44,6 @@ class TagsStateDelegate: NSObject, RPTagsServerStateDelegate {
         let json: [String: Any?] = ["status": state, "tag": jsonTag]
         if let promise = deleteTagPromise {
             promise.resolve(json)
-            deleteTagPromise = nil
         }
     }
     
@@ -59,7 +57,6 @@ class TagsStateDelegate: NSObject, RPTagsServerStateDelegate {
         let result: [String: Any] = ["status": state, "tags": jsonTags]
         if let promise = getTagsPromise {
             promise.resolve(result)
-            getTagsPromise = nil
         }
     }
     
@@ -67,37 +64,18 @@ class TagsStateDelegate: NSObject, RPTagsServerStateDelegate {
         let state = parseStatus(status: status)
         if let promise = removeAllPromise {
             promise.resolve(state)
-            removeAllPromise = nil
         }
     }
     
-    func addFutureTag(_ status: RPTagStatus, tag: RPTag!, timestamp:Int) {
-        let state = parseStatus(status: status)
-        let jsonTag = ["tag": tag.tag, "source": tag.source]
-        let json: [String: Any?] = ["status": state, "tag": jsonTag]
-        if let promise = addTagPromise {
-            promise.resolve(json)
-            addTagPromise = nil
-        }
+    func addFutureTag(_ status: RPTagStatus, tag: RPTag!, timestamp:Int){
+      
     }
-
+    
     func removeFutureTrackTag(_ status: RPTagStatus, tag: RPTag!, timestamp:Int) {
-        let state = parseStatus(status: status)
-        let jsonTag = ["tag": tag.tag, "source": tag.source]
-        let json: [String: Any?] = ["status": state, "tag": jsonTag]
-        if let promise = deleteTagPromise {
-            promise.resolve(json)
-            deleteTagPromise = nil
-        }
+       
     }
-
     
-    func removeAllFutureTrackTag(_ status: RPTagStatus!, timestamp: Int) {
-        let state = parseStatus(status: status)
-        if let promise = removeAllPromise {
-            promise.resolve(state)
-            removeAllPromise = nil
-        }
+    func removeAllFutureTrackTag(_ status: RPTagStatus!, timestamp:Int) {
+       
     }
 }
-
