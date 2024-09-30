@@ -49,9 +49,9 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements A
     if (!api.isInitialized()) {
       api.initialize(this.getReactApplicationContext(), setTelematicsSettings());
       Log.d(TAG, "Tracking api is initialized");
-      api.addTagsProcessingCallback(tagsProcessor);
-      Log.d(TAG, "Tag callback is set");
     }
+    api.addTagsProcessingCallback(tagsProcessor);
+    Log.d(TAG, "Tag callback is set");
   }
 
   /**
