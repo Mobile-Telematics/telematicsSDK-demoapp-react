@@ -24,7 +24,7 @@ android {
     compileSdkVersion safeExtGet('TelematicsSdk_compileSdkVersion', 34)
     buildToolsVersion safeExtGet('TelematicsSdk_buildToolsVersion', '34.0.0')
     defaultConfig {
-        minSdkVersion safeExtGet('TelematicsSdk_minSdkVersion', 21)
+        minSdkVersion safeExtGet('TelematicsSdk_minSdkVersion', 23)
         targetSdkVersion safeExtGet('TelematicsSdk_targetSdkVersion', 33)
         versionCode 3
         versionName "1.0"
@@ -63,6 +63,6 @@ rootProject.allprojects {
 
 dependencies {
     //noinspection GradleDynamicVersion
-    implementation("com.facebook.react:react-android:0.73.0")
-    implementation "com.telematicssdk:tracking:2.2.260"  // Telematics sdk
+    implementation("com.facebook.react:react-android:0.75.3")
+    implementation "com.telematicssdk:tracking:2.2.262"  // Telematics sdk
 }
