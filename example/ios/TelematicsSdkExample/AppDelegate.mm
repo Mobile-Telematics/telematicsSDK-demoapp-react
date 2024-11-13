@@ -19,10 +19,10 @@
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
-  return [self getBundleURL];
+  return [self bundleURL];
 }
-
-- (NSURL *)getBundleURL
+\
+- (NSURL *)bundleURL
 {
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
@@ -31,9 +31,9 @@
 #endif
 }
 
-- (void)applicationWillEnterForeground:(UIApplication *)application {
-  [RPEntry applicationWillEnterForeground:application];
-}
+// - (void)applicationWillEnterForeground:(UIApplication *)application {
+//   [RPEntry applicationWillEnterForeground:application];
+// }
 
 
 - (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(nonnull NSString *)identifier completionHandler:(nonnull void (^)(void))completionHandler {
