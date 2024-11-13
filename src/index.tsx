@@ -1,4 +1,4 @@
-import { NativeModules, EventSubscription } from 'react-native';
+import { NativeModules, type EventSubscription } from 'react-native';
 
 interface Tag {
   tag: string;
