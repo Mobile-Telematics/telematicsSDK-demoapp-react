@@ -50,7 +50,7 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
                 RPEntry.instance().virtualDeviceToken = token
                 RPEntry.instance().setEnableSdk(true)
                 RPEntry.instance().disableTracking = false
-                RPTracker.instance().startPersistentTracking()
+                //RPTracker.instance().startPersistentTracking()
                 resolve(RPEntry.isSDKEnabled())
             }
         }
