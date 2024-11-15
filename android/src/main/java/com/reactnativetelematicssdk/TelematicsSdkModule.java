@@ -1,21 +1,26 @@
 package com.reactnativetelematicssdk;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
+import android.preference.PreferenceManager;
+import android.util.Log;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+
+import com.facebook.react.bridge.ActivityEventListener;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.raxeltelematics.v2.sdk.Settings;
+import com.facebook.react.module.annotations.ReactModule;
+
 import com.raxeltelematics.v2.sdk.TrackingApi;
+import com.raxeltelematics.v2.sdk.Settings;
 import com.raxeltelematics.v2.sdk.utils.permissions.PermissionsWizardActivity;
-
-import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import androidx.annotation.NonNull;
-
-
-public class TelematicsSdkModule extends ReactContextBaseJavaModule implements PreferenceManager.OnActivityResultListener {
+public class TelematicsSdkModule extends ReactContextBaseJavaModule implements ActivityEventListener {
   public static final String NAME = "TelematicsSdk";
   private static final String TAG = "TelematicsSdkModule";
 
@@ -26,6 +31,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
 
   public TelematicsSdkModule(ReactApplicationContext reactContext) {
     super(reactContext);
+    reactContext.addActivityEventListener(this);
   }
 
   @Override
@@ -41,16 +47,16 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
     if (!api.isInitialized()) {
       api.initialize(this.getReactApplicationContext(), setTelematicsSettings());
       Log.d(TAG, "Tracking api is initialized");
-      api.addTagsProcessingCallback(tagsProcessor);
-      Log.d(TAG, "Tag callback is set");
     }
+    api.addTagsProcessingCallback(tagsProcessor);
+    Log.d(TAG, "Tag callback is set");
   }
 
-  //startPersistentTrackingMethod
-  @ReactMethod
-  public void startPersistentTracking(Promise promise) {
-    promise.resolve(api.startPersistentTracking());
-  }
+    //startPersistentTrackingMethod
+    @ReactMethod
+    public void startPersistentTracking(Promise promise) {
+      promise.resolve(api.startPersistentTracking());
+    }
 
   /**
    * Default Setting constructor
@@ -68,7 +74,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
       true,
       true,
       false,
-      true
+      false
     );
     Log.d(TAG, "setTelematicsSettings");
     return settings;
@@ -105,7 +111,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
   @SuppressLint("MissingPermission")
   @ReactMethod
   public void enable(String deviceToken, Promise promise) {
-    if(deviceToken.isEmpty()) {
+    if(deviceToken.length() == 0) {
       promise.reject("Error", "Missing token value");
       return;
     }
@@ -180,7 +186,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
 
   // Permission wizard result
   @Override
-  public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
+  public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
     if (requestCode == 50005) {
       switch(resultCode) {
         case -1:
@@ -200,6 +206,10 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
           break;
       }
     }
-    return false;
+  }
+
+  @Override
+  public void onNewIntent(Intent intent) {
+
   }
 }
