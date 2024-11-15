@@ -64,5 +64,5 @@ rootProject.allprojects {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation("com.facebook.react:react-android:0.75.3")
-    implementation "com.telematicssdk:tracking:2.2.262"  // Telematics sdk
+    implementation("com.telematicssdk:tracking:2.2.263")  // Telematics sdk
 }

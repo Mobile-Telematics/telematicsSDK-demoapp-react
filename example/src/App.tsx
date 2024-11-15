@@ -1,23 +1,26 @@
-import * as React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import {
+  Alert,
+  LogBox,
+  NativeEventEmitter,
   SafeAreaView,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
-  NativeEventEmitter,
-  Alert,
 } from 'react-native';
 import TelematicsSdk from 'react-native-telematics';
+import { Button, Input } from './components';
+import { ClearButton } from './components/ClearButton';
+
+LogBox.ignoreLogs(['new NativeEventEmitter()']);
 
 export default function App() {
-  const [deviceToken, setDeviceToken] = React.useState<string>('');
-  const [sdkStatus, setSdkStatus] = React.useState(false);
-  const [sdkTag, setSdkTag] = React.useState('');
+  const [deviceToken, setDeviceToken] = useState('');
+  const [sdkStatus, setSdkStatus] = useState(false);
+  const [sdkTag, setSdkTag] = useState('');
 
-  React.useEffect(() => {
+  useEffect(() => {
     TelematicsSdk.initialize();
     requestPermissions();
     updateSdkStatus();
@@ -33,20 +36,25 @@ export default function App() {
     };
   }, []);
 
+  const showErrorAlert = (error: any) => {
+    console.log(error);
+    Alert.alert('Error', error.message, [{ text: 'OK' }]);
+  };
+
+  const clearSdkTag = () => setSdkTag('');
+
+  // methods
   const getToken = async () => {
     const token = await TelematicsSdk.getDeviceToken();
     setDeviceToken(token);
   };
-
-  const clearSdkTag = () => setSdkTag('');
 
   const requestPermissions = async () => {
     try {
       const isGranted = await TelematicsSdk.requestPermissions();
       if (isGranted) console.log('All permissions granted');
     } catch (error: any) {
-      Alert.alert('Error', error.message, [{ text: 'OK' }]);
-      console.log(error);
+      showErrorAlert(error);
     }
   };
 
@@ -69,8 +77,7 @@ export default function App() {
       }
       updateSdkStatus();
     } catch (error: any) {
-      Alert.alert('Error', error.message, [{ text: 'OK' }]);
-      console.log(error.message);
+      showErrorAlert(error);
     }
   };
 
@@ -86,8 +93,7 @@ export default function App() {
       const result = await TelematicsSdk.addFutureTrackTag('Some', 'Some');
       setSdkTag(JSON.stringify(result));
     } catch (error: any) {
-      Alert.alert('Error', error.message, [{ text: 'OK' }]);
-      console.log(error);
+      showErrorAlert(error);
     }
   };
 
@@ -96,8 +102,7 @@ export default function App() {
       const result = await TelematicsSdk.getFutureTrackTags();
       setSdkTag(JSON.stringify(result));
     } catch (error: any) {
-      Alert.alert('Error', error.message, [{ text: 'OK' }]);
-      console.log(error);
+      showErrorAlert(error);
     }
   };
 
@@ -106,8 +111,7 @@ export default function App() {
       const result = await TelematicsSdk.removeAllFutureTrackTags();
       setSdkTag(JSON.stringify(result));
     } catch (error: any) {
-      Alert.alert('Error', error.message, [{ text: 'OK' }]);
-      console.log(error);
+      showErrorAlert(error);
     }
   };
 
@@ -116,55 +120,44 @@ export default function App() {
       const result = await TelematicsSdk.removeFutureTrackTag('Some');
       setSdkTag(JSON.stringify(result));
     } catch (error: any) {
-      Alert.alert('Error', error.message, [{ text: 'OK' }]);
-      console.log(error);
+      showErrorAlert(error);
     }
   };
 
+  const startPersistentTracking = async () => {
+    try {
+      const result = await TelematicsSdk.startPersistentTracking();
+      !!result && setSdkTag(JSON.stringify(result));
+    } catch (error: any) {
+      showErrorAlert(error);
+    }
+  };
+
+  const sdkStatusText = useMemo(() => {
+    return `SDK Status: ${sdkStatus ? 'enabled' : 'disabled'}`;
+  }, [sdkStatus]);
+
   return (
     <SafeAreaView style={styles.container}>
-      {sdkTag === '' ? (
-        <View />
-      ) : (
-        <View style={styles.clearButton}>
-          <TouchableOpacity onPress={clearSdkTag}>
-            <Text style={styles.clearButtonText}>X</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      {!sdkStatus ? (
-        <Text style={styles.status}>SDK Status: disabled</Text>
-      ) : (
-        <Text style={styles.status}>SDK Status: enabled</Text>
-      )}
-      <TextInput
+      {sdkTag === '' ? <View /> : <ClearButton onPress={clearSdkTag} />}
+      <Text style={styles.status}>{sdkStatusText}</Text>
+      <Input
         placeholder={'Your device token'}
         value={deviceToken}
         onChangeText={setDeviceToken}
-        multiline={true}
-        blurOnSubmit={true}
-        style={styles.input}
       />
       <Text style={styles.tagText}>{sdkTag}</Text>
       <View>
-        <TouchableOpacity onPress={enableSDK} style={styles.button}>
-          <Text>Enable SDK</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={setTag} style={styles.button}>
-          <Text>Add test tag</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={getTags} style={styles.button}>
-          <Text>Get all tags</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={removeTag} style={styles.button}>
-          <Text>Remove test tag</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={removeAllTags} style={styles.button}>
-          <Text>Remove all tags</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={disableSDK} style={styles.button}>
-          <Text>Disable SDK</Text>
-        </TouchableOpacity>
+        <Button text="Enable SDK" onPress={enableSDK} />
+        <Button text="Add test tag" onPress={setTag} />
+        <Button text="Get all tags" onPress={getTags} />
+        <Button text="Remove test tag" onPress={removeTag} />
+        <Button text="Remove all tags" onPress={removeAllTags} />
+        <Button text="Disable SDK" onPress={disableSDK} />
+        <Button
+          text="Start persistent tracking"
+          onPress={startPersistentTracking}
+        />
       </View>
     </SafeAreaView>
   );
@@ -175,32 +168,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-around',
   },
-  button: {
-    backgroundColor: 'green',
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    marginHorizontal: 24,
-    marginVertical: 8,
-  },
-  input: {
-    marginHorizontal: 24,
-    fontSize: 20,
-    textAlign: 'center',
-  },
   status: {
     textAlign: 'center',
     fontSize: 20,
   },
   tagText: {
     textAlign: 'center',
-  },
-  clearButton: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingHorizontal: 24,
-  },
-  clearButtonText: {
-    fontSize: 24,
   },
 });

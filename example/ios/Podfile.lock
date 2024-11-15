@@ -4,7 +4,7 @@ PODS:
   - FBLazyVector (0.75.3)
   - fmt (9.1.0)
   - glog (0.3.5)
-  - RaxelPulse (6.0.4)
+  - RaxelPulse (6.0.5)
   - RCT-Folly (2024.01.01.00):
     - boost
     - DoubleConversion
@@ -1210,7 +1210,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-telematics-sdk (1.0.10):
+  - react-native-telematics-sdk (1.0.14):
     - RaxelPulse
     - React-Core
   - React-nativeconfig (0.75.3)
@@ -1659,9 +1659,9 @@ SPEC CHECKSUMS:
   FBLazyVector: 7b438dceb9f904bd85ca3c31d64cce32a035472b
   fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
   glog: 69ef571f3de08433d766d614c73a9838a06bf7eb
-  RaxelPulse: 9d336698d172db7fe09f8af924c4b0100a0c3cfc
+  RaxelPulse: a4a59fa48443d6d86e64bd8160943a699b51f228
   RCT-Folly: 4464f4d875961fce86008d45f4ecf6cef6de0740
-  RCTDeprecation: 5f4f1a43ecdfee14837615316dc6001edf3766c6
+  RCTDeprecation: 4191f6e64b72d9743f6fe1a8a16e89e868f5e9e7
   RCTRequired: 9bb589570f2bb3abc6518761e3fd1ad9b7f7f06c
   RCTTypeSafety: 1c1a8741c86df0a0ac1a99cf3fb0e29eedbc2c88
   React: b6810a201ee11e69ae8bfd4eb4aaab86610600bf
@@ -1689,7 +1689,7 @@ SPEC CHECKSUMS:
   React-logger: 4072f39df335ca443932e0ccece41fbeb5ca8404
   React-Mapbuffer: 714f2fae68edcabfc332b754e9fbaa8cfc68fdd4
   React-microtasksnativemodule: 987cf7e0e0e7129250a48b807e70d3b906c726cf
-  react-native-telematics-sdk: 1269e754a91c71d475aa9d4adb88daa0c025b737
+  react-native-telematics-sdk: 6c29c22ef640bfea5e835f65ac3b172472211dac
   React-nativeconfig: 4a9543185905fe41014c06776bf126083795aed9
   React-NativeModulesApple: 651670a799672bd54469f2981d91493dda361ddf
   React-perflogger: 3bbb82f18e9ac29a1a6931568e99d6305ef4403b
@@ -1716,8 +1716,8 @@ SPEC CHECKSUMS:
   ReactCodegen: f177b8fd67788c5c6ff45a39c7482c5f8d77ace6
   ReactCommon: 627bd3192ef01a351e804e9709673d3741d38fec
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
-  Yoga: 1354c027ab07c7736f99a3bef16172d6f1b12b47
+  Yoga: 4ef80d96a5534f0e01b3055f17d1e19a9fc61b63
 
 PODFILE CHECKSUM: c8f81a1cdcfea357d0943353bd92725506881bc0
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.15.2

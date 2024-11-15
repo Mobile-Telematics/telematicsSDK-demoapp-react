@@ -12,6 +12,10 @@ RCT_EXTERN_METHOD(enable: (NSString *) token
 
 RCT_EXTERN_METHOD(disable)
 
+RCT_EXTERN_METHOD(startPersistentTracking: 
+                  (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(requestPermissions:
                   (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
