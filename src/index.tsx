@@ -1,4 +1,8 @@
-import { NativeModules, type EventSubscription } from 'react-native';
+import {
+  type EventSubscription,
+  type NativeModule,
+  NativeModules,
+} from 'react-native';
 
 interface Tag {
   tag: string;
@@ -21,8 +25,11 @@ interface TelematicsSdkType {
   ) => Promise<{ status: string; tag: Tag }>;
   removeFutureTrackTag: (tag: string) => Promise<{ status: string; tag: Tag }>;
   removeAllFutureTrackTags: () => Promise<string>;
+  startPersistentTracking: () => Promise<boolean | null>;
 }
 
 const { TelematicsSdk } = NativeModules;
 
-export default TelematicsSdk as TelematicsSdkType & EventSubscription;
+export default TelematicsSdk as TelematicsSdkType &
+  EventSubscription &
+  NativeModule;
