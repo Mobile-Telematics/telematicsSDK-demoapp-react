@@ -52,11 +52,11 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements A
     Log.d(TAG, "Tag callback is set");
   }
 
-    //startPersistentTrackingMethod
-    @ReactMethod
-    public void startPersistentTracking(Promise promise) {
-      promise.resolve(api.startPersistentTracking());
-    }
+  //startPersistentTrackingMethod
+  @ReactMethod
+  public void startPersistentTracking(Promise promise) {
+    promise.resolve(api.startPersistentTracking());
+  }
 
   /**
    * Default Setting constructor
@@ -111,7 +111,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements A
   @SuppressLint("MissingPermission")
   @ReactMethod
   public void enable(String deviceToken, Promise promise) {
-    if(deviceToken.length() == 0) {
+    if(deviceToken.isEmpty()) {
       promise.reject("Error", "Missing token value");
       return;
     }

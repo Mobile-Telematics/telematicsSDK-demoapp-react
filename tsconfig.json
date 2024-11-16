@@ -3,7 +3,7 @@
     "ignoreDeprecations": "5.0",
     "baseUrl": "./",
     "paths": {
-      "react-native-telematics-sdk": ["./src/index"]
+      "react-native-telematics": ["./src/index"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

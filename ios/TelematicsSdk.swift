@@ -73,6 +73,12 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
         func getDeviceToken(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
             resolve(RPEntry.instance().virtualDeviceToken)
         }
+
+        // Start persistent tracking
+        @objc(startPersistentTracking:rejecter:)
+        func startPersistentTracking(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+            resolve(RPTracker.instance().startPersistentTracking())
+        }
         
         // Tags API
         @objc(addFutureTrackTag:source:resolver:rejecter:)
