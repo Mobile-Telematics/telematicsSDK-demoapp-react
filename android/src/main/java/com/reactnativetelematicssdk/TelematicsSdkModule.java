@@ -4,18 +4,14 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
+
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import java.util.Map;
-import java.util.HashMap;
 
 import com.raxeltelematics.v2.sdk.TrackingApi;
 import com.raxeltelematics.v2.sdk.Settings;
@@ -51,6 +47,12 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
       api.addTagsProcessingCallback(tagsProcessor);
       Log.d(TAG, "Tag callback is set");
     }
+  }
+
+  //startPersistentTrackingMethod
+  @ReactMethod
+  public void startPersistentTracking(Promise promise) {
+    promise.resolve(api.startPersistentTracking());
   }
 
   /**
@@ -105,7 +107,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
   @SuppressLint("MissingPermission")
   @ReactMethod
   public void enable(String deviceToken, Promise promise) {
-    if(deviceToken.length() == 0) {
+    if(deviceToken.isEmpty()) {
       promise.reject("Error", "Missing token value");
       return;
     }
