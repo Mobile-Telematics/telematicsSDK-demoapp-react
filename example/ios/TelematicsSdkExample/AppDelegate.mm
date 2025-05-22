@@ -1,7 +1,7 @@
 #import "AppDelegate.h"
 
 #import <React/RCTBundleURLProvider.h>
-#import <RaxelPulse/RaxelPulse.h>
+#import <TelematicsSDK/TelematicsSDK.h>
 
 @implementation AppDelegate
 
@@ -11,8 +11,8 @@
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
-  [RPEntry initializeWithRequestingPermissions:NO];
-   [RPEntry application:application didFinishLaunchingWithOptions:launchOptions];
+  [RPEntry initializeSDK];
+  [[RPEntry instance] application:application didFinishLaunchingWithOptions:launchOptions];
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
@@ -31,33 +31,32 @@
 #endif
 }
 
-// - (void)applicationWillEnterForeground:(UIApplication *)application {
-//   [RPEntry applicationWillEnterForeground:application];
-// }
-
-
 - (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(nonnull NSString *)identifier completionHandler:(nonnull void (^)(void))completionHandler {
-    [RPEntry application:application handleEventsForBackgroundURLSession:identifier completionHandler:completionHandler];
+    [[RPEntry instance] application:application handleEventsForBackgroundURLSession:identifier completionHandler:completionHandler];
 }
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
-    [RPEntry applicationDidReceiveMemoryWarning:application];
+    [[RPEntry instance] applicationDidReceiveMemoryWarning:application];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
-    [RPEntry applicationWillTerminate:application];
+    [[RPEntry instance] applicationWillTerminate:application];
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-    [RPEntry applicationDidEnterBackground:application];
+    [[RPEntry instance] applicationDidEnterBackground:application];
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+  [[RPEntry instance] applicationWillEnterForeground:application];
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
-    [RPEntry applicationDidBecomeActive:application];
+    [[RPEntry instance] applicationDidBecomeActive:application];
 }
 
 - (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    [RPEntry application:application performFetchWithCompletionHandler:^{
+    [[RPEntry instance] application:application performFetchWithCompletionHandler:^{
         completionHandler(UIBackgroundFetchResultNewData);
     }];
 }
