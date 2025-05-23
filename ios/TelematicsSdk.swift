@@ -57,9 +57,10 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
         
         @objc(disable)
         func disable() {
-            RPEntry.instance.disableTracking = true
-            RPEntry.instance.setDisableWithUpload()
+            //RPEntry.instance.disableTracking = true
+            //RPEntry.instance.setDisableWithUpload() // deprecated: https://docs.damoov.com/docs/methods-for-ios-app
             //RPEntry.instance.removeVirtualDeviceToken()
+            RPEntry.instance.setEnableSdk(false)
         }
         
         // API Status
@@ -101,23 +102,24 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
             })
         }
         
-        @objc(removeFutureTrackTag:resolver:rejecter:)
-        func removeFutureTrackTag(_ tag: NSString, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-              // TODO
-          //let tagEntity = RPFutureTag(
-            //    tag: tag as String
-            //)
-            //if let stateDelegate = tagsStateDelegate {
-            //    stateDelegate.deleteTagPromise = Promise(resolve: resolve, reject: reject)
-            //}
-            //RPEntry.instance.api.removeFutureTrackTag(tagEntity, completion: {[weak self]status, error in
-                //if let error {
-                    //reject("Error", error.localizedDescription, nil)
-                    //return
-                //}
-                //guard let self else {return}
-                //self.tagsStateDelegate?.removeFutureTrackTag(status, tag: tag)
-            //})
+        @objc(removeFutureTrackTag:source:resolver:rejecter:)
+        func removeFutureTrackTag(_ tag: NSString, _ source: NSString, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+            // TODO
+            let tagEntity = RPFutureTag(
+                tag: tag as String,
+                source: source as String
+            )
+            if let stateDelegate = tagsStateDelegate {
+                stateDelegate.deleteTagPromise = Promise(resolve: resolve, reject: reject)
+            }
+            RPEntry.instance.api.removeFutureTrackTag(tagEntity, completion: {[weak self]status, error in
+                if let error {
+                    reject("Error", error.localizedDescription, nil)
+                    return
+                }
+                guard let self else {return}
+                self.tagsStateDelegate?.removeFutureTrackTag(status, tag: tagEntity)
+            })
         }
         
         @objc(removeAllFutureTrackTags:rejecter:)
