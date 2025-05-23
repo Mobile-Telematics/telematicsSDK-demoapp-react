@@ -77,7 +77,8 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
         // Start persistent tracking
         @objc(startPersistentTracking:rejecter:)
         func startPersistentTracking(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-            resolve(RPEntry.instance.startPersistentTracking())
+            RPEntry.instance.startPersistentTracking()
+            resolve(true)
         }
         
         // Tags API
@@ -96,7 +97,7 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
                     return
                 }
                 guard let self else {return}
-              self.tagsStateDelegate?.addFutureTag(status, tag: tagEntity)
+                self.tagsStateDelegate?.addFutureTag(status, tag: tagEntity)
             })
         }
         
