@@ -44,5 +44,8 @@ const config = {
       },
     }),
   },
+  resolver: {
+    sourceExts: ['jsx', 'js', 'ts', 'tsx', 'cjs', 'json'], //add here
+  },
 };
 module.exports = mergeConfig(defaultConfig, config);

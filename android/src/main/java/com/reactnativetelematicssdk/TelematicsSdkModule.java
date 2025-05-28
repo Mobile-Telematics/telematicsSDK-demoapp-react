@@ -17,9 +17,9 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.module.annotations.ReactModule;
 
-import com.raxeltelematics.v2.sdk.TrackingApi;
-import com.raxeltelematics.v2.sdk.Settings;
-import com.raxeltelematics.v2.sdk.utils.permissions.PermissionsWizardActivity;
+import com.telematicssdk.tracking.TrackingApi;
+import com.telematicssdk.tracking.Settings;
+import com.telematicssdk.tracking.utils.permissions.PermissionsWizardActivity;
 public class TelematicsSdkModule extends ReactContextBaseJavaModule implements ActivityEventListener {
   public static final String NAME = "TelematicsSdk";
   private static final String TAG = "TelematicsSdkModule";
