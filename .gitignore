@@ -73,3 +73,7 @@ example/.yarn/*
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# example app ruby files
+example/vendor/*
+example/Gemfile.lock
