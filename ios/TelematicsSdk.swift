@@ -57,9 +57,12 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
         
         @objc(disable)
         func disable() {
-            RPEntry.instance().disableTracking = true
-            RPEntry.instance().setDisableWithUpload()
-            //RPEntry.instance().removeVirtualDeviceToken()
+            // Fix collection mutation issue by executing on main thread
+            DispatchQueue.main.async {
+                RPEntry.instance().disableTracking = true
+                RPEntry.instance().setDisableWithUpload()
+                //RPEntry.instance().removeVirtualDeviceToken()
+            }
         }
         
         // API Status
