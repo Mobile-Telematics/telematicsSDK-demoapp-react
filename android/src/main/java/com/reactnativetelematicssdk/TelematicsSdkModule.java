@@ -163,7 +163,8 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements A
   }
 
   @ReactMethod
-  public void removeFutureTrackTag(String tag, Promise promise) {
+  public void removeFutureTrackTag(String tag, String source, Promise promise) {
+    // We don't use source yet, may be used in the new android sdk
     Log.d(TAG, "Removing track");
     if(!api.isInitialized()) {
       promise.reject("Error", "Tracking api is not initialized");

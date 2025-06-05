@@ -23,7 +23,10 @@ interface TelematicsSdkType {
     tag: string,
     source?: string
   ) => Promise<{ status: string; tag: Tag }>;
-  removeFutureTrackTag: (tag: string) => Promise<{ status: string; tag: Tag }>;
+  removeFutureTrackTag: (
+    tag: string,
+    source?: string
+  ) => Promise<{ status: string; tag: Tag }>;
   removeAllFutureTrackTags: () => Promise<string>;
   startPersistentTracking: () => Promise<boolean | null>;
 }
