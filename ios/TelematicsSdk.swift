@@ -57,10 +57,10 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
         
         @objc(disable)
         func disable() {
-            //RPEntry.instance.disableTracking = true
-            //RPEntry.instance.setDisableWithUpload() // deprecated: https://docs.damoov.com/docs/methods-for-ios-app
-            //RPEntry.instance.removeVirtualDeviceToken()
-            RPEntry.instance.setEnableSdk(false)
+            // Always perform SDK state changes on the main thread to avoid collection mutation crashes
+            DispatchQueue.main.async {
+                RPEntry.instance.setEnableSdk(false)
+            }
         }
         
         // API Status
