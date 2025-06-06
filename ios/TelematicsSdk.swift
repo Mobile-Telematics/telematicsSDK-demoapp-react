@@ -1,5 +1,5 @@
 import Foundation
-import RaxelPulse
+import TelematicsSDK
 import UIKit
 
 @objc(TelematicsSdk)
@@ -20,20 +20,20 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
         @objc(initialize)
         func initialize() {
             tagsStateDelegate = TagsStateDelegate()
-            RPEntry.instance().tagStateDelegate = tagsStateDelegate
-            RPEntry.instance().lowPowerModeDelegate = self
-            RPEntry.enableHF(true)
+            //RPEntry.instance.api.tag = tagsStateDelegate // Seems to be removed?
+            RPEntry.instance.lowPowerModeDelegate = self
+            //RPEntry.enableHF(true) // Enabled by default now
         }
         
         @objc(requestPermissions:rejecter:)
         func requestPermissions(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-            if RPEntry.isAllRequiredPermissionsGranted() {
+            if RPEntry.instance.isAllRequiredPermissionsGranted() {
                 resolve(true)
                 return
             }
             DispatchQueue.main.async {
                 RPPermissionsWizard.returnInstance().launch(finish: {_ in
-                    RPEntry.isAllRequiredPermissionsGranted() ? resolve(true) : resolve(false)
+                    RPEntry.instance.isAllRequiredPermissionsGranted() ? resolve(true) : resolve(false)
                 })
             }
         }
@@ -47,66 +47,79 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
             }
             
             DispatchQueue.main.async {
-                RPEntry.instance().virtualDeviceToken = token
-                RPEntry.instance().setEnableSdk(true)
-                RPEntry.instance().disableTracking = false
-                //RPTracker.instance().startPersistentTracking()
-                resolve(RPEntry.isSDKEnabled())
+                RPEntry.instance.virtualDeviceToken = String(token)
+                RPEntry.instance.setEnableSdk(true)
+                RPEntry.instance.disableTracking = false
+                //RPTracker.instance.startPersistentTracking()
+                resolve(RPEntry.instance.isSDKEnabled())
             }
         }
         
         @objc(disable)
         func disable() {
-            // Fix collection mutation issue by executing on main thread
+            // Always perform SDK state changes on the main thread to avoid collection mutation crashes
             DispatchQueue.main.async {
-                RPEntry.instance().disableTracking = true
-                RPEntry.instance().setDisableWithUpload()
-                //RPEntry.instance().removeVirtualDeviceToken()
+                RPEntry.instance.setEnableSdk(false)
             }
         }
         
         // API Status
         @objc(getStatus:rejecter:)
         func getStatus(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-            resolve(RPEntry.isSDKEnabled())
+            resolve(RPEntry.instance.isSDKEnabled())
         }
     
         // Device token
         @objc(getDeviceToken:rejecter:)
         func getDeviceToken(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-            resolve(RPEntry.instance().virtualDeviceToken)
+            resolve(RPEntry.instance.virtualDeviceToken)
         }
 
         // Start persistent tracking
         @objc(startPersistentTracking:rejecter:)
         func startPersistentTracking(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-            resolve(RPTracker.instance().startPersistentTracking())
+            RPEntry.instance.startPersistentTracking()
+            resolve(true)
         }
         
         // Tags API
         @objc(addFutureTrackTag:source:resolver:rejecter:)
         func addFutureTrackTag(_ tag: NSString, _ source: NSString, _ resolve: @escaping RCTPromiseResolveBlock, _ reject: @escaping RCTPromiseRejectBlock) {
-            let tagEntity = RPTag.init()
-            tagEntity.tag = tag as String
-            tagEntity.source = source as String
+            let tagEntity = RPFutureTag(
+                tag: tag as String,
+                source: source as String
+            )
             if let stateDelegate = tagsStateDelegate {
                 stateDelegate.addTagPromise = Promise(resolve:resolve, reject: reject)
             }
-            RPEntry.instance().api.addFutureTrackTag(tagEntity,completion:{status, tag, timestamp in
-                self.tagsStateDelegate?.addFutureTag(status,tag: tag,timestamp: timestamp)
+            RPEntry.instance.api.addFutureTrackTag(tagEntity,completion:{[weak self]status, error in
+                if let error {
+                    reject("Error", error.localizedDescription, nil)
+                    return
+                }
+                guard let self else {return}
+                self.tagsStateDelegate?.addFutureTag(status, tag: tagEntity)
             })
         }
         
-        @objc(removeFutureTrackTag:resolver:rejecter:)
-        func removeFutureTrackTag(_ tag: NSString, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-            let tagEntity = RPTag.init()
-            tagEntity.tag = tag as String
+        @objc(removeFutureTrackTag:source:resolver:rejecter:)
+        func removeFutureTrackTag(_ tag: NSString, _ source: NSString, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+            // TODO
+            let tagEntity = RPFutureTag(
+                tag: tag as String,
+                source: source as String
+            )
             if let stateDelegate = tagsStateDelegate {
                 stateDelegate.deleteTagPromise = Promise(resolve: resolve, reject: reject)
             }
-            RPEntry.instance().api.removeFutureTrackTag(tagEntity, completion: { [weak self] status, tag, timestamp in
+            RPEntry.instance.api.removeFutureTrackTag(tagEntity, completion: {[weak self]status, error in
+                if let error {
+                    reject("Error", error.localizedDescription, nil)
+                    return
+                }
                 guard let self else {return}
-                self.tagsStateDelegate?.removeFutureTrackTag(status ,tag:tag, timestamp:timestamp)})
+                self.tagsStateDelegate?.removeFutureTrackTag(status, tag: tagEntity)
+            })
         }
         
         @objc(removeAllFutureTrackTags:rejecter:)
@@ -114,9 +127,14 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
             if let stateDelegate = tagsStateDelegate {
                 stateDelegate.removeAllPromise = Promise(resolve: resolve, reject: reject)
             }
-            RPEntry.instance().api.removeAllFutureTrackTagsWithСompletion({[weak self] status, timestamp in
+          RPEntry.instance.api.removeAllFutureTrackTags(completion: {[weak self] status, error in
+                if let error {
+                    reject("Error", error.localizedDescription, nil)
+                    return
+                }
                 guard let self else {return}
-                self.tagsStateDelegate?.removeAllFutureTrackTag(status, timestamp: timestamp)})
+                self.tagsStateDelegate?.removeAllFutureTrackTag(status)
+        })
         }
         
         @objc(getFutureTrackTags:rejecter:)
@@ -124,9 +142,10 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
             if let stateDelegate = tagsStateDelegate {
                 stateDelegate.getTagsPromise = Promise(resolve: resolve, reject: reject)
             }
-            RPEntry.instance().api.getFutureTrackTag(0, completion: {[weak self]status, tags, timestamp in
+            let dateExample = Date()
+            RPEntry.instance.api.getFutureTrackTag(dateExample, completion: {[weak self]status, tags in
                 guard let self else {return}
-                self.tagsStateDelegate?.getTags(status, tags: tags, timestamp: timestamp)
+                self.tagsStateDelegate?.getTags(status, tags: tags)
             })
         }
         

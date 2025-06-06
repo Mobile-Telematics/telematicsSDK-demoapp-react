@@ -1,7 +1,7 @@
 import Foundation
-import RaxelPulse
+import TelematicsSDK
 
-class TagsStateDelegate: NSObject, RPTagsServerStateDelegate {
+class TagsStateDelegate: NSObject {
     
     var addTagPromise: Promise?
     var removeAllPromise: Promise?
@@ -14,22 +14,18 @@ class TagsStateDelegate: NSObject, RPTagsServerStateDelegate {
     
     private func parseStatus(status: RPTagStatus) -> NSString {
         switch status {
-        case .SUCCESS:
+        case .success:
             return "Success"
-        case .OFFLINE:
+        case .offline:
             return "Offline"
-        case .ERROR_WRONG_TIME:
-            return "Wrong time"
-        case .ERROR_TAG_OPERATION:
+        case .errorTagOperation:
             return "Wrong tag operation"
-        case .ERROR_INVALIND_TAG_SPECIFIED:
-            return "Invalid tag specified"
         @unknown default:
             return "Unknown error"
         }
     }
     
-    func addTag(_ status: RPTagStatus, tag: RPTag!, timestamp: Int) {
+    func addTag(_ status: RPTagStatus, tag: RPTag!) {
         let state = parseStatus(status: status)
         let jsonTag = ["tag": tag.tag, "source": tag.source]
         let json: [String: Any?] = ["status": state, "tag": jsonTag]
@@ -38,7 +34,7 @@ class TagsStateDelegate: NSObject, RPTagsServerStateDelegate {
         }
     }
     
-    func deleteTag(_ status: RPTagStatus, tag: RPTag!, timestamp: Int) {
+    func deleteTag(_ status: RPTagStatus, tag: RPTag!) {
         let state = parseStatus(status: status)
         let jsonTag = ["tag": tag.tag, "source": tag.source]
         let json: [String: Any?] = ["status": state, "tag": jsonTag]
@@ -47,7 +43,7 @@ class TagsStateDelegate: NSObject, RPTagsServerStateDelegate {
         }
     }
     
-    func getTags(_ status: RPTagStatus, tags: Any!, timestamp: Int) {
+    func getTags(_ status: RPTagStatus, tags: Any!) {
         let state = parseStatus(status: status)
         let tagsList = tags as? [RPTag]
         var jsonTags = [[String : String?]]()
@@ -60,22 +56,35 @@ class TagsStateDelegate: NSObject, RPTagsServerStateDelegate {
         }
     }
     
-    func removeAll(_ status: RPTagStatus, timestamp: Int) {
+    func removeAll(_ status: RPTagStatus) {
         let state = parseStatus(status: status)
         if let promise = removeAllPromise {
             promise.resolve(state)
         }
     }
     
-    func addFutureTag(_ status: RPTagStatus, tag: RPTag!, timestamp:Int){
-      
+    func addFutureTag(_ status: RPTagStatus, tag: RPFutureTag!){
+      let state = parseStatus(status: status)
+      let jsonTag = ["tag": tag.tag, "source": tag.source]
+      let json: [String: Any?] = ["status": state, "tag": jsonTag]
+      if let promise = addTagPromise {
+          promise.resolve(json)
+      }
     }
     
-    func removeFutureTrackTag(_ status: RPTagStatus, tag: RPTag!, timestamp:Int) {
-       
+    func removeFutureTrackTag(_ status: RPTagStatus, tag: RPFutureTag!) {
+      let state = parseStatus(status: status)
+      let jsonTag = ["tag": tag.tag, "source": tag.source]
+      let json: [String: Any?] = ["status": state, "tag": jsonTag]
+      if let promise = deleteTagPromise {
+          promise.resolve(json)
+      }
     }
     
-    func removeAllFutureTrackTag(_ status: RPTagStatus!, timestamp:Int) {
-       
+    func removeAllFutureTrackTag(_ status: RPTagStatus!) {
+      let state = parseStatus(status: status)
+      if let promise = removeAllPromise {
+          promise.resolve(state)
+      }
     }
 }

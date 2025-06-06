@@ -34,6 +34,7 @@ RCT_EXTERN_METHOD(addFutureTrackTag: (NSString*) tag
                   rejecter: (RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(removeFutureTrackTag: (NSString*) tag
+                  source: (NSString*) source
                   resolver: (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 

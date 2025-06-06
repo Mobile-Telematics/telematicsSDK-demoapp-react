@@ -139,32 +139,42 @@ Proper application lifecycle handling is extremely important for the TelematicsS
 ```obj-c
 // AppDelegate.mm
 
-#import <RaxelPulse/RaxelPulse.h>
+#import <TelematicsSDK/TelematicsSDK.h>
 
 // ....
 
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+	[RPEntry initializeSDK];
+	[[RPEntry instance] application:application didFinishLaunchingWithOptions:launchOptions];
+  return YES;
+}
+
 - (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(nonnull NSString *)identifier completionHandler:(nonnull void (^)(void))completionHandler {
-    [RPEntry application:application handleEventsForBackgroundURLSession:identifier completionHandler:completionHandler];
+    [[RPEntry instance] application:application handleEventsForBackgroundURLSession:identifier completionHandler:completionHandler];
 }
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
-    [RPEntry applicationDidReceiveMemoryWarning:application];
+    [[RPEntry instance] applicationDidReceiveMemoryWarning:application];
 }
 
 - (void)applicationWillTerminate:(UIApplication *)application {
-    [RPEntry applicationWillTerminate:application];
+    [[RPEntry instance] applicationWillTerminate:application];
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
-    [RPEntry applicationDidEnterBackground:application];
+    [[RPEntry instance] applicationDidEnterBackground:application];
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+  [[RPEntry instance] applicationWillEnterForeground:application];
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
-    [RPEntry applicationDidBecomeActive:application];
+    [[RPEntry instance] applicationDidBecomeActive:application];
 }
 
 - (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    [RPEntry application:application performFetchWithCompletionHandler:^{
+    [[RPEntry instance] application:application performFetchWithCompletionHandler:^{
         completionHandler(UIBackgroundFetchResultNewData);
     }];
 }
@@ -174,7 +184,7 @@ Also add the SDK initialization before React Native bridge initialization
 
 ```obj-c
 
-  [RPEntry initializeWithRequestingPermissions:NO];
+  [RPEntry initializeSDK];
   [RPEntry application:application didFinishLaunchingWithOptions:launchOptions];
 
   // before this line
