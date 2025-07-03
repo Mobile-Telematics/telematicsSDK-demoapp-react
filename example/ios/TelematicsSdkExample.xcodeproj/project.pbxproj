@@ -16,7 +16,6 @@
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		5E8A0324010E7F6950DF9B43 /* libPods-TelematicsSdkExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FD5059D640D9B15CDEDC6203 /* libPods-TelematicsSdkExample.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		CE3FC0BDA4952B0C3B3F79BA /* libPods-TelematicsSdkExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 59E2761B4E836D692266E560 /* libPods-TelematicsSdkExample.a */; };
 		CFE8391B7C398F53CE134238 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 51CEAF9A64F8635FE6F0EBBC /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
