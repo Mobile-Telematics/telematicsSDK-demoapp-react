@@ -1,5 +1,5 @@
 import Foundation
-import RaxelPulse
+import TelematicsSDK
 
 struct Promise {
     var resolve: RCTPromiseResolveBlock
