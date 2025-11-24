@@ -9,9 +9,9 @@ import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
-import com.raxeltelematics.v2.sdk.TagsProcessingListener;
-import com.raxeltelematics.v2.sdk.model.database.models.raw_tags.Status;
-import com.raxeltelematics.v2.sdk.server.model.sdk.raw_tags.Tag;
+import com.telematicssdk.tracking.TagsProcessingListener;
+import com.telematicssdk.tracking.model.database.models.raw_tags.Status;
+import com.telematicssdk.tracking.server.model.sdk.raw_tags.Tag;
 
 public class TagsProcessor implements TagsProcessingListener {
   private static final String TAG = "TelematicsSdkModule";

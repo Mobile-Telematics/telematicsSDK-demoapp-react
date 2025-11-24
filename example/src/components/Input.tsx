@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TextInput, TextInputProps } from 'react-native';
+import { StyleSheet, TextInput, type TextInputProps, View } from 'react-native';
 
 interface InputProps {
   placeholder?: string;
@@ -9,21 +9,44 @@ interface InputProps {
 
 export const Input = ({ placeholder, value, onChangeText }: InputProps) => {
   return (
-    <TextInput
-      placeholder={placeholder}
-      value={value}
-      onChangeText={onChangeText}
-      multiline
-      blurOnSubmit
-      style={styles.input}
-    />
+    <View style={styles.container}>
+      <TextInput
+        placeholder={placeholder}
+        value={value}
+        onChangeText={onChangeText}
+        multiline
+        blurOnSubmit
+        style={styles.input}
+        placeholderTextColor="#999"
+        textAlign="center"
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    marginHorizontal: 20,
+    marginVertical: 12,
+    borderRadius: 16,
+    backgroundColor: '#F0F8FF',
+    borderWidth: 2,
+    borderColor: '#5AC8FA',
+    shadowColor: '#007AFF',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   input: {
-    marginHorizontal: 24,
-    fontSize: 20,
-    textAlign: 'center',
+    fontSize: 15,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    color: '#000',
+    textAlign: 'left',
+    minHeight: 50,
   },
 });

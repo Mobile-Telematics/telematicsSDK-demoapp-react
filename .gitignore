@@ -66,6 +66,11 @@ example/android/app/src/main/res/raw/app.json
 .yarn/*
 example/.yarn/*
 
+# Android example build outputs
+example/android/app/build/
+example/android/app/debug/
+example/android/app/release/
+
 # Yarn
 .yarn/*
 !.yarn/patches

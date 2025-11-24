@@ -1,0 +1,3 @@
+info Found Xcode workspace "TelematicsSdkExample.xcworkspace"
+info Found booted iPhone Женя
+error Failed to install the app on the device because we couldn't execute the "ios-deploy" command. Please install it by running "brew install ios-deploy" and try again.

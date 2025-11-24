@@ -45,4 +45,8 @@ RCT_EXTERN_METHOD(removeAllFutureTrackTags:
                   (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(sendCustomHeartbeat:
+                  (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject)
+
 @end
