@@ -1,5 +1,5 @@
 import Foundation
-import RaxelPulse
+import TelematicsSDK
 import UIKit
 
 @objc(TelematicsSdk)
@@ -9,8 +9,6 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
         private var lowPowerEventName = "onLowPowerModeEnabled"
         
         private var lowPowerModeCallback: RCTResponseSenderBlock?
-        private var tagsStateDelegate: TagsStateDelegate?
-
         // used to allow UI operations
         @objc override static func requiresMainQueueSetup() -> Bool {
             return true
@@ -19,21 +17,18 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
         // Initialization and permission request
         @objc(initialize)
         func initialize() {
-            tagsStateDelegate = TagsStateDelegate()
-            RPEntry.instance().tagStateDelegate = tagsStateDelegate
-            RPEntry.instance().lowPowerModeDelegate = self
-            RPEntry.enableHF(true)
+            RPEntry.instance.lowPowerModeDelegate = self
         }
         
         @objc(requestPermissions:rejecter:)
         func requestPermissions(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-            if RPEntry.isAllRequiredPermissionsGranted() {
+            if RPEntry.instance.isAllRequiredPermissionsGranted() {
                 resolve(true)
                 return
             }
             DispatchQueue.main.async {
                 RPPermissionsWizard.returnInstance().launch(finish: {_ in
-                    RPEntry.isAllRequiredPermissionsGranted() ? resolve(true) : resolve(false)
+                    RPEntry.instance.isAllRequiredPermissionsGranted() ? resolve(true) : resolve(false)
                 })
             }
         }
@@ -47,82 +42,83 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
             }
             
             DispatchQueue.main.async {
-                RPEntry.instance().virtualDeviceToken = token
-                RPEntry.instance().setEnableSdk(true)
-                RPEntry.instance().disableTracking = false
-                resolve(RPEntry.isSDKEnabled())
+                RPEntry.instance.virtualDeviceToken = token as String
+                RPEntry.instance.setEnableSdk(true)
+                RPEntry.instance.disableTracking = false
+                resolve(RPEntry.instance.isSDKEnabled())
             }
         }
         
         @objc(disable)
         func disable() {
-            RPEntry.instance().disableTracking = true
-            RPEntry.instance().setDisableWithUpload()
-            RPEntry.instance().removeVirtualDeviceToken()
+            RPEntry.instance.disableTracking = true
+            RPEntry.instance.setEnableSdk(false)
+            RPEntry.instance.removeVirtualDeviceToken()
         }
         
         // API Status
         @objc(getStatus:rejecter:)
         func getStatus(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-            resolve(RPEntry.isSDKEnabled())
+            resolve(RPEntry.instance.isSDKEnabled())
         }
     
         // Device token
         @objc(getDeviceToken:rejecter:)
         func getDeviceToken(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-            resolve(RPEntry.instance().virtualDeviceToken)
+            resolve(RPEntry.instance.virtualDeviceToken)
         }
         
         // Start persistent tracking
         @objc(startPersistentTracking:rejecter:)
         func startPersistentTracking(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-            resolve(RPTracker.instance().startPersistentTracking())
+            RPEntry.instance.startPersistentTracking()
+            resolve(true)
         }
 
         // Tags API
         @objc(addFutureTrackTag:source:resolver:rejecter:)
         func addFutureTrackTag(_ tag: NSString, _ source: NSString, _ resolve: @escaping RCTPromiseResolveBlock, _ reject: @escaping RCTPromiseRejectBlock) {
-            let tagEntity = RPTag.init()
-            tagEntity.tag = tag as String
-            tagEntity.source = source as String
-            if let stateDelegate = tagsStateDelegate {
-                stateDelegate.addTagPromise = Promise(resolve:resolve, reject: reject)
-            }
-            RPEntry.instance().api.addFutureTrackTag(tagEntity,completion:{status, tag, timestamp in
-                self.tagsStateDelegate?.addFutureTag(status,tag: tag,timestamp: timestamp)
+            let tagEntity = RPFutureTag(tag: tag as String, source: source as String)
+            RPEntry.instance.api.addFutureTrackTag(tagEntity, completion: { status, error in
+                if let err = error {
+                    reject("ERROR", err.localizedDescription, err)
+                } else {
+                    let result: [String: Any] = ["status": self.parseTagStatus(status: status), "tag": ["tag": tag, "source": source]]
+                    resolve(result)
+                }
             })
         }
         
         @objc(removeFutureTrackTag:resolver:rejecter:)
         func removeFutureTrackTag(_ tag: NSString, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-            let tagEntity = RPTag.init()
-            tagEntity.tag = tag as String
-            if let stateDelegate = tagsStateDelegate {
-                stateDelegate.deleteTagPromise = Promise(resolve: resolve, reject: reject)
-            }
-            RPEntry.instance().api.removeFutureTrackTag(tagEntity, completion: { [weak self] status, tag, timestamp in
-                guard let self else {return}
-                self.tagsStateDelegate?.removeFutureTrackTag(status ,tag:tag, timestamp:timestamp)})
+            let tagEntity = RPFutureTag(tag: tag as String, source: nil)
+            RPEntry.instance.api.removeFutureTrackTag(tagEntity, completion: { status, error in
+                if let err = error {
+                    reject("ERROR", err.localizedDescription, err)
+                } else {
+                    let result: [String: Any] = ["status": self.parseTagStatus(status: status), "tag": ["tag": tag]]
+                    resolve(result)
+                }
+            })
         }
         
         @objc(removeAllFutureTrackTags:rejecter:)
         func removeAllFutureTrackTags(_ resolve: @escaping RCTPromiseResolveBlock, _ reject: @escaping RCTPromiseRejectBlock) {
-            if let stateDelegate = tagsStateDelegate {
-                stateDelegate.removeAllPromise = Promise(resolve: resolve, reject: reject)
-            }
-            RPEntry.instance().api.removeAllFutureTrackTagsWithСompletion({[weak self] status, timestamp in
-                guard let self else {return}
-                self.tagsStateDelegate?.removeAllFutureTrackTag(status, timestamp: timestamp)})
+            RPEntry.instance.api.removeAllFutureTrackTags(completion: { status, error in
+                if let err = error {
+                    reject("ERROR", err.localizedDescription, err)
+                } else {
+                    resolve(self.parseTagStatus(status: status))
+                }
+            })
         }
         
         @objc(getFutureTrackTags:rejecter:)
         func getFutureTrackTags(_ resolve: @escaping RCTPromiseResolveBlock, _ reject: @escaping RCTPromiseRejectBlock) {
-            if let stateDelegate = tagsStateDelegate {
-                stateDelegate.getTagsPromise = Promise(resolve: resolve, reject: reject)
-            }
-            RPEntry.instance().api.getFutureTrackTag(0, completion: {[weak self]status, tags, timestamp in
-                guard let self else {return}
-                self.tagsStateDelegate?.getTags(status, tags: tags, timestamp: timestamp)
+            RPEntry.instance.api.getFutureTrackTag(nil, completion: { status, tags in
+                let tagsList = tags.map { ["tag": $0.tag ?? "", "source": $0.source ?? ""] }
+                let result: [String: Any] = ["status": self.parseTagStatus(status: status), "tags": tagsList]
+                resolve(result)
             })
         }
         
@@ -143,6 +139,22 @@ class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
             // if state == true low power mode was enabled
             if self.hasLowPowerListeners && (state == true) {
                 self.sendEvent(withName: self.lowPowerEventName, body: nil)
+            }
+        }
+        
+        
+
+        // Helper method to parse tag status
+        private func parseTagStatus(status: RPTagStatus) -> String {
+            switch status {
+            case .success:
+                return "Success"
+            case .offline:
+                return "Offline"
+            case .errorTagOperation:
+                return "Wrong tag operation"
+            @unknown default:
+                return "Unknown error"
             }
         }
 }

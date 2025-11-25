@@ -109,6 +109,22 @@ android {
         }
     }
 
+    packaging {
+        resources {
+            excludes += [
+                'META-INF/INDEX.LIST',
+                'META-INF/io.netty.versions.properties'
+            ]
+        }
+    }
+
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.24'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.24'
+    }
 }
 
 dependencies {
@@ -116,7 +132,8 @@ dependencies {
     //noinspection GradleDynamicVersion
     implementation("com.facebook.react:react-android")
 
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.0"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.24"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
 
 
     if (hermesEnabled.toBoolean()) {
