@@ -36,7 +36,7 @@ export default function App() {
 
     // iOS only: Low power mode event
     // For React Native 0.75+, use NativeEventEmitter without argument
-    const eventEmitter = new NativeEventEmitter();
+    const eventEmitter = new NativeEventEmitter(TelematicsSdk);
     const emitter = eventEmitter.addListener('onLowPowerModeEnabled', () => {
       console.log('Low power enabled');
     });
@@ -186,6 +186,24 @@ export default function App() {
     }
   };
 
+  const startTracking = async () => {
+    try {
+      const result = await TelematicsSdk.startTracking();
+      !!result && setSdkTag(JSON.stringify(result));
+    } catch (error: any) {
+      showErrorAlert(error);
+    }
+  };
+
+  const stopTracking = async () => {
+    try {
+      const result = await TelematicsSdk.stopTracking();
+      !!result && setSdkTag(JSON.stringify(result));
+    } catch (error: any) {
+      showErrorAlert(error);
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
     <SafeAreaView style={styles.container}>
@@ -209,8 +227,18 @@ export default function App() {
         <Button text="Remove all tags" onPress={removeAllTags} variant="secondary" />
         <Button text="Disable SDK" onPress={disableSDK} variant="danger" />
         <Button
+          text="Start tracking"
+          onPress={startTracking}
+          variant="primary"
+        />
+        <Button
           text="Start persistent tracking"
           onPress={startPersistentTracking}
+          variant="primary"
+        />
+        <Button
+          text="Stop tracking"
+          onPress={stopTracking}
           variant="primary"
         />
       </View>

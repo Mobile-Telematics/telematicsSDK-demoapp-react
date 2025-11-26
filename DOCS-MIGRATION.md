@@ -19,6 +19,8 @@ This guide summarizes the migration performed in this repo and how to adapt your
   - `disable()`
   - Tags API: `addFutureTrackTag(tag, source?)`, `getFutureTrackTags()`, `removeFutureTrackTag(tag)`, `removeAllFutureTrackTags()`
   - `startPersistentTracking()`
+  - `startTracking()`
+  - `stopTracking()`
 - Low Power event: `onLowPowerModeEnabled` via `RCTEventEmitter`.
 
 ### Removed/retired

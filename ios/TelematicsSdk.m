@@ -16,6 +16,14 @@ RCT_EXTERN_METHOD(startPersistentTracking:
                   (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(startTracking: 
+                  (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(stopTracking: 
+                  (RCTPromiseResolveBlock)resolve
+                  rejecter: (RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(requestPermissions:
                   (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)

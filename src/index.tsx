@@ -26,6 +26,8 @@ interface TelematicsSdkType {
   removeFutureTrackTag: (tag: string) => Promise<{ status: string; tag: Tag }>;
   removeAllFutureTrackTags: () => Promise<string>;
   startPersistentTracking: () => Promise<boolean | null>;
+  startTracking: () => Promise<boolean | null>;
+  stopTracking: () => Promise<boolean | null>;
 }
 
 const { TelematicsSdk } = NativeModules;

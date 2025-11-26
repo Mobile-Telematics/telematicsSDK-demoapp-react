@@ -48,6 +48,8 @@
 	<string>We're using location services to determine your driving style.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>We're using location services to determine your driving style.</string>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>

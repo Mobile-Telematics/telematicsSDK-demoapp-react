@@ -14,7 +14,8 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/maximcodm/react-native-telematics-sdk.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
+  s.swift_version = '5.0'
 
   s.dependency "React-Core"
-  s.dependency "TelematicsSDK"
+  s.dependency 'TelematicsSDK', '~> 7.0.2'
 end

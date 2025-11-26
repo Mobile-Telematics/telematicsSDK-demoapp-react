@@ -21,6 +21,6 @@ All notable changes to this repository are documented here.
 ### Migration
 - Migrated from Raxel+ integrations to the new Telematics SDK wrapper on both platforms:
   - iOS: Reworked Swift bridge (`ios/TelematicsSdk.swift`) to use `TelematicsSDK.RPEntry` API
-    - Methods exposed: `initialize`, `requestPermissions`, `enable`, `getStatus`, `getDeviceToken`, `disable`, tags API, `startPersistentTracking`.
+    - Methods exposed: `initialize`, `requestPermissions`, `enable`, `getStatus`, `getDeviceToken`, `disable`, tags API, `startPersistentTracking`, `startTracking`, `stopTracking`.
     - Removed legacy Swift files no longer needed by the new SDK (e.g., old Promise/Tags delegates).
   - Android: Aligned example app configuration and Gradle with the new SDK; ensured compatibility with WorkManager 2.10.0 via `compileSdkVersion 35`.

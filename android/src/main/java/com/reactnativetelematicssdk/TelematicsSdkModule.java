@@ -55,6 +55,18 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
     promise.resolve(api.startPersistentTracking());
   }
 
+  //startTrackingMethod
+  @ReactMethod
+  public void startTracking(Promise promise) {
+    promise.resolve(api.startTracking());
+  }
+
+  //stopTrackingMethod
+  @ReactMethod
+  public void stopTracking(Promise promise) {
+    promise.resolve(api.stopTracking());
+  }
+
   /**
    * Default Setting constructor
    * Stop tracking time is 5 minute.

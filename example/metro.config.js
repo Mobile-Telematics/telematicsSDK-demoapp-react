@@ -1,5 +1,5 @@
 const path = require('path');
-const blacklist = require('metro-config/src/defaults/exclusionList');
+// Build a list of regex patterns to exclude (block list)
 const escape = require('escape-string-regexp');
 const pak = require('../package.json');
 
@@ -12,28 +12,24 @@ const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 
 const defaultConfig = getDefaultConfig(__dirname);
 
-const {
-  resolver: { sourceExts, assetExts },
-} = getDefaultConfig(__dirname);
+// Create blocklist regexes to exclude peer dependency copies from root
+const blockList = modules.map(
+  (m) => new RegExp(`^${escape(path.join(root, 'node_modules', m))}\\/.*$`)
+);
 
 const config = {
   projectRoot: __dirname,
   watchFolders: [root],
 
-  // We need to make sure that only one version is loaded for peerDependencies
-  // So we blacklist them at the root, and alias them to the versions in example's node_modules
+  // Ensure only one version is used for peerDependencies by blocking
+  // versions in the repo root and resolving to example's node_modules
   resolver: {
-    blacklistRE: blacklist(
-      modules.map(
-        (m) =>
-          new RegExp(`^${escape(path.join(root, 'node_modules', m))}\\/.*$`)
-      )
-    ),
-
+    blockList,
     extraNodeModules: modules.reduce((acc, name) => {
       acc[name] = path.join(__dirname, 'node_modules', name);
       return acc;
     }, {}),
+    sourceExts: ['jsx', 'js', 'ts', 'tsx', 'cjs', 'json'],
   },
 
   transformer: {
@@ -45,4 +41,5 @@ const config = {
     }),
   },
 };
+
 module.exports = mergeConfig(defaultConfig, config);
