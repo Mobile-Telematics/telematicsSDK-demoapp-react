@@ -15,10 +15,10 @@
 		2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		BB6C655548212CA2011CF601 /* libPods-TelematicsSdkExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A53666B0578B2370D7971C44 /* libPods-TelematicsSdkExample.a */; };
 		CFE8391B7C398F53CE134238 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 51CEAF9A64F8635FE6F0EBBC /* PrivacyInfo.xcprivacy */; };
 		E3F9FD142ED611B60085485B /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3F9FD132ED611B60085485B /* File.swift */; };
 		E3F9FD152ED611B60085485B /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3F9FD132ED611B60085485B /* File.swift */; };
+		F7DE3744B9C21D34424329F4 /* libPods-TelematicsSdkExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E7229653F9885331A02541B4 /* libPods-TelematicsSdkExample.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,7 +40,7 @@
 
 /* Begin PBXFileReference section */
 		00E356EE1AD99517003FC87E /* TelematicsSdkExampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TelematicsSdkExampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		075246732D91670CB7D27288 /* Pods-TelematicsSdkExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TelematicsSdkExample.debug.xcconfig"; path = "Target Support Files/Pods-TelematicsSdkExample/Pods-TelematicsSdkExample.debug.xcconfig"; sourceTree = "<group>"; };
+		0C6317244C0ACE58CD1A278A /* Pods-TelematicsSdkExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TelematicsSdkExample.release.xcconfig"; path = "Target Support Files/Pods-TelematicsSdkExample/Pods-TelematicsSdkExample.release.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* TelematicsSdkExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TelematicsSdkExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = TelematicsSdkExample/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.mm; path = TelematicsSdkExample/AppDelegate.mm; sourceTree = "<group>"; };
@@ -48,17 +48,17 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = TelematicsSdkExample/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = TelematicsSdkExample/main.m; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = RnDiffApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		16BA67B58CDDFD74D638AAB7 /* Pods-TelematicsSdkExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TelematicsSdkExample.debug.xcconfig"; path = "Target Support Files/Pods-TelematicsSdkExample/Pods-TelematicsSdkExample.debug.xcconfig"; sourceTree = "<group>"; };
 		2D02E47B1E0B4A5D006451C7 /* TelematicsSdkExample-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "TelematicsSdkExample-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D02E4901E0B4A5D006451C7 /* TelematicsSdkExample-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "TelematicsSdkExample-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		51CEAF9A64F8635FE6F0EBBC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = TelematicsSdkExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		6CA49B1707BD835188CCEC85 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = TelematicsSdkExample/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = TelematicsSdkExample/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		A53666B0578B2370D7971C44 /* libPods-TelematicsSdkExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TelematicsSdkExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E3F9FD122ED611B60085485B /* TelematicsSdkExample-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TelematicsSdkExample-Bridging-Header.h"; sourceTree = "<group>"; };
 		E3F9FD132ED611B60085485B /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		E7229653F9885331A02541B4 /* libPods-TelematicsSdkExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TelematicsSdkExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
-		EF67DBB447F5834789B84C29 /* Pods-TelematicsSdkExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TelematicsSdkExample.release.xcconfig"; path = "Target Support Files/Pods-TelematicsSdkExample/Pods-TelematicsSdkExample.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,7 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BB6C655548212CA2011CF601 /* libPods-TelematicsSdkExample.a in Frameworks */,
+				F7DE3744B9C21D34424329F4 /* libPods-TelematicsSdkExample.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -116,7 +116,7 @@
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
-				A53666B0578B2370D7971C44 /* libPods-TelematicsSdkExample.a */,
+				E7229653F9885331A02541B4 /* libPods-TelematicsSdkExample.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -124,8 +124,8 @@
 		6B9684456A2045ADE5A6E47E /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				075246732D91670CB7D27288 /* Pods-TelematicsSdkExample.debug.xcconfig */,
-				EF67DBB447F5834789B84C29 /* Pods-TelematicsSdkExample.release.xcconfig */,
+				16BA67B58CDDFD74D638AAB7 /* Pods-TelematicsSdkExample.debug.xcconfig */,
+				0C6317244C0ACE58CD1A278A /* Pods-TelematicsSdkExample.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -188,14 +188,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "TelematicsSdkExample" */;
 			buildPhases = (
-				B507761B4B2B4A33A359C145 /* [CP] Check Pods Manifest.lock */,
+				BCD2067A1D4A761FB3170A05 /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				812335FAA49C5CC5FDC8985F /* [CP] Embed Pods Frameworks */,
-				0902A736A1C336DDA5FC860D /* [CP] Copy Pods Resources */,
+				27C7E542403453F06BD18B4E /* [CP] Embed Pods Frameworks */,
+				B9BC7FC17EE4C6E03D2C9658 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -341,38 +341,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\n# Load .xcode.env if present\nif [ -f \"$SRCROOT/.xcode.env\" ]; then\n  source \"$SRCROOT/.xcode.env\"\nfi\n\n# Load .xcode.env.local if present (local overrides)\nif [ -f \"$SRCROOT/.xcode.env.local\" ]; then\n  source \"$SRCROOT/.xcode.env.local\"\nfi\n\n# Fallback to node if NODE_BINARY not set\nif [ -z \"$NODE_BINARY\" ]; then\n  export NODE_BINARY=$(command -v node || echo \"node\")\nfi\n\n../node_modules/react-native/scripts/react-native-xcode.sh";
 		};
-		0902A736A1C336DDA5FC860D /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TelematicsSdkExample/Pods-TelematicsSdkExample-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TelematicsSdkExample/Pods-TelematicsSdkExample-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TelematicsSdkExample/Pods-TelematicsSdkExample-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		2D02E4CB1E0B4B27006451C7 /* Bundle React Native Code And Images */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Bundle React Native Code And Images";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -e\n\n# Load .xcode.env if present\nif [ -f \"$SRCROOT/.xcode.env\" ]; then\n  source \"$SRCROOT/.xcode.env\"\nfi\n\n# Load .xcode.env.local if present (local overrides)\nif [ -f \"$SRCROOT/.xcode.env.local\" ]; then\n  source \"$SRCROOT/.xcode.env.local\"\nfi\n\n# Fallback to node if NODE_BINARY not set\nif [ -z \"$NODE_BINARY\" ]; then\n  export NODE_BINARY=$(command -v node || echo \"node\")\nfi\n\n../node_modules/react-native/scripts/react-native-xcode.sh";
-		};
-		812335FAA49C5CC5FDC8985F /* [CP] Embed Pods Frameworks */ = {
+		27C7E542403453F06BD18B4E /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -389,7 +358,38 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TelematicsSdkExample/Pods-TelematicsSdkExample-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		B507761B4B2B4A33A359C145 /* [CP] Check Pods Manifest.lock */ = {
+		2D02E4CB1E0B4B27006451C7 /* Bundle React Native Code And Images */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Bundle React Native Code And Images";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\n# Load .xcode.env if present\nif [ -f \"$SRCROOT/.xcode.env\" ]; then\n  source \"$SRCROOT/.xcode.env\"\nfi\n\n# Load .xcode.env.local if present (local overrides)\nif [ -f \"$SRCROOT/.xcode.env.local\" ]; then\n  source \"$SRCROOT/.xcode.env.local\"\nfi\n\n# Fallback to node if NODE_BINARY not set\nif [ -z \"$NODE_BINARY\" ]; then\n  export NODE_BINARY=$(command -v node || echo \"node\")\nfi\n\n../node_modules/react-native/scripts/react-native-xcode.sh";
+		};
+		B9BC7FC17EE4C6E03D2C9658 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TelematicsSdkExample/Pods-TelematicsSdkExample-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TelematicsSdkExample/Pods-TelematicsSdkExample-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TelematicsSdkExample/Pods-TelematicsSdkExample-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		BCD2067A1D4A761FB3170A05 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -555,7 +555,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 075246732D91670CB7D27288 /* Pods-TelematicsSdkExample.debug.xcconfig */;
+			baseConfigurationReference = 16BA67B58CDDFD74D638AAB7 /* Pods-TelematicsSdkExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -592,7 +592,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EF67DBB447F5834789B84C29 /* Pods-TelematicsSdkExample.release.xcconfig */;
+			baseConfigurationReference = 0C6317244C0ACE58CD1A278A /* Pods-TelematicsSdkExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;

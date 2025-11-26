@@ -4,13 +4,15 @@ import {
   Alert,
   LogBox,
   NativeEventEmitter,
-  SafeAreaView,
+  ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
   Keyboard,
   View,
 } from 'react-native';
+import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import TelematicsSdk from 'react-native-telematics';
 import { Button, Input } from './components';
 import { ClearButton } from './components/ClearButton';
@@ -205,8 +207,13 @@ export default function App() {
   };
 
   return (
+    <SafeAreaProvider>
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-    <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+        >
       {sdkTag === '' ? <View /> : <ClearButton onPress={clearSdkTag} />}
       <Input
         placeholder={'Your device token'}
@@ -241,9 +248,11 @@ export default function App() {
           onPress={stopTracking}
           variant="primary"
         />
-      </View>
-    </SafeAreaView>
-    </TouchableWithoutFeedback>
+        </View>
+        </ScrollView>
+      </SafeAreaView>
+      </TouchableWithoutFeedback>
+    </SafeAreaProvider>
   );
 }
 
@@ -253,6 +262,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     backgroundColor: '#F0F8FF',
     paddingVertical: 20,
+  },
+  scrollView: {
+    backgroundColor: '#FFF',
   },
   card: {
     marginHorizontal: 20,
@@ -307,4 +319,8 @@ const styles = StyleSheet.create({
     color: '#666',
     fontWeight: '500',
   },
+  scrollContent: {
+    paddingVertical: 20,
+    paddingBottom: 40,
+  }
 });
