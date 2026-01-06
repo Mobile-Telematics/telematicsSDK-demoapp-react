@@ -1837,7 +1837,7 @@ PODS:
     - Yoga
   - react-native-telematics-sdk (1.0.16):
     - React-Core
-    - TelematicsSDK (~> 7.0.2)
+    - TelematicsSDK (~> 7.0.3)
   - React-NativeModulesApple (0.81.4):
     - boost
     - DoubleConversion
@@ -2344,7 +2344,7 @@ PODS:
     - React-utils (= 0.81.4)
     - SocketRocket
   - SocketRocket (0.7.1)
-  - TelematicsSDK (7.0.2)
+  - TelematicsSDK (7.0.3)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -2425,7 +2425,7 @@ DEPENDENCIES:
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
-  trunk:
+  https://github.com/CocoaPods/Specs.git:
     - SocketRocket
     - TelematicsSDK
 
@@ -2620,7 +2620,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 9d2434a42701d6144ca18f0ca1c4507808ca7696
   React-microtasksnativemodule: 75b6604b667d297292345302cc5bfb6b6aeccc1b
   react-native-safe-area-context: c00143b4823773bba23f2f19f85663ae89ceb460
-  react-native-telematics-sdk: c5dcc4be93e18050c18c2d9d35dca381473173a2
+  react-native-telematics-sdk: 997477a710dd32e79dd3eb7d167752a314353c51
   React-NativeModulesApple: 879fbdc5dcff7136abceb7880fe8a2022a1bd7c3
   React-oscompat: 93b5535ea7f7dff46aaee4f78309a70979bdde9d
   React-perflogger: 5536d2df3d18fe0920263466f7b46a56351c0510
@@ -2652,9 +2652,9 @@ SPEC CHECKSUMS:
   ReactCodegen: 1d05923ad119796be9db37830d5e5dc76586aa00
   ReactCommon: 394c6b92765cf6d211c2c3f7f6bc601dffb316a6
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
-  TelematicsSDK: 7832ca022cee60475a269666922d6fc814330d34
+  TelematicsSDK: 674997aa9eb9bca1a9b02e0dd9dd2b4a93b6cb2f
   Yoga: a3ed390a19db0459bd6839823a6ac6d9c6db198d
 
-PODFILE CHECKSUM: c8f81a1cdcfea357d0943353bd92725506881bc0
+PODFILE CHECKSUM: eed8d5e51c09c5c586a3afd1b566b6257a53598a
 
 COCOAPODS: 1.16.2

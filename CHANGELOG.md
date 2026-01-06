@@ -15,7 +15,7 @@ All notable changes to this repository are documented here.
   - primary: `#007AFF`, secondary: `#5AC8FA`, danger/success use `#007AFF`.
 - Input styling updated to a lighter blue background and border.
 - Android build updated to satisfy `androidx.work:2.10.0` AAR requirements:
-  - `compileSdkVersion` → 35 (example app).
+  - `compileSdkVersion` → 36 (example app).
   - Android Gradle Plugin → `8.6.1` (Gradle wrapper already `8.8`).
 
 ### Migration

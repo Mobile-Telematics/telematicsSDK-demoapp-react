@@ -209,6 +209,17 @@ if(enabled) {
 }
 await TelematicsSdk.disable();
 
+//SDK Device Token
+const token = await TelematicsSdk.getDeviceToken();
+
+//Start tracking
+const result = await TelematicsSdk.startPersistentTracking();
+//or
+const result = await TelematicsSdk.startTracking();
+
+//Stop tracking
+const result = await TelematicsSdk.stopTracking();
+
 // SDK Status
 const isEnabled = await TelematicsSdk.getStatus();
 if(isEnabled) {
