@@ -8,6 +8,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReactApplicationContext;
 
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -16,6 +18,8 @@ import com.facebook.react.bridge.ReactMethod;
 import com.telematicssdk.tracking.TrackingApi;
 import com.telematicssdk.tracking.Settings;
 import com.telematicssdk.tracking.utils.permissions.PermissionsWizardActivity;
+import com.telematicssdk.tracking.server.model.sdk.TrackTag;
+import com.telematicssdk.tracking.model.realtime.configuration.AccidentDetectionSensitivity;
 
 
 public class TelematicsSdkModule extends ReactContextBaseJavaModule implements PreferenceManager.OnActivityResultListener {
@@ -37,45 +41,14 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
     return NAME;
   }
 
-  // Initialization and permission request
   @ReactMethod
   public void initialize() {
-    Log.d(TAG, "init method");
     if (!api.isInitialized()) {
       api.initialize(this.getReactApplicationContext(), setTelematicsSettings());
-      Log.d(TAG, "Tracking api is initialized");
       api.addTagsProcessingCallback(tagsProcessor);
-      Log.d(TAG, "Tag callback is set");
     }
   }
 
-  //startPersistentTrackingMethod
-  @ReactMethod
-  public void startPersistentTracking(Promise promise) {
-    promise.resolve(api.startPersistentTracking());
-  }
-
-  //startTrackingMethod
-  @ReactMethod
-  public void startTracking(Promise promise) {
-    promise.resolve(api.startTracking());
-  }
-
-  //stopTrackingMethod
-  @ReactMethod
-  public void stopTracking(Promise promise) {
-    promise.resolve(api.stopTracking());
-  }
-
-  /**
-   * Default Setting constructor
-   * Stop tracking time is 5 minute.
-   * Parking radius is 100 meters.
-   * Auto start tracking is true.
-   * hfOn - true if HIGH FREQUENCY data recording from sensors (acc, gyro) is ON and false otherwise.
-   * isElmOn - true if data recording from ELM327 devices is ON and false otherwise.
-   * isAdOn - false to keep accident detection disabled
-   */
   public Settings setTelematicsSettings() {
     Settings settings = new Settings(
       Settings.getStopTrackingTimeHigh(),
@@ -89,67 +62,189 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
   }
 
   @ReactMethod
-  public void requestPermissions(Promise promise) {
-    permissionsPromise = promise;
-    if (!api.areAllRequiredPermissionsGranted()) {
-      this.getReactApplicationContext().
-        startActivityForResult(PermissionsWizardActivity.Companion.getStartWizardIntent(
-          this.getReactApplicationContext(),
-          false,
-          false
-        ), PermissionsWizardActivity.WIZARD_PERMISSIONS_CODE, null);
-    } else {
-      permissionsPromise.resolve(true);
-    }
+  public void isInitialized(Promise promise) {
+    promise.resolve(api.isInitialized());
   }
 
-  // API Status
   @ReactMethod
-  public void getStatus(Promise promise) {
-    promise.resolve(api.isSdkEnabled());
-  }
-
-  // Device token
-  @ReactMethod
-  public void getDeviceToken(Promise promise) {
+  public void getDeviceId(Promise promise) {
     promise.resolve(api.getDeviceId());
   }
 
-  // Enabling and disabling SDK
-  @SuppressLint("MissingPermission")
   @ReactMethod
-  public void enable(String deviceToken, Promise promise) {
-    if(deviceToken.isEmpty()) {
-      promise.reject("Error", "Missing token value");
-      return;
-    }
-    if (!api.areAllRequiredPermissionsGranted() || !api.isInitialized()) {
-      Log.d(TAG, "Failed to start SDK");
-      promise.resolve(false);
-      return;
-    }
-    api.setDeviceID(deviceToken);
-    api.setEnableSdk(true);
-    Log.d(TAG, "SDK Started");
-    promise.resolve(true);
+  public void setDeviceId(String deviceId, Promise promise) {
+    api.setDeviceID(deviceId);
+    promise.resolve(null);
   }
 
-  @SuppressLint("MissingPermission")
   @ReactMethod
-  public void disable() {
-    if(!api.isInitialized()) {
-      Log.d(TAG, "Failed to stop SDK");
+  public void logout(Promise promise) {
+    api.logout();
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void isAllRequiredPermissionsAndSensorsGranted(Promise promise) {
+    promise.resolve(api.areAllRequiredPermissionsAndSensorsGranted());
+  }
+
+  @ReactMethod
+  public void isSdkEnabled(Promise promise) {
+    promise.resolve(api.isSdkEnabled());
+  }
+
+  @ReactMethod
+  public void isTracking(Promise promise) {
+    promise.resolve(api.isTracking());
+  }
+
+  @ReactMethod
+  public void setEnableSdk(boolean enable, Promise promise) {
+    api.setEnableSdk(enable);
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void startManualTracking(Promise promise) {
+    api.startTracking();
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void startManualPersistentTracking(Promise promise) {
+    api.startPersistentTracking();
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void stopManualTracking(Promise promise) {
+    api.stopTracking();
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void uploadUnsentTrips(Promise promise) {
+    api.uploadUnsentTrips();
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void getUnsentTripCount(Promise promise) {
+    int count = api.getUnsentTripCount();
+    promise.resolve(count);
+  }
+
+  @ReactMethod
+  public void sendCustomHeartbeats(String reason, Promise promise) {
+    api.sendCustomHeartbeats(reason)
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void showPermissionWizard(boolean enableAggressivePermissionsWizard, boolean enableAggressivePermissionsWizardPage, Promise promise) {
+    if (!api.areAllRequiredPermissionsGranted()) {
+      permissionsPromise = promise;
+      this.getReactApplicationContext().
+        startActivityForResult(PermissionsWizardActivity.Companion.getStartWizardIntent(
+          this.getReactApplicationContext(),
+          enableAggressivePermissionsWizard,
+          enableAggressivePermissionsWizardPage
+        ), PermissionsWizardActivity.WIZARD_PERMISSIONS_CODE, null);
+    } else {
+      promise.resolve(true);
+    }
+  }
+
+  // Permission wizard result
+  @Override
+  public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
+    if (requestCode == 50005) {
+      switch(resultCode) {
+        case -1:
+          if(permissionsPromise == null) break;
+          permissionsPromise.resolve(true);
+          break;
+        case 0:
+          if(permissionsPromise == null) break;
+          permissionsPromise.resolve(false);
+          break;
+        case 1:
+          if(permissionsPromise == null) break;
+          permissionsPromise.resolve(false);
+          break;
+      }
+    }
+    return false;
+  }
+
+  @ReactMethod
+  public void setAccidentDetectionSensitivity(ReadableMap params, Promise promise) {
+    if (!params.hasKey("accidentDetectionSensitivity")) {
+      promise.reject(
+        "INVALID_PARAMS",
+        "Missing accidentDetectionSensitivity"
+      );
       return;
     }
-    api.setEnableSdk(false);
-    api.clearDeviceID();
-    Log.d(TAG, "SDK is stopped");
+
+    int value = params.getInt("accidentDetectionSensitivity");
+    AccidentDetectionSensitivity sensitivity;
+
+    switch (value) {
+      case 1:
+        sensitivity = AccidentDetectionSensitivity.Sensitive;
+        break;
+      case 2:
+        sensitivity = AccidentDetectionSensitivity.Tough;
+        break;
+      case 0:
+      default:
+        sensitivity = AccidentDetectionSensitivity.Normal;
+        break;
+    }
+
+    api.setAccidentDetectionMode(sensitivity);
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void isRTLDEnabled(Promise promise) {
+    promise.resolve(api.isRtdEnabled());
+  }
+
+  @ReactMethod
+  public void enableAccidents(boolean enable, Promise promise) {
+    api.setAccidentDetectionEnabled(enable);
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void isEnabledAccidents(Promise promise) {
+    promise.resolve(api.isAccidentDetectionEnabled());
+  }
+
+  @ReactMethod
+  public void setAndroidAutoStartEnabled(ReadableMap params, Promise promise) {
+    if (!params.hasKey("enable") || !params.hasKey("permanent")) {
+      promise.reject("INVALID_PARAMS", "Missing 'enable' or 'permanent'");
+      return;
+    }
+
+    boolean enable = params.getBoolean("enable");
+    boolean permanent = params.getBoolean("permanent");
+
+    api.setAutoStartEnabled(enable, permanent);
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void isAndroidAutoStartEnabled(Promise promise) {
+    promise.resolve(api.isAutoStartEnabled());
   }
 
   // Tags API
   @ReactMethod
   public void getFutureTrackTags(Promise promise) {
-    Log.d(TAG, "Fetching future tracks");
     if(!api.isInitialized()) {
       promise.reject("Error", "Tracking api is not initialized");
       return;
@@ -189,30 +284,5 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
     }
     tagsProcessor.setOnAllTagsRemove(promise);
     api.removeAllFutureTrackTags();
-  }
-
-  // Permission wizard result
-  @Override
-  public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-    if (requestCode == 50005) {
-      switch(resultCode) {
-        case -1:
-          Log.d(TAG, "onActivityResult: WIZARD_RESULT_ALL_GRANTED");
-          if(permissionsPromise == null) break;
-          permissionsPromise.resolve(true);
-          break;
-        case 0:
-          Log.d(TAG, "onActivityResult: WIZARD_RESULT_CANCELED");
-          if(permissionsPromise == null) break;
-          permissionsPromise.resolve(false);
-          break;
-        case 1:
-          Log.d(TAG, "onActivityResult: WIZARD_RESULT_NOT_ALL_GRANTED");
-          if(permissionsPromise == null) break;
-          permissionsPromise.resolve(false);
-          break;
-      }
-    }
-    return false;
   }
 }

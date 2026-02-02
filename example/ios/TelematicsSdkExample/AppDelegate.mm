@@ -33,11 +33,6 @@
 #endif
 }
 
-// - (void)applicationWillEnterForeground:(UIApplication *)application {
-//   [RPEntry applicationWillEnterForeground:application];
-// }
-
-
 - (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(nonnull NSString *)identifier completionHandler:(nonnull void (^)(void))completionHandler {
     [[RPEntry instance] application:application handleEventsForBackgroundURLSession:identifier completionHandler:completionHandler];
 }
@@ -52,6 +47,10 @@
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     [[RPEntry instance] applicationDidEnterBackground:application];
+}
+
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    [[RPEntry instance] applicationWillEnterForeground:application];
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
