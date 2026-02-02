@@ -1,8 +1,9 @@
 #import "React/RCTBridgeModule.h"
 #import "React/RCTViewManager.h"
+#import <React/RCTEventEmitter.h>
 
 
-@interface RCT_EXTERN_MODULE(TelematicsSdk, NSObject)
+@interface RCT_EXTERN_MODULE(TelematicsSdk, RCTEventEmitter)
 
 RCT_EXTERN_METHOD(initialize)
 
@@ -127,5 +128,13 @@ RCT_EXTERN_METHOD(getFutureTrackTags:
 RCT_EXTERN_METHOD(removeAllFutureTrackTags:
                   (RCTPromiseResolveBlock)resolve
                   rejecter: (RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(getApiLanguage:
+                  (RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(setApiLanguage:(NSString *)language
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 
 @end

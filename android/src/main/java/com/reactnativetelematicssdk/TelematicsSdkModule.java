@@ -1,11 +1,16 @@
 package com.reactnativetelematicssdk;
 
-import android.annotation.SuppressLint;
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+
+import android.location.Location;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactMethod;
@@ -13,12 +18,14 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReactApplicationContext;
 
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
+
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import com.telematicssdk.tracking.TrackingApi;
 import com.telematicssdk.tracking.Settings;
 import com.telematicssdk.tracking.utils.permissions.PermissionsWizardActivity;
-import com.telematicssdk.tracking.server.model.sdk.TrackTag;
 import com.telematicssdk.tracking.model.realtime.configuration.AccidentDetectionSensitivity;
 
 
@@ -27,12 +34,20 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
   private static final String TAG = "TelematicsSdkModule";
 
   private Promise permissionsPromise = null;
+  private final ReactApplicationContext reactContext;
+  private boolean hasListeners = false;
 
   private final TrackingApi api = TrackingApi.getInstance();
   private final TagsProcessor tagsProcessor = new TagsProcessor();
+  private final LocationListenerImpl locationListener;
+
+  private final TrackingStateListenerImpl trackingStateListener;
 
   public TelematicsSdkModule(ReactApplicationContext reactContext) {
     super(reactContext);
+    this.reactContext = reactContext;
+    this.locationListener = new LocationListenerImpl(this);
+    this.trackingStateListener = new TrackingStateListenerImpl(this);
   }
 
   @Override
@@ -42,13 +57,62 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
   }
 
   @ReactMethod
+  public void addListener(String eventName) {
+    hasListeners = true;
+  }
+
+  @ReactMethod
+  public void removeListeners(double count) {
+    hasListeners = false;
+  }
+
+  boolean hasListeners() {
+    return hasListeners;
+  }
+
+  @Override
+  public void invalidate() {
+    super.invalidate();
+    try {
+      api.setLocationListener(null);
+      api.unregisterCallback(trackingStateListener);
+    } catch (Exception ignored) {
+    }
+  }
+
+  void emitLocationChanged(@Nullable Location location) {
+    if (!hasListeners || location == null) return;
+
+    WritableMap payload = Arguments.createMap();
+    payload.putDouble("latitude", location.getLatitude());
+    payload.putDouble("longitude", location.getLongitude());
+
+    reactContext.runOnUiQueueThread(() ->
+      reactContext
+        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit("onLocationChanged", payload)
+    );
+  }
+
+  void emitTrackingStateChanged(boolean state) {
+    if (!hasListeners) return;
+
+    reactContext.runOnUiQueueThread(() ->
+      reactContext
+        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit("onTrackingStateChanged", state)
+    );
+  }
+
+  @ReactMethod
   public void initialize() {
     if (!api.isInitialized()) {
       api.initialize(this.getReactApplicationContext(), setTelematicsSettings());
       api.addTagsProcessingCallback(tagsProcessor);
+      api.setLocationListener(locationListener);
+      api.registerCallback(trackingStateListener);
     }
   }
-
   public Settings setTelematicsSettings() {
     Settings settings = new Settings(
       Settings.getStopTrackingTimeHigh(),
@@ -100,6 +164,16 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
 
   @ReactMethod
   public void setEnableSdk(boolean enable, Promise promise) {
+    if (ActivityCompat.checkSelfPermission(
+      this.getReactApplicationContext(),
+      Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+    ) {
+      promise.reject(
+        "INVALID_PERMISSION",
+        "Missing premission Manifest.permission.ACCESS_FINE_LOCATION"
+      );
+      return;
+    }
     api.setEnableSdk(enable);
     promise.resolve(null);
   }
@@ -136,7 +210,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
 
   @ReactMethod
   public void sendCustomHeartbeats(String reason, Promise promise) {
-    api.sendCustomHeartbeats(reason)
+    api.sendCustomHeartbeats(reason);
     promise.resolve(null);
   }
 
@@ -188,20 +262,11 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
     }
 
     int value = params.getInt("accidentDetectionSensitivity");
-    AccidentDetectionSensitivity sensitivity;
-
-    switch (value) {
-      case 1:
-        sensitivity = AccidentDetectionSensitivity.Sensitive;
-        break;
-      case 2:
-        sensitivity = AccidentDetectionSensitivity.Tough;
-        break;
-      case 0:
-      default:
-        sensitivity = AccidentDetectionSensitivity.Normal;
-        break;
-    }
+    AccidentDetectionSensitivity sensitivity = switch (value) {
+      case 1 -> AccidentDetectionSensitivity.Sensitive;
+      case 2 -> AccidentDetectionSensitivity.Tough;
+      default -> AccidentDetectionSensitivity.Normal;
+    };
 
     api.setAccidentDetectionMode(sensitivity);
     promise.resolve(null);

@@ -2,19 +2,36 @@ import Foundation
 import TelematicsSDK
 import UIKit
 
+fileprivate enum Events: String, CaseIterable {
+  case onLowPowerMode = "onLowPowerMode"
+  case onLocationChanged = "onLocationChanged"
+  case onTrackingStateChanged = "onTrackingStateChanged"
+}
+
 @objc(TelematicsSdk)
-public class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
+public class TelematicsSdk: RCTEventEmitter {
   
-  private var hasLowPowerListeners = false
-  private var lowPowerEventName = "onLowPowerModeEnabled"
-  
-  private var lowPowerModeCallback: RCTResponseSenderBlock?
+  private var hasListeners = false
+    
   // used to allow UI operations
   @objc public override static func requiresMainQueueSetup() -> Bool { true }
   
-  override init() {
-    super.init()
+  public override func supportedEvents() -> [String]! {
+    Events.allCases.map(\.rawValue)
+  }
+  
+  public override func startObserving() {
+    hasListeners = true
     RPEntry.instance.lowPowerModeDelegate = self
+    RPEntry.instance.locationDelegate = self
+    RPEntry.instance.trackingStateDelegate = self
+  }
+  
+  public override func stopObserving() {
+    hasListeners = false
+    RPEntry.instance.lowPowerModeDelegate = nil
+    RPEntry.instance.locationDelegate = nil
+    RPEntry.instance.trackingStateDelegate = nil
   }
   
   @objc(initialize)
@@ -268,6 +285,53 @@ public class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
       resolve(nil)
   }
   
+  @objc(getApiLanguage:rejecter:)
+  public func getApiLanguage(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    switch RPEntry.instance.apiLanguage {
+    case .none:
+      resolve("None")
+    case .english:
+      resolve("English")
+    case .russian:
+      resolve("Russian")
+    case .portuguese:
+      resolve("Portuguese")
+    case .spanish:
+      resolve("Spanish")
+    @unknown default:
+      resolve(nil)
+    }
+  }
+  
+  @objc(setApiLanguage:resolver:rejecter:)
+  public func setApiLanguage(
+    _ language: NSString,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    let lang = String(language)
+    
+    switch lang {
+    case "None":
+      RPEntry.instance.apiLanguage = .none
+    case "English":
+      RPEntry.instance.apiLanguage = .english
+    case "Russian":
+      RPEntry.instance.apiLanguage = .russian
+    case "Portuguese":
+      RPEntry.instance.apiLanguage = .portuguese
+    case "Spanish":
+      RPEntry.instance.apiLanguage = .spanish
+    default:
+      RPEntry.instance.apiLanguage = .english
+      return
+    }
+    resolve(nil)
+  }
+  
   @objc(addFutureTrackTag:source:resolver:rejecter:)
   public func addFutureTrackTag(
     _ tag: NSString,
@@ -330,28 +394,6 @@ public class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
     }
   }
   
-  // Low power mode
-  public override func supportedEvents() -> [String]! {
-    return [lowPowerEventName]
-  }
-  
-  public override func startObserving() {
-    hasLowPowerListeners = true
-  }
-  
-  public override func stopObserving() {
-    hasLowPowerListeners = false
-  }
-  
-  public func lowPowerMode(_ state: Bool) {
-    // if state == true low power mode was enabled
-    if self.hasLowPowerListeners && (state == true) {
-      self.sendEvent(withName: self.lowPowerEventName, body: nil)
-    }
-  }
-  
-  
-  
   // Helper method to parse tag status
   private func parseTagStatus(status: RPTagStatus) -> String {
     switch status {
@@ -367,4 +409,37 @@ public class TelematicsSdk: RCTEventEmitter, RPLowPowerModeDelegate {
       return "Unknown error"
     }
   }
+}
+
+extension TelematicsSdk: RPLowPowerModeDelegate {
+  
+  public func lowPowerMode(_ state: Bool) {
+    guard hasListeners else { return }
+    sendEvent(withName: Events.onLowPowerMode.rawValue, body: ["enabled": state])
+  }
+  
+}
+
+extension TelematicsSdk: RPLocationDelegate {
+  
+  public func onLocationChanged(_ location: CLLocation) {
+    guard hasListeners else { return }
+    let coordinate: [String: Any] = [
+      "latitude": location.coordinate.latitude,
+      "longitude": location.coordinate.longitude
+    ]
+    sendEvent(withName: Events.onLocationChanged.rawValue, body: coordinate)
+  }
+  
+  public func onNewEvents(_ events: [TelematicsSDK.RPEventPoint]) {}
+  
+}
+
+extension TelematicsSdk: RPTrackingStateListenerDelegate {
+  
+  public func trackingStateChanged(_ state: Bool) {
+    guard hasListeners else { return }
+    sendEvent(withName: Events.onTrackingStateChanged.rawValue, body: state)
+  }
+  
 }

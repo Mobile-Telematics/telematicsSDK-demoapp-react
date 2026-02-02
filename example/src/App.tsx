@@ -2,26 +2,23 @@ import React, { useEffect, useState } from 'react';
 
 import {
   Alert,
-  LogBox,
-  NativeEventEmitter,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableWithoutFeedback,
   Keyboard,
   View,
+  Platform
 } from 'react-native';
+
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
-import TelematicsSdk from 'react-native-telematics';
+import TelematicsSdk, { ApiLanguage, addOnLowPowerModeListener } from 'react-native-telematics';
 import { Button, Input } from './components';
 import { ClearButton } from './components/ClearButton';
 
-LogBox.ignoreLogs(['new NativeEventEmitter()']);
-
 export default function App() {
   const [deviceToken, setDeviceToken] = useState('');
-  const [sdkStatus, setSdkStatus] = useState(false);
+  const [isSdkEnabled, setSdkStatus] = useState(false);
   const [sdkTag, setSdkTag] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isPermissionsGranted, setIsPermissionsGranted] = useState(false);
@@ -29,22 +26,22 @@ export default function App() {
   useEffect(() => {
     TelematicsSdk.initialize();
     const checkPermissions = async () => {
-      const isGranted = await TelematicsSdk.requestPermissions();
+      const isGranted = await TelematicsSdk.showPermissionWizard(false, false);
       setIsPermissionsGranted(isGranted);
     };
     checkPermissions();
     updateSdkStatus();
     getToken();
 
-    // iOS only: Low power mode event
-    // For React Native 0.75+, use NativeEventEmitter without argument
-    const eventEmitter = new NativeEventEmitter(TelematicsSdk);
-    const emitter = eventEmitter.addListener('onLowPowerModeEnabled', () => {
-      console.log('Low power enabled');
-    });
+    let sub: { remove: () => void } | null = null;
+    if (Platform.OS === 'ios') {
+      sub = addOnLowPowerModeListener(({ enabled }) => {
+        console.log('Low power mode:', enabled);
+      });
+    }
 
     return () => {
-      emitter.remove();
+      sub?.remove();
     };
   }, []);
 
@@ -62,22 +59,23 @@ export default function App() {
 
   // methods
   const getToken = async () => {
-    const token = await TelematicsSdk.getDeviceToken();
+    const token = await TelematicsSdk.getDeviceId();
     setDeviceToken(token);
-  };
-
-  const requestPermissions = async () => {
-    const isGranted = await TelematicsSdk.requestPermissions();
   };
 
   const updateSdkStatus = async () => {
     try {
-      const isEnabled = await TelematicsSdk.getStatus();
-      setSdkStatus(isEnabled);
+      const isSdkEnabled = await TelematicsSdk.isSdkEnabled();
+      setSdkStatus(isSdkEnabled);
     } catch (error: any) {
       console.log(error);
     }
   };
+
+  const showPermissionWizard = async () => {
+    await TelematicsSdk.showPermissionWizard(false,false);
+  };
+
 
   const enableSDK = async () => {
     console.log('=== Enabling SDK ===');
@@ -93,26 +91,33 @@ export default function App() {
     
     try {
       console.log('Checking permissions...');
-      const hasPermissions = await TelematicsSdk.requestPermissions();
-      console.log('Permissions granted:', hasPermissions);
+      const isAllRequiredPermissionsAndSensorsGranted = await TelematicsSdk.isAllRequiredPermissionsAndSensorsGranted();
+      console.log('Permissions granted:', isAllRequiredPermissionsAndSensorsGranted);
       
-      if (!hasPermissions) {
+      if (!isAllRequiredPermissionsAndSensorsGranted) {
         setIsLoading(false);
         Alert.alert('⚠️ Permissions missing', 'Please grant all required permissions in Settings.', [
           { text: 'OK', style: 'default' },
-          { text: 'Request again', onPress: requestPermissions, style: 'default' },
+          { text: 'Request again', onPress: showPermissionWizard, style: 'default' },
         ]);
         return;
       }
 
       console.log('Checking SDK status...');
-      const currentStatus = await TelematicsSdk.getStatus();
-      console.log('Current SDK status:', currentStatus);
+      const isSdkEnabled = await TelematicsSdk.isSdkEnabled();
+      console.log('SDK enabled:', isSdkEnabled);
 
       console.log('Calling TelematicsSdk.enable()...');
       const startTime = Date.now();
       
-      const isEnabled = await TelematicsSdk.enable(deviceToken.trim());
+      await TelematicsSdk.setDeviceId(deviceToken.trim());
+      await TelematicsSdk.setEnableSdk(true);
+      
+      if (Platform.OS === 'ios') {
+        await TelematicsSdk.setDisableTracking(false);
+      }
+
+      const isEnabled = await TelematicsSdk.isSdkEnabled();
       
       const duration = Date.now() - startTime;
       console.log(`Enable SDK completed in ${duration}ms`);
@@ -136,16 +141,16 @@ export default function App() {
     }
   };
 
-  const disableSDK = async () => {
-    console.log('Disabling SDK');
-    await TelematicsSdk.disable();
+  const logout = async () => {
+    console.log('Logout');
+    await TelematicsSdk.logout();
     setDeviceToken('');
     updateSdkStatus();
   };
 
   const setTag = async () => {
     try {
-      const result = await TelematicsSdk.addFutureTrackTag('Some', 'Some');
+      const result = await TelematicsSdk.addFutureTrackTag('RN_Demo_Tag', 'RN_Demo_Source');
       setSdkTag(JSON.stringify(result));
     } catch (error: any) {
       showErrorAlert(error);
@@ -172,7 +177,7 @@ export default function App() {
 
   const removeTag = async () => {
     try {
-      const result = await TelematicsSdk.removeFutureTrackTag('Some');
+      const result = await TelematicsSdk.removeFutureTrackTag('RN_Demo_Tag');
       setSdkTag(JSON.stringify(result));
     } catch (error: any) {
       showErrorAlert(error);
@@ -181,8 +186,8 @@ export default function App() {
 
   const startPersistentTracking = async () => {
     try {
-      const result = await TelematicsSdk.startPersistentTracking();
-      !!result && setSdkTag(JSON.stringify(result));
+      await TelematicsSdk.startManualPersistentTracking();
+      setSdkTag('startManualPersistentTracking');
     } catch (error: any) {
       showErrorAlert(error);
     }
@@ -190,8 +195,8 @@ export default function App() {
 
   const startTracking = async () => {
     try {
-      const result = await TelematicsSdk.startTracking();
-      !!result && setSdkTag(JSON.stringify(result));
+      await TelematicsSdk.startManualTracking();
+      setSdkTag('startManualTracking');
     } catch (error: any) {
       showErrorAlert(error);
     }
@@ -199,8 +204,8 @@ export default function App() {
 
   const stopTracking = async () => {
     try {
-      const result = await TelematicsSdk.stopTracking();
-      !!result && setSdkTag(JSON.stringify(result));
+      await TelematicsSdk.stopManualTracking();
+      setSdkTag('stopManualTracking');
     } catch (error: any) {
       showErrorAlert(error);
     }
@@ -232,7 +237,7 @@ export default function App() {
         <Button text="Get all tags" onPress={getTags} variant="primary" />
         <Button text="Remove test tag" onPress={removeTag} variant="secondary" />
         <Button text="Remove all tags" onPress={removeAllTags} variant="secondary" />
-        <Button text="Disable SDK" onPress={disableSDK} variant="danger" />
+        <Button text="Logout" onPress={logout} variant="danger" />
         <Button
           text="Start tracking"
           onPress={startTracking}

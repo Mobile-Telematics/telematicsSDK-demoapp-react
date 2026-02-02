@@ -1,6 +1,7 @@
 import {
   type EventSubscription,
   type NativeModule,
+  NativeEventEmitter,
   NativeModules,
   Platform
 } from 'react-native';
@@ -11,22 +12,29 @@ export enum AccidentDetectionSensitivity {
   Tough = 2,
 }
 
+export enum ApiLanguage {
+  none = 'None',
+  english = 'English',
+  russian = 'Russian',
+  portuguese = 'Portuguese',
+  spanish = 'Spanish',
+}
+
 interface Tag {
   tag: string;
   source?: string;
 }
 
-function ensureIOS(methodName: string): void {
-  if (Platform.OS !== 'ios') {
-    throw new Error(`${methodName} is only available on iOS.`);
-  }
-}
+export type LowPowerModeEvent = {
+  enabled: boolean;
+};
 
-function ensureAndroid(methodName: string): void {
-  if (Platform.OS !== 'android') {
-    throw new Error(`${methodName} is only available on Android.`);
-  }
-}
+export type LocationChangedEvent = {
+  latitude: number;
+  longitude: number;
+};
+
+export type TrackingStateChangedEvent = boolean;
 
 interface TelematicsSdkType {
   initialize: () => Promise<void>;
@@ -62,6 +70,8 @@ interface TelematicsSdkType {
   isWrongAccuracyState: () => Promise<boolean | null>;
   requestIOSLocationAlwaysPermission: () => Promise<boolean | null>;
   requestIOSMotionPermission: () => Promise<boolean | null>;
+  getApiLanguage: () => Promise<ApiLanguage | null>;
+  setApiLanguage: (language: ApiLanguage) => Promise<void>;
 
   // Android only
   setAndroidAutoStartEnabled: (params: { enable: boolean; permanent: boolean }) => Promise<void>;
@@ -70,6 +80,7 @@ interface TelematicsSdkType {
 
 const { TelematicsSdk } = NativeModules;
 const sdk = TelematicsSdk as TelematicsSdkType & EventSubscription & NativeModule;
+const telematicsEmitter = new NativeEventEmitter(TelematicsSdk);
 
 export default {
   ...sdk,
@@ -101,12 +112,65 @@ export default {
     ensureIOS('requestIOSMotionPermission');
     return sdk.requestIOSMotionPermission();
   },
+  getApiLanguage: () => {
+    ensureIOS('getApiLanguage');
+    return sdk.getApiLanguage().then((value: string | null) => {
+      if (!value) return null;
+
+      switch (value) {
+       case ApiLanguage.none:
+       case ApiLanguage.english:
+       case ApiLanguage.russian:
+       case ApiLanguage.portuguese:
+       case ApiLanguage.spanish:
+        return value as ApiLanguage;
+      default:
+        return null;
+      }
+    });
+  },
+  setApiLanguage: (language: ApiLanguage) => {
+    ensureIOS('setApiLanguage');
+    return sdk.setApiLanguage(language);
+  },
   setAndroidAutoStartEnabled: (params: { enable: boolean; permanent: boolean }) => {
-  ensureAndroid('setAndroidAutoStartEnabled');
-  return sdk.setAndroidAutoStartEnabled(params);
-},
-isAndroidAutoStartEnabled: () => {
-  ensureAndroid('isAndroidAutoStartEnabled');
-  return sdk.isAndroidAutoStartEnabled();
-},
+    ensureAndroid('setAndroidAutoStartEnabled');
+    return sdk.setAndroidAutoStartEnabled(params);
+  },
+  isAndroidAutoStartEnabled: () => {
+    ensureAndroid('isAndroidAutoStartEnabled');
+    return sdk.isAndroidAutoStartEnabled();
+  },
 };
+
+export function addOnLowPowerModeListener(handler: (event: LowPowerModeEvent) => void) {
+  if (Platform.OS !== 'ios') {
+    throw new Error('onLowPowerModeListener is only available on iOS.');
+  }
+
+  return telematicsEmitter.addListener('onLowPowerMode', handler);
+}
+
+export function addOnLocationChangedListener(
+  handler: (event: LocationChangedEvent) => void
+) {
+  return telematicsEmitter.addListener('onLocationChanged', handler);
+}
+
+export function addOnTrackingStateChangedListener(
+  handler: (state: boolean) => void
+) {
+  return telematicsEmitter.addListener('onTrackingStateChanged', handler);
+}
+
+function ensureIOS(methodName: string): void {
+  if (Platform.OS !== 'ios') {
+    throw new Error(`${methodName} is only available on iOS.`);
+  }
+}
+
+function ensureAndroid(methodName: string): void {
+  if (Platform.OS !== 'android') {
+    throw new Error(`${methodName} is only available on Android.`);
+  }
+}
