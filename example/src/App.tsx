@@ -12,7 +12,16 @@ import {
 } from 'react-native';
 
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
-import TelematicsSdk, { ApiLanguage, addOnLowPowerModeListener } from 'react-native-telematics';
+import TelematicsSdk, {
+  AccidentDetectionSensitivity,
+  ApiLanguage,
+  addOnLowPowerModeListener,
+  addOnLocationChangedListener,
+  addOnTrackingStateChangedListener,
+  addOnWrongAccuracyAuthorizationListener,
+  addOnRtldColectedData,
+  addOnSpeedViolationListener,
+} from 'react-native-telematics';
 import { Button, Input } from './components';
 import { ClearButton } from './components/ClearButton';
 
@@ -22,6 +31,16 @@ export default function App() {
   const [sdkTag, setSdkTag] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isPermissionsGranted, setIsPermissionsGranted] = useState(false);
+  const [heartbeatReason, setHeartbeatReason] = useState('RN_Heartbeat_Test');
+  const [accidentSensitivity, setAccidentSensitivity] = useState<AccidentDetectionSensitivity>(AccidentDetectionSensitivity.Normal);
+  const [speedLimitKmH, setSpeedLimitKmH] = useState('80');
+  const [speedLimitTimeout, setSpeedLimitTimeout] = useState('10');
+  const [apiLanguage, setApiLanguage] = useState<ApiLanguage>(ApiLanguage.english);
+  const [androidAutoStartEnable, setAndroidAutoStartEnable] = useState(true);
+  const [androidAutoStartPermanent, setAndroidAutoStartPermanent] = useState(true);
+  const [iosDisableTracking, setIosDisableTracking] = useState(false);
+  const [iosAggressiveHeartbeats, setIosAggressiveHeartbeats] = useState(false);
+
 
   useEffect(() => {
     TelematicsSdk.initialize();
@@ -33,15 +52,48 @@ export default function App() {
     updateSdkStatus();
     getToken();
 
-    let sub: { remove: () => void } | null = null;
+    const subs: Array<{ remove: () => void }> = [];
     if (Platform.OS === 'ios') {
-      sub = addOnLowPowerModeListener(({ enabled }) => {
-        console.log('Low power mode:', enabled);
-      });
+      subs.push(
+        addOnLowPowerModeListener(({ enabled }) => {
+          setSdkTag(`onLowPowerMode: ${enabled}`);
+        })
+      );
+
+      subs.push(
+        addOnWrongAccuracyAuthorizationListener(() => {
+          setSdkTag('onWrongAccuracyAuthorization');
+        })
+      );
+
+      subs.push(
+        addOnRtldColectedData(() => {
+          setSdkTag('onRtldColectedData');
+        })
+      );
     }
 
+    subs.push(
+      addOnLocationChangedListener((e) => {
+        setSdkTag(`onLocationChanged: ${e.latitude}, ${e.longitude}`);
+      })
+    );
+
+    subs.push(
+      addOnTrackingStateChangedListener((state) => {
+        setSdkTag(`onTrackingStateChanged: ${state}`);
+      })
+    );
+
+    subs.push(
+      addOnSpeedViolationListener((e) => {
+        setSdkTag(
+          `onSpeedViolation: speed=${e.speed} limit=${e.speedLimit} @ ${e.latitude},${e.longitude}`
+        );
+      })
+    );
     return () => {
-      sub?.remove();
+      subs.forEach((s) => s.remove());
     };
   }, []);
 
@@ -76,6 +128,236 @@ export default function App() {
     await TelematicsSdk.showPermissionWizard(false,false);
   };
 
+  const checkInitialized = async () => {
+    try {
+      const v = await TelematicsSdk.isInitialized();
+      setSdkTag(`isInitialized: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+    const checkTracking = async () => {
+    try {
+      const v = await TelematicsSdk.isTracking();
+      setSdkTag(`isTracking: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const uploadTrips = async () => {
+    try {
+      await TelematicsSdk.uploadUnsentTrips();
+      setSdkTag('uploadUnsentTrips: OK');
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const getUnsentCount = async () => {
+    try {
+      const v = await TelematicsSdk.getUnsentTripCount();
+      setSdkTag(`getUnsentTripCount: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const sendHeartbeat = async () => {
+    try {
+      await TelematicsSdk.sendCustomHeartbeats(heartbeatReason);
+      setSdkTag(`sendCustomHeartbeats: ${heartbeatReason}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const setSensitivity = async (s: AccidentDetectionSensitivity) => {
+    try {
+      setAccidentSensitivity(s);
+      await TelematicsSdk.setAccidentDetectionSensitivity(s);
+      setSdkTag(`setAccidentDetectionSensitivity: ${AccidentDetectionSensitivity[s]}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const checkRtld = async () => {
+    try {
+      const v = await TelematicsSdk.isRTLDEnabled();
+      setSdkTag(`isRTLDEnabled: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const enableAccidents = async (enable: boolean) => {
+    try {
+      await TelematicsSdk.enableAccidents(enable);
+      const v = await TelematicsSdk.isEnabledAccidents();
+      setSdkTag(`enableAccidents(${enable}) => isEnabledAccidents: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const registerSpeed = async () => {
+    try {
+      const kmh = Number(speedLimitKmH);
+      const timeout = Number(speedLimitTimeout);
+      await TelematicsSdk.registerSpeedViolations({
+        speedLimitKmH: Number.isFinite(kmh) ? kmh : 80,
+        speedLimitTimeout: Number.isFinite(timeout) ? timeout : 10,
+      });
+      setSdkTag(`registerSpeedViolations: ${speedLimitKmH} km/h, ${speedLimitTimeout}s`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const setApiLang = async (lang: ApiLanguage) => {
+    try {
+      setApiLanguage(lang);
+      await TelematicsSdk.setApiLanguage(lang);
+      const current = await TelematicsSdk.getApiLanguage();
+      setSdkTag(`setApiLanguage: ${lang} => getApiLanguage: ${current}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const checkApiLang = async () => {
+    try {
+      const current = await TelematicsSdk.getApiLanguage();
+      setSdkTag(`getApiLanguage: ${current}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const iosAggressiveHeartbeat = async () => {
+    try {
+      if (Platform.OS !== 'ios') {
+        Alert.alert('iOS only', 'This method is only available on iOS');
+        return;
+      }
+      const v = await TelematicsSdk.isAggressiveHeartbeat();
+      setSdkTag(`isAggressiveHeartbeat: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const iosSetAggressiveHeartbeats = async (enable: boolean) => {
+    try {
+      if (Platform.OS !== 'ios') {
+        Alert.alert('iOS only', 'This method is only available on iOS');
+        return;
+      }
+      setIosAggressiveHeartbeats(enable);
+      await TelematicsSdk.setAggressiveHeartbeats(enable);
+      setSdkTag(`setAggressiveHeartbeats: ${enable}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const iosSetDisableTracking = async (value: boolean) => {
+    try {
+      if (Platform.OS !== 'ios') {
+        Alert.alert('iOS only', 'This method is only available on iOS');
+        return;
+      }
+      setIosDisableTracking(value);
+      await TelematicsSdk.setDisableTracking(value);
+      setSdkTag(`setDisableTracking: ${value}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const iosCheckDisableTracking = async () => {
+    try {
+      if (Platform.OS !== 'ios') {
+        Alert.alert('iOS only', 'This method is only available on iOS');
+        return;
+      }
+      const v = await TelematicsSdk.isDisableTracking();
+      setSdkTag(`isDisableTracking: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const iosCheckWrongAccuracyState = async () => {
+    try {
+      if (Platform.OS !== 'ios') {
+        Alert.alert('iOS only', 'This method is only available on iOS');
+        return;
+      }
+      const v = await TelematicsSdk.isWrongAccuracyState();
+      setSdkTag(`isWrongAccuracyState: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const iosRequestAlwaysLocation = async () => {
+    try {
+      if (Platform.OS !== 'ios') {
+        Alert.alert('iOS only', 'This method is only available on iOS');
+        return;
+      }
+      const v = await TelematicsSdk.requestIOSLocationAlwaysPermission();
+      setSdkTag(`requestIOSLocationAlwaysPermission: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const iosRequestMotion = async () => {
+    try {
+      if (Platform.OS !== 'ios') {
+        Alert.alert('iOS only', 'This method is only available on iOS');
+        return;
+      }
+      const v = await TelematicsSdk.requestIOSMotionPermission();
+      setSdkTag(`requestIOSMotionPermission: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const androidSetAutoStart = async () => {
+    try {
+      if (Platform.OS !== 'android') {
+        Alert.alert('Android only', 'This method is only available on Android');
+        return;
+      }
+      await TelematicsSdk.setAndroidAutoStartEnabled({
+        enable: androidAutoStartEnable,
+        permanent: androidAutoStartPermanent,
+      });
+      const v = await TelematicsSdk.isAndroidAutoStartEnabled();
+      setSdkTag(`setAndroidAutoStartEnabled => isAndroidAutoStartEnabled: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const androidCheckAutoStart = async () => {
+    try {
+      if (Platform.OS !== 'android') {
+        Alert.alert('Android only', 'This method is only available on Android');
+        return;
+      }
+      const v = await TelematicsSdk.isAndroidAutoStartEnabled();
+      setSdkTag(`isAndroidAutoStartEnabled: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
 
   const enableSDK = async () => {
     console.log('=== Enabling SDK ===');
@@ -215,9 +497,7 @@ export default function App() {
     <SafeAreaProvider>
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <SafeAreaView style={styles.container}>
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}
         >
       {sdkTag === '' ? <View /> : <ClearButton onPress={clearSdkTag} />}
       <Input
@@ -225,36 +505,63 @@ export default function App() {
         value={deviceToken}
         onChangeText={setDeviceToken}
       />
+      <Input
+        placeholder={'Heartbeat reason'}
+        value={heartbeatReason}
+        onChangeText={setHeartbeatReason}
+      />
+      <Input
+        placeholder={'Speed limit km/h (e.g. 80)'}
+        value={speedLimitKmH}
+        onChangeText={setSpeedLimitKmH}
+      />
+      <Input
+        placeholder={'Speed limit timeout seconds (e.g. 10)'}
+        value={speedLimitTimeout}
+        onChangeText={setSpeedLimitTimeout}
+      />
       <Text style={styles.tagText}>{sdkTag}</Text>
       <View>
-          <Button 
-            text="Enable SDK" 
-            onPress={enableSDK} 
-            variant="success"
-            disabled={isLoading}
-          />
-        <Button text="Add test tag" onPress={setTag} variant="secondary" />
-        <Button text="Get all tags" onPress={getTags} variant="primary" />
-        <Button text="Remove test tag" onPress={removeTag} variant="secondary" />
-        <Button text="Remove all tags" onPress={removeAllTags} variant="secondary" />
-        <Button text="Logout" onPress={logout} variant="danger" />
-        <Button
-          text="Start tracking"
-          onPress={startTracking}
-          variant="primary"
-        />
-        <Button
-          text="Start persistent tracking"
-          onPress={startPersistentTracking}
-          variant="primary"
-        />
-        <Button
-          text="Stop tracking"
-          onPress={stopTracking}
-          variant="primary"
-        />
-        </View>
-        </ScrollView>
+        <Button text="Enable SDK" onPress={enableSDK} variant="success" disabled={isLoading}/>
+        <Button text="Add test tag" onPress={setTag} variant="secondary"/>
+        <Button text="Get all tags" onPress={getTags} variant="primary"/>
+        <Button text="Remove test tag" onPress={removeTag} variant="secondary"/>
+        <Button text="Remove all tags" onPress={removeAllTags} variant="secondary"/>
+        <Button text="Logout" onPress={logout} variant="danger"/>
+        <Button text="Start tracking" onPress={startTracking} variant="primary"/>
+        <Button text="Start persistent tracking" onPress={startPersistentTracking} variant="primary"/>
+        <Button text="Stop tracking" onPress={stopTracking} variant="primary"/>
+                <Button text="isInitialized" onPress={checkInitialized} variant="secondary" />
+        <Button text="isTracking" onPress={checkTracking} variant="secondary" />
+        <Button text="Upload unsent trips" onPress={uploadTrips} variant="secondary" />
+        <Button text="Get unsent trip count" onPress={getUnsentCount} variant="secondary" />
+        <Button text="Send custom heartbeat" onPress={sendHeartbeat} variant="secondary" />
+        <Button text="Is RTLD enabled" onPress={checkRtld} variant="secondary" />
+        <Button text="Enable accidents" onPress={() => enableAccidents(true)} variant="secondary" />
+        <Button text="Disable accidents" onPress={() => enableAccidents(false)} variant="secondary" />
+        <Button text="Register speed violations" onPress={registerSpeed} variant="secondary" />
+
+        <Button text="Sensitivity: Normal" onPress={() => setSensitivity(AccidentDetectionSensitivity.Normal)} variant="secondary" />
+        <Button text="Sensitivity: Sensitive" onPress={() => setSensitivity(AccidentDetectionSensitivity.Sensitive)} variant="secondary" />
+        <Button text="Sensitivity: Tough" onPress={() => setSensitivity(AccidentDetectionSensitivity.Tough)} variant="secondary" />
+
+        <Button text="iOS: isAggressiveHeartbeat" onPress={iosAggressiveHeartbeat} variant="primary" />
+        <Button text="iOS: setAggressiveHeartbeats ON" onPress={() => iosSetAggressiveHeartbeats(true)} variant="primary" />
+        <Button text="iOS: setAggressiveHeartbeats OFF" onPress={() => iosSetAggressiveHeartbeats(false)} variant="primary" />
+        <Button text="iOS: setDisableTracking ON" onPress={() => iosSetDisableTracking(true)} variant="primary" />
+        <Button text="iOS: setDisableTracking OFF" onPress={() => iosSetDisableTracking(false)} variant="primary" />
+        <Button text="iOS: isDisableTracking" onPress={iosCheckDisableTracking} variant="primary" />
+        <Button text="iOS: isWrongAccuracyState" onPress={iosCheckWrongAccuracyState} variant="primary" />
+        <Button text="iOS: request Always Location" onPress={iosRequestAlwaysLocation} variant="primary" />
+        <Button text="iOS: request Motion" onPress={iosRequestMotion} variant="primary" />
+        <Button text="iOS: getApiLanguage" onPress={checkApiLang} variant="primary" />
+        <Button text="iOS: setApiLanguage English" onPress={() => setApiLang(ApiLanguage.english)} variant="primary" />
+        <Button text="iOS: setApiLanguage Russian" onPress={() => setApiLang(ApiLanguage.russian)} variant="primary" />
+
+        <Button text="Android: isAutoStartEnabled" onPress={androidCheckAutoStart} variant="primary" />
+        <Button text="Android: setAutoStartEnabled" onPress={androidSetAutoStart} variant="primary" />
+      </View>
+    </ScrollView>
       </SafeAreaView>
       </TouchableWithoutFeedback>
     </SafeAreaProvider>
