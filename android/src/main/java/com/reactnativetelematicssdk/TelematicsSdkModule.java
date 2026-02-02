@@ -252,16 +252,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
   }
 
   @ReactMethod
-  public void setAccidentDetectionSensitivity(ReadableMap params, Promise promise) {
-    if (!params.hasKey("accidentDetectionSensitivity")) {
-      promise.reject(
-        "INVALID_PARAMS",
-        "Missing accidentDetectionSensitivity"
-      );
-      return;
-    }
-
-    int value = params.getInt("accidentDetectionSensitivity");
+  public void setAccidentDetectionSensitivity(int value, Promise promise) {
     AccidentDetectionSensitivity sensitivity = switch (value) {
       case 1 -> AccidentDetectionSensitivity.Sensitive;
       case 2 -> AccidentDetectionSensitivity.Tough;
