@@ -16,7 +16,7 @@ RCT_EXTERN_METHOD(getDeviceId:
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(setDeviceId:(NSString *)deviceId
-                  (RCTPromiseResolveBlock)resolve
+                  resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(logout:
@@ -36,7 +36,7 @@ RCT_EXTERN_METHOD(isTracking:
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(setEnableSdk:(BOOL)enable
-                  (RCTPromiseResolveBlock)resolve
+                  resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(startManualTracking:
@@ -60,7 +60,7 @@ RCT_EXTERN_METHOD(getUnsentTripCount:
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(sendCustomHeartbeats:(NSString *)reason
-                  (RCTPromiseResolveBlock)resolve
+                  resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(showPermissionWizard:(BOOL)enableAggressivePermissionsWizard
@@ -77,7 +77,7 @@ RCT_EXTERN_METHOD(isRTLDEnabled:
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(enableAccidents:(BOOL)enable
-                  (RCTPromiseResolveBlock)resolve
+                  resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(isEnabledAccidents:
@@ -112,22 +112,22 @@ RCT_EXTERN_METHOD(requestIOSMotionPermission:
                   (RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(addFutureTrackTag: (NSString*) tag
-                  source: (NSString*) source
-                  resolver: (RCTPromiseResolveBlock)resolve
-                  rejecter: (RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(addFutureTrackTag:(NSString*) tag
+                  source:(NSString*)source
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(removeFutureTrackTag: (NSString*) tag
-                  resolver: (RCTPromiseResolveBlock)resolve
-                  rejecter: (RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(removeFutureTrackTag:(NSString*)tag
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(getFutureTrackTags:
                   (RCTPromiseResolveBlock)resolve
-                  rejecter: (RCTPromiseRejectBlock)reject)
+                  rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(removeAllFutureTrackTags:
                   (RCTPromiseResolveBlock)resolve
-                  rejecter: (RCTPromiseRejectBlock)reject)
+                  rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(getApiLanguage:
                   (RCTPromiseResolveBlock)resolve

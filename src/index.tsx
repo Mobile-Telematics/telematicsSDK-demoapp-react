@@ -87,70 +87,10 @@ interface TelematicsSdkType {
   isAndroidAutoStartEnabled: () => Promise<boolean | null>;
 }
 
+
 const { TelematicsSdk } = NativeModules;
-const sdk = TelematicsSdk as TelematicsSdkType & EventSubscription & NativeModule;
+export default TelematicsSdk as TelematicsSdkType & EventSubscription & NativeModule;
 const telematicsEmitter = new NativeEventEmitter(TelematicsSdk);
-
-export default {
-  ...sdk,
-  isAggressiveHeartbeat: () => {
-    ensureIOS('isAggressiveHeartbeat');
-    return sdk.isAggressiveHeartbeat();
-  },
-  setAggressiveHeartbeats: (enable: boolean) => {
-    ensureIOS('setAggressiveHeartbeats');
-    return sdk.setAggressiveHeartbeats(enable);
-  },
-    setDisableTracking: (value: boolean) => {
-    ensureIOS('setDisableTracking');
-    return sdk.setDisableTracking(value);
-  },
-  isDisableTracking: () => {
-    ensureIOS('isDisableTracking');
-    return sdk.isDisableTracking();
-  },
-  isWrongAccuracyState: () => {
-    ensureIOS('isWrongAccuracyState');
-    return sdk.isWrongAccuracyState();
-  },
-  requestIOSLocationAlwaysPermission: () => {
-    ensureIOS('requestIOSLocationAlwaysPermission');
-    return sdk.requestIOSLocationAlwaysPermission();
-  },
-  requestIOSMotionPermission: () => {
-    ensureIOS('requestIOSMotionPermission');
-    return sdk.requestIOSMotionPermission();
-  },
-  getApiLanguage: () => {
-    ensureIOS('getApiLanguage');
-    return sdk.getApiLanguage().then((value: string | null) => {
-      if (!value) return null;
-
-      switch (value) {
-       case ApiLanguage.none:
-       case ApiLanguage.english:
-       case ApiLanguage.russian:
-       case ApiLanguage.portuguese:
-       case ApiLanguage.spanish:
-        return value as ApiLanguage;
-      default:
-        return null;
-      }
-    });
-  },
-  setApiLanguage: (language: ApiLanguage) => {
-    ensureIOS('setApiLanguage');
-    return sdk.setApiLanguage(language);
-  },
-  setAndroidAutoStartEnabled: (params: { enable: boolean; permanent: boolean }) => {
-    ensureAndroid('setAndroidAutoStartEnabled');
-    return sdk.setAndroidAutoStartEnabled(params);
-  },
-  isAndroidAutoStartEnabled: () => {
-    ensureAndroid('isAndroidAutoStartEnabled');
-    return sdk.isAndroidAutoStartEnabled();
-  },
-};
 
 export function addOnLowPowerModeListener(handler: (event: LowPowerModeEvent) => void) {
   if (Platform.OS !== 'ios') {
@@ -192,16 +132,4 @@ export function addOnSpeedViolationListener(
   handler: (event: SpeedViolationEvent) => void
 ) {
   return telematicsEmitter.addListener('onSpeedViolation', handler);
-}
-
-function ensureIOS(methodName: string): void {
-  if (Platform.OS !== 'ios') {
-    throw new Error(`${methodName} is only available on iOS.`);
-  }
-}
-
-function ensureAndroid(methodName: string): void {
-  if (Platform.OS !== 'android') {
-    throw new Error(`${methodName} is only available on Android.`);
-  }
 }

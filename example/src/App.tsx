@@ -43,7 +43,7 @@ export default function App() {
 
 
   useEffect(() => {
-    TelematicsSdk.initialize;
+    TelematicsSdk.initialize();
     const checkPermissions = async () => {
       const isGranted = await TelematicsSdk.showPermissionWizard(false, false);
       setIsPermissionsGranted(isGranted);
@@ -56,38 +56,38 @@ export default function App() {
     if (Platform.OS === 'ios') {
       subs.push(
         addOnLowPowerModeListener(({ enabled }) => {
-          setSdkTag(`onLowPowerMode: ${enabled}`);
+          console.log('onLowPowerMode:', enabled);
         })
       );
 
       subs.push(
         addOnWrongAccuracyAuthorizationListener(() => {
-          setSdkTag('onWrongAccuracyAuthorization');
+          console.log('onWrongAccuracyAuthorization');
         })
       );
 
       subs.push(
         addOnRtldColectedData(() => {
-          setSdkTag('onRtldColectedData');
+          console.log('onRtldColectedData');
         })
       );
     }
 
     subs.push(
       addOnLocationChangedListener((e) => {
-        setSdkTag(`onLocationChanged: ${e.latitude}, ${e.longitude}`);
+        console.log(`onLocationChanged: latitude=${e.latitude}, longitude=${e.longitude}`);
       })
     );
 
     subs.push(
       addOnTrackingStateChangedListener((state) => {
-        setSdkTag(`onTrackingStateChanged: ${state}`);
+        console.log(`onTrackingStateChanged: ${state}`);
       })
     );
 
     subs.push(
       addOnSpeedViolationListener((e) => {
-        setSdkTag(
+        console.log(
           `onSpeedViolation: speed=${e.speed} limit=${e.speedLimit} @ ${e.latitude},${e.longitude}`
         );
       })
@@ -131,7 +131,7 @@ export default function App() {
   const checkInitialized = async () => {
     try {
       const v = await TelematicsSdk.isInitialized();
-      setSdkTag(`isInitialized: ${v}`);
+      console.log(`isInitialized: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -140,7 +140,7 @@ export default function App() {
   const checkTracking = async () => {
     try {
       const v = await TelematicsSdk.isTracking();
-      setSdkTag(`isTracking: ${v}`);
+      console.log(`isTracking: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -149,7 +149,7 @@ export default function App() {
   const uploadTrips = async () => {
     try {
       await TelematicsSdk.uploadUnsentTrips();
-      setSdkTag('uploadUnsentTrips: OK');
+      console.log('uploadUnsentTrips: OK');
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -158,7 +158,7 @@ export default function App() {
   const getUnsentCount = async () => {
     try {
       const v = await TelematicsSdk.getUnsentTripCount();
-      setSdkTag(`getUnsentTripCount: ${v}`);
+      console.log(`getUnsentTripCount: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -167,7 +167,7 @@ export default function App() {
   const sendHeartbeat = async () => {
     try {
       await TelematicsSdk.sendCustomHeartbeats(heartbeatReason);
-      setSdkTag(`sendCustomHeartbeats: ${heartbeatReason}`);
+      console.log(`sendCustomHeartbeats: ${heartbeatReason}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -177,7 +177,7 @@ export default function App() {
     try {
       setAccidentSensitivity(s);
       await TelematicsSdk.setAccidentDetectionSensitivity(s);
-      setSdkTag(`setAccidentDetectionSensitivity: ${AccidentDetectionSensitivity[s]}`);
+      console.log(`setAccidentDetectionSensitivity: ${AccidentDetectionSensitivity[s]}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -186,7 +186,7 @@ export default function App() {
   const checkRtld = async () => {
     try {
       const v = await TelematicsSdk.isRTLDEnabled();
-      setSdkTag(`isRTLDEnabled: ${v}`);
+      console.log(`isRTLDEnabled: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -196,7 +196,7 @@ export default function App() {
     try {
       await TelematicsSdk.enableAccidents(enable);
       const v = await TelematicsSdk.isEnabledAccidents();
-      setSdkTag(`enableAccidents(${enable}) => isEnabledAccidents: ${v}`);
+      console.log(`enableAccidents(${enable}) => isEnabledAccidents: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -210,7 +210,7 @@ export default function App() {
         speedLimitKmH: Number.isFinite(kmh) ? kmh : 80,
         speedLimitTimeout: Number.isFinite(timeout) ? timeout : 10,
       });
-      setSdkTag(`registerSpeedViolations: ${speedLimitKmH} km/h, ${speedLimitTimeout}s`);
+      console.log(`registerSpeedViolations: ${speedLimitKmH} km/h, ${speedLimitTimeout}s`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -221,7 +221,7 @@ export default function App() {
       setApiLanguage(lang);
       await TelematicsSdk.setApiLanguage(lang);
       const current = await TelematicsSdk.getApiLanguage();
-      setSdkTag(`setApiLanguage: ${lang} => getApiLanguage: ${current}`);
+      console.log(`setApiLanguage: ${lang} => getApiLanguage: ${current}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -230,7 +230,7 @@ export default function App() {
   const checkApiLang = async () => {
     try {
       const current = await TelematicsSdk.getApiLanguage();
-      setSdkTag(`getApiLanguage: ${current}`);
+      console.log(`getApiLanguage: ${current}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -243,7 +243,7 @@ export default function App() {
         return;
       }
       const v = await TelematicsSdk.isAggressiveHeartbeat();
-      setSdkTag(`isAggressiveHeartbeat: ${v}`);
+      console.log(`isAggressiveHeartbeat: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -257,7 +257,7 @@ export default function App() {
       }
       setIosAggressiveHeartbeats(enable);
       await TelematicsSdk.setAggressiveHeartbeats(enable);
-      setSdkTag(`setAggressiveHeartbeats: ${enable}`);
+      console.log(`setAggressiveHeartbeats: ${enable}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -271,7 +271,7 @@ export default function App() {
       }
       setIosDisableTracking(value);
       await TelematicsSdk.setDisableTracking(value);
-      setSdkTag(`setDisableTracking: ${value}`);
+      console.log(`setDisableTracking: ${value}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -284,7 +284,7 @@ export default function App() {
         return;
       }
       const v = await TelematicsSdk.isDisableTracking();
-      setSdkTag(`isDisableTracking: ${v}`);
+      console.log(`isDisableTracking: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -297,7 +297,7 @@ export default function App() {
         return;
       }
       const v = await TelematicsSdk.isWrongAccuracyState();
-      setSdkTag(`isWrongAccuracyState: ${v}`);
+      console.log(`isWrongAccuracyState: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -310,7 +310,7 @@ export default function App() {
         return;
       }
       const v = await TelematicsSdk.requestIOSLocationAlwaysPermission();
-      setSdkTag(`requestIOSLocationAlwaysPermission: ${v}`);
+      console.log(`requestIOSLocationAlwaysPermission: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -323,7 +323,7 @@ export default function App() {
         return;
       }
       const v = await TelematicsSdk.requestIOSMotionPermission();
-      setSdkTag(`requestIOSMotionPermission: ${v}`);
+      console.log(`requestIOSMotionPermission: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -340,7 +340,7 @@ export default function App() {
         permanent: androidAutoStartPermanent,
       });
       const v = await TelematicsSdk.isAndroidAutoStartEnabled();
-      setSdkTag(`setAndroidAutoStartEnabled => isAndroidAutoStartEnabled: ${v}`);
+      console.log(`setAndroidAutoStartEnabled => isAndroidAutoStartEnabled: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -353,7 +353,7 @@ export default function App() {
         return;
       }
       const v = await TelematicsSdk.isAndroidAutoStartEnabled();
-      setSdkTag(`isAndroidAutoStartEnabled: ${v}`);
+      console.log(`isAndroidAutoStartEnabled: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
