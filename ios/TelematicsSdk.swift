@@ -6,12 +6,17 @@ fileprivate enum Events: String, CaseIterable {
   case onLowPowerMode = "onLowPowerMode"
   case onLocationChanged = "onLocationChanged"
   case onTrackingStateChanged = "onTrackingStateChanged"
+  case onWrongAccuracyAuthorization = "onWrongAccuracyAuthorization"
+  case onRtldColectedData = "onRtldColectedData"
+  case onSpeedViolation = "onSpeedViolation"
 }
 
 @objc(TelematicsSdk)
 public class TelematicsSdk: RCTEventEmitter {
   
   private var hasListeners = false
+  private var speedLimitKmH: Double = 0
+  private var speedLimitTimeThreshold: TimeInterval = 0
     
   // used to allow UI operations
   @objc public override static func requiresMainQueueSetup() -> Bool { true }
@@ -25,6 +30,8 @@ public class TelematicsSdk: RCTEventEmitter {
     RPEntry.instance.lowPowerModeDelegate = self
     RPEntry.instance.locationDelegate = self
     RPEntry.instance.trackingStateDelegate = self
+    RPEntry.instance.accuracyAuthorizationDelegate = self
+    RPEntry.instance.rtldDelegate = self
   }
   
   public override func stopObserving() {
@@ -32,6 +39,8 @@ public class TelematicsSdk: RCTEventEmitter {
     RPEntry.instance.lowPowerModeDelegate = nil
     RPEntry.instance.locationDelegate = nil
     RPEntry.instance.trackingStateDelegate = nil
+    RPEntry.instance.accuracyAuthorizationDelegate = nil
+    RPEntry.instance.rtldDelegate = nil
   }
   
   @objc(initialize)
@@ -394,6 +403,27 @@ public class TelematicsSdk: RCTEventEmitter {
     }
   }
   
+  @objc(registerSpeedViolations:resolver:rejecter:)
+  public func registerSpeedViolations(
+    _ params: NSDictionary,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard
+      let speedLimitKmH = params["speedLimitKmH"] as? NSNumber,
+      let speedLimitTimeout = params["speedLimitTimeout"] as? NSNumber
+    else {
+      reject("INVALID_PARAMS", "Missing speedLimitKmH/speedLimitTimeout", nil)
+      return
+    }
+    
+    self.speedLimitKmH = speedLimitKmH.doubleValue
+    self.speedLimitTimeThreshold = speedLimitTimeout.doubleValue // seconds, как во Flutter
+    
+    RPEntry.instance.speedLimitDelegate = self
+    resolve(nil)
+  }
+  
   // Helper method to parse tag status
   private func parseTagStatus(status: RPTagStatus) -> String {
     switch status {
@@ -441,5 +471,50 @@ extension TelematicsSdk: RPTrackingStateListenerDelegate {
     guard hasListeners else { return }
     sendEvent(withName: Events.onTrackingStateChanged.rawValue, body: state)
   }
+  
+}
+
+extension TelematicsSdk: RPAccuracyAuthorizationDelegate {
+  
+  public func wrongAccuracyAuthorization() {
+    guard hasListeners else { return }
+    sendEvent(withName: Events.onWrongAccuracyAuthorization.rawValue, body: nil)
+  }
+  
+}
+
+extension TelematicsSdk: RPRTDLDelegate {
+  
+  public func rtldColectedData() {
+    guard hasListeners else { return }
+    sendEvent(withName: Events.onRtldColectedData.rawValue, body: nil)
+  }
+  
+}
+
+extension TelematicsSdk: RPSpeedLimitDelegate {
+  
+  public var timeThreshold: TimeInterval { speedLimitTimeThreshold }
+  public var speedLimit: Double { speedLimitKmH }
+  
+  public func speedLimitNotification(
+    _ speedLimit: Double,
+    speed: Double,
+    latitude: Double,
+    longitude: Double,
+    date: Date
+  ) {
+    guard hasListeners else { return }
+    let payload: [String: Any] = [
+      "date": Int(date.timeIntervalSince1970),
+      "latitude": latitude,
+      "longitude": longitude,
+      "speed": speed,
+      "speedLimit": speedLimit
+    ]
+    
+    sendEvent(withName: Events.onSpeedViolation.rawValue, body: payload)
+  }
+  
   
 }

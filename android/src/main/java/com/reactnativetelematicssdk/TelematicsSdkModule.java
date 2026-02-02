@@ -27,7 +27,7 @@ import com.telematicssdk.tracking.TrackingApi;
 import com.telematicssdk.tracking.Settings;
 import com.telematicssdk.tracking.utils.permissions.PermissionsWizardActivity;
 import com.telematicssdk.tracking.model.realtime.configuration.AccidentDetectionSensitivity;
-
+import com.telematicssdk.tracking.SpeedViolation;
 
 public class TelematicsSdkModule extends ReactContextBaseJavaModule implements PreferenceManager.OnActivityResultListener {
   public static final String NAME = "TelematicsSdk";
@@ -350,4 +350,38 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
     tagsProcessor.setOnAllTagsRemove(promise);
     api.removeAllFutureTrackTags();
   }
+
+  @ReactMethod
+  public void registerSpeedViolations(ReadableMap params, Promise promise) {
+    if (!params.hasKey("speedLimitKmH") || !params.hasKey("speedLimitTimeout")) {
+      promise.reject("INVALID_PARAMS", "Missing speedLimitKmH/speedLimitTimeout");
+      return;
+    }
+
+    double speedLimitKmH = params.getDouble("speedLimitKmH");
+    int speedLimitTimeoutSeconds = params.getInt("speedLimitTimeout");
+    long timeoutMs = (long) speedLimitTimeoutSeconds * 1000L;
+
+    api.registerSpeedViolations(
+      (float)speedLimitKmH,
+      timeoutMs,
+      new SpeedViolationsListenerImpl(this)
+    );
+  }
+
+  void emitSpeedViolation(SpeedViolation speedViolation) {
+    WritableMap payload = Arguments.createMap();
+    payload.putDouble("date", speedViolation.getDate());
+    payload.putDouble("latitude", speedViolation.getLatitude());
+    payload.putDouble("longitude", speedViolation.getLong());
+    payload.putDouble("speed", speedViolation.getYourSpeed());
+    payload.putDouble("speedLimit", speedViolation.getSpeedLimit());
+
+    reactContext.runOnUiQueueThread(() ->
+      reactContext
+        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+        .emit("onSpeedViolation", payload)
+    );
+  }
+
 }

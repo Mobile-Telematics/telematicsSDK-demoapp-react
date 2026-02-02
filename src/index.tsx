@@ -34,6 +34,14 @@ export type LocationChangedEvent = {
   longitude: number;
 };
 
+export type SpeedViolationEvent = {
+  date: number;
+  latitude: number;
+  longitude: number;
+  speed: number;
+  speedLimit: number;
+};
+
 export type TrackingStateChangedEvent = boolean;
 
 interface TelematicsSdkType {
@@ -61,6 +69,7 @@ interface TelematicsSdkType {
   addFutureTrackTag: (tag: string, source?: string) => Promise<{ status: string; tag: Tag }>;
   removeFutureTrackTag: (tag: string) => Promise<{ status: string; tag: Tag }>;
   removeAllFutureTrackTags: () => Promise<string>;
+  registerSpeedViolations: (params: { speedLimitKmH: number; speedLimitTimeout: number; }) => Promise<void>;
 
   // iOS only
   isAggressiveHeartbeat: () => Promise<boolean | null>; 
@@ -145,7 +154,7 @@ export default {
 
 export function addOnLowPowerModeListener(handler: (event: LowPowerModeEvent) => void) {
   if (Platform.OS !== 'ios') {
-    throw new Error('onLowPowerModeListener is only available on iOS.');
+    throw new Error('addOnnLowPowerModeListener is only available on iOS.');
   }
 
   return telematicsEmitter.addListener('onLowPowerMode', handler);
@@ -161,6 +170,28 @@ export function addOnTrackingStateChangedListener(
   handler: (state: boolean) => void
 ) {
   return telematicsEmitter.addListener('onTrackingStateChanged', handler);
+}
+
+export function addOnWrongAccuracyAuthorizationListener(handler: () => void) {
+  if (Platform.OS !== 'ios') {
+    throw new Error('addOnWrongAccuracyAuthorizationListener is only available on iOS.');
+  }
+
+  return telematicsEmitter.addListener('onWrongAccuracyAuthorization', handler);
+}
+
+export function addOnRtldColectedData(handler: () => void) {
+  if (Platform.OS !== 'ios') {
+    throw new Error('addOnRtldColectedData is only available on iOS.');
+  }
+
+  return telematicsEmitter.addListener('onRtldColectedData', handler);
+}
+
+export function addOnSpeedViolationListener(
+  handler: (event: SpeedViolationEvent) => void
+) {
+  return telematicsEmitter.addListener('onSpeedViolation', handler);
 }
 
 function ensureIOS(methodName: string): void {
