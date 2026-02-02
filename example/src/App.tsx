@@ -11,7 +11,7 @@ import {
   Platform
 } from 'react-native';
 
-import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import TelematicsSdk, {
   AccidentDetectionSensitivity,
   ApiLanguage,
@@ -43,7 +43,7 @@ export default function App() {
 
 
   useEffect(() => {
-    TelematicsSdk.initialize();
+    TelematicsSdk.initialize;
     const checkPermissions = async () => {
       const isGranted = await TelematicsSdk.showPermissionWizard(false, false);
       setIsPermissionsGranted(isGranted);
@@ -125,7 +125,7 @@ export default function App() {
   };
 
   const showPermissionWizard = async () => {
-    await TelematicsSdk.showPermissionWizard(false,false);
+    await TelematicsSdk.showPermissionWizard(false, false);
   };
 
   const checkInitialized = async () => {
@@ -137,7 +137,7 @@ export default function App() {
     }
   };
 
-    const checkTracking = async () => {
+  const checkTracking = async () => {
     try {
       const v = await TelematicsSdk.isTracking();
       setSdkTag(`isTracking: ${v}`);
@@ -363,19 +363,19 @@ export default function App() {
     console.log('=== Enabling SDK ===');
     console.log('Device token length:', deviceToken.length);
     console.log('Device token (first 20 chars):', deviceToken.substring(0, 20));
-    
-      if (!deviceToken || deviceToken.trim() === '') {
-        Alert.alert('⚠️ Token required', 'Please enter device token to enable the SDK', [{ text: 'OK', style: 'default' }]);
-        return;
-      }
+
+    if (!deviceToken || deviceToken.trim() === '') {
+      Alert.alert('⚠️ Token required', 'Please enter device token to enable the SDK', [{ text: 'OK', style: 'default' }]);
+      return;
+    }
 
     setIsLoading(true);
-    
+
     try {
       console.log('Checking permissions...');
       const isAllRequiredPermissionsAndSensorsGranted = await TelematicsSdk.isAllRequiredPermissionsAndSensorsGranted();
       console.log('Permissions granted:', isAllRequiredPermissionsAndSensorsGranted);
-      
+
       if (!isAllRequiredPermissionsAndSensorsGranted) {
         setIsLoading(false);
         Alert.alert('⚠️ Permissions missing', 'Please grant all required permissions in Settings.', [
@@ -391,28 +391,28 @@ export default function App() {
 
       console.log('Calling TelematicsSdk.enable()...');
       const startTime = Date.now();
-      
+
       await TelematicsSdk.setDeviceId(deviceToken.trim());
       await TelematicsSdk.setEnableSdk(true);
-      
+
       if (Platform.OS === 'ios') {
         await TelematicsSdk.setDisableTracking(false);
       }
 
       const isEnabled = await TelematicsSdk.isSdkEnabled();
-      
+
       const duration = Date.now() - startTime;
       console.log(`Enable SDK completed in ${duration}ms`);
       console.log('SDK enabled result:', isEnabled);
-      
+
       setIsLoading(false);
-      
+
       if (!isEnabled) {
         console.log('Error during enabling process');
         Alert.alert('❌ Enable failed', 'Failed to enable SDK. Please check your token and permissions.', [{ text: 'OK', style: 'default' }]);
         return;
       }
-      
+
       console.log('SDK enabled successfully!');
       await updateSdkStatus();
       Alert.alert('✅ Success', 'SDK enabled successfully. You can use telematics features now.', [{ text: 'Great', style: 'default' }]);
@@ -495,74 +495,74 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-      <SafeAreaView style={styles.container}>
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}
-        >
-      {sdkTag === '' ? <View /> : <ClearButton onPress={clearSdkTag} />}
-      <Input
-        placeholder={'Your device token'}
-        value={deviceToken}
-        onChangeText={setDeviceToken}
-      />
-      <Input
-        placeholder={'Heartbeat reason'}
-        value={heartbeatReason}
-        onChangeText={setHeartbeatReason}
-      />
-      <Input
-        placeholder={'Speed limit km/h (e.g. 80)'}
-        value={speedLimitKmH}
-        onChangeText={setSpeedLimitKmH}
-      />
-      <Input
-        placeholder={'Speed limit timeout seconds (e.g. 10)'}
-        value={speedLimitTimeout}
-        onChangeText={setSpeedLimitTimeout}
-      />
-      <Text style={styles.tagText}>{sdkTag}</Text>
-      <View>
-        <Button text="Enable SDK" onPress={enableSDK} variant="success" disabled={isLoading}/>
-        <Button text="Add test tag" onPress={setTag} variant="secondary"/>
-        <Button text="Get all tags" onPress={getTags} variant="primary"/>
-        <Button text="Remove test tag" onPress={removeTag} variant="secondary"/>
-        <Button text="Remove all tags" onPress={removeAllTags} variant="secondary"/>
-        <Button text="Logout" onPress={logout} variant="danger"/>
-        <Button text="Start tracking" onPress={startTracking} variant="primary"/>
-        <Button text="Start persistent tracking" onPress={startPersistentTracking} variant="primary"/>
-        <Button text="Stop tracking" onPress={stopTracking} variant="primary"/>
-                <Button text="isInitialized" onPress={checkInitialized} variant="secondary" />
-        <Button text="isTracking" onPress={checkTracking} variant="secondary" />
-        <Button text="Upload unsent trips" onPress={uploadTrips} variant="secondary" />
-        <Button text="Get unsent trip count" onPress={getUnsentCount} variant="secondary" />
-        <Button text="Send custom heartbeat" onPress={sendHeartbeat} variant="secondary" />
-        <Button text="Is RTLD enabled" onPress={checkRtld} variant="secondary" />
-        <Button text="Enable accidents" onPress={() => enableAccidents(true)} variant="secondary" />
-        <Button text="Disable accidents" onPress={() => enableAccidents(false)} variant="secondary" />
-        <Button text="Register speed violations" onPress={registerSpeed} variant="secondary" />
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <SafeAreaView style={styles.container}>
+          <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}
+          >
+            {sdkTag === '' ? <View /> : <ClearButton onPress={clearSdkTag} />}
+            <Input
+              placeholder={'Your device token'}
+              value={deviceToken}
+              onChangeText={setDeviceToken}
+            />
+            <Input
+              placeholder={'Heartbeat reason'}
+              value={heartbeatReason}
+              onChangeText={setHeartbeatReason}
+            />
+            <Input
+              placeholder={'Speed limit km/h (e.g. 80)'}
+              value={speedLimitKmH}
+              onChangeText={setSpeedLimitKmH}
+            />
+            <Input
+              placeholder={'Speed limit timeout seconds (e.g. 10)'}
+              value={speedLimitTimeout}
+              onChangeText={setSpeedLimitTimeout}
+            />
+            <Text style={styles.tagText}>{sdkTag}</Text>
+            <View>
+              <Button text="Enable SDK" onPress={enableSDK} variant="success" disabled={isLoading} />
+              <Button text="Add test tag" onPress={setTag} variant="secondary" />
+              <Button text="Get all tags" onPress={getTags} variant="primary" />
+              <Button text="Remove test tag" onPress={removeTag} variant="secondary" />
+              <Button text="Remove all tags" onPress={removeAllTags} variant="secondary" />
+              <Button text="Logout" onPress={logout} variant="danger" />
+              <Button text="Start tracking" onPress={startTracking} variant="primary" />
+              <Button text="Start persistent tracking" onPress={startPersistentTracking} variant="primary" />
+              <Button text="Stop tracking" onPress={stopTracking} variant="primary" />
+              <Button text="isInitialized" onPress={checkInitialized} variant="secondary" />
+              <Button text="isTracking" onPress={checkTracking} variant="secondary" />
+              <Button text="Upload unsent trips" onPress={uploadTrips} variant="secondary" />
+              <Button text="Get unsent trip count" onPress={getUnsentCount} variant="secondary" />
+              <Button text="Send custom heartbeat" onPress={sendHeartbeat} variant="secondary" />
+              <Button text="Is RTLD enabled" onPress={checkRtld} variant="secondary" />
+              <Button text="Enable accidents" onPress={() => enableAccidents(true)} variant="secondary" />
+              <Button text="Disable accidents" onPress={() => enableAccidents(false)} variant="secondary" />
+              <Button text="Register speed violations" onPress={registerSpeed} variant="secondary" />
 
-        <Button text="Sensitivity: Normal" onPress={() => setSensitivity(AccidentDetectionSensitivity.Normal)} variant="secondary" />
-        <Button text="Sensitivity: Sensitive" onPress={() => setSensitivity(AccidentDetectionSensitivity.Sensitive)} variant="secondary" />
-        <Button text="Sensitivity: Tough" onPress={() => setSensitivity(AccidentDetectionSensitivity.Tough)} variant="secondary" />
+              <Button text="Sensitivity: Normal" onPress={() => setSensitivity(AccidentDetectionSensitivity.Normal)} variant="secondary" />
+              <Button text="Sensitivity: Sensitive" onPress={() => setSensitivity(AccidentDetectionSensitivity.Sensitive)} variant="secondary" />
+              <Button text="Sensitivity: Tough" onPress={() => setSensitivity(AccidentDetectionSensitivity.Tough)} variant="secondary" />
 
-        <Button text="iOS: isAggressiveHeartbeat" onPress={iosAggressiveHeartbeat} variant="primary" />
-        <Button text="iOS: setAggressiveHeartbeats ON" onPress={() => iosSetAggressiveHeartbeats(true)} variant="primary" />
-        <Button text="iOS: setAggressiveHeartbeats OFF" onPress={() => iosSetAggressiveHeartbeats(false)} variant="primary" />
-        <Button text="iOS: setDisableTracking ON" onPress={() => iosSetDisableTracking(true)} variant="primary" />
-        <Button text="iOS: setDisableTracking OFF" onPress={() => iosSetDisableTracking(false)} variant="primary" />
-        <Button text="iOS: isDisableTracking" onPress={iosCheckDisableTracking} variant="primary" />
-        <Button text="iOS: isWrongAccuracyState" onPress={iosCheckWrongAccuracyState} variant="primary" />
-        <Button text="iOS: request Always Location" onPress={iosRequestAlwaysLocation} variant="primary" />
-        <Button text="iOS: request Motion" onPress={iosRequestMotion} variant="primary" />
-        <Button text="iOS: getApiLanguage" onPress={checkApiLang} variant="primary" />
-        <Button text="iOS: setApiLanguage English" onPress={() => setApiLang(ApiLanguage.english)} variant="primary" />
-        <Button text="iOS: setApiLanguage Russian" onPress={() => setApiLang(ApiLanguage.russian)} variant="primary" />
+              <Button text="iOS: isAggressiveHeartbeat" onPress={iosAggressiveHeartbeat} variant="primary" />
+              <Button text="iOS: setAggressiveHeartbeats ON" onPress={() => iosSetAggressiveHeartbeats(true)} variant="primary" />
+              <Button text="iOS: setAggressiveHeartbeats OFF" onPress={() => iosSetAggressiveHeartbeats(false)} variant="primary" />
+              <Button text="iOS: setDisableTracking ON" onPress={() => iosSetDisableTracking(true)} variant="primary" />
+              <Button text="iOS: setDisableTracking OFF" onPress={() => iosSetDisableTracking(false)} variant="primary" />
+              <Button text="iOS: isDisableTracking" onPress={iosCheckDisableTracking} variant="primary" />
+              <Button text="iOS: isWrongAccuracyState" onPress={iosCheckWrongAccuracyState} variant="primary" />
+              <Button text="iOS: request Always Location" onPress={iosRequestAlwaysLocation} variant="primary" />
+              <Button text="iOS: request Motion" onPress={iosRequestMotion} variant="primary" />
+              <Button text="iOS: getApiLanguage" onPress={checkApiLang} variant="primary" />
+              <Button text="iOS: setApiLanguage English" onPress={() => setApiLang(ApiLanguage.english)} variant="primary" />
+              <Button text="iOS: setApiLanguage Russian" onPress={() => setApiLang(ApiLanguage.russian)} variant="primary" />
 
-        <Button text="Android: isAutoStartEnabled" onPress={androidCheckAutoStart} variant="primary" />
-        <Button text="Android: setAutoStartEnabled" onPress={androidSetAutoStart} variant="primary" />
-      </View>
-    </ScrollView>
-      </SafeAreaView>
+              <Button text="Android: isAutoStartEnabled" onPress={androidCheckAutoStart} variant="primary" />
+              <Button text="Android: setAutoStartEnabled" onPress={androidSetAutoStart} variant="primary" />
+            </View>
+          </ScrollView>
+        </SafeAreaView>
       </TouchableWithoutFeedback>
     </SafeAreaProvider>
   );

@@ -45,7 +45,7 @@ export type SpeedViolationEvent = {
 export type TrackingStateChangedEvent = boolean;
 
 interface TelematicsSdkType {
-  initialize: () => Promise<void>;
+  initialize: () => void;
   isInitialized: () => Promise<boolean>;
   getDeviceId: () => Promise<string>;
   setDeviceId: (deviceId: string) => Promise<void>;

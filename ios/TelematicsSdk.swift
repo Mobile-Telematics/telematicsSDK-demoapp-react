@@ -44,7 +44,9 @@ public class TelematicsSdk: RCTEventEmitter {
   }
   
   @objc(initialize)
-  public func initialize() {}
+  public func initialize() {
+    
+  }
   
   @objc(isInitialized:rejecter:)
   public func isInitialized(
