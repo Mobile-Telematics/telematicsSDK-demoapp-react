@@ -6,11 +6,9 @@ import ReactAppDependencyProvider
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-  
-  var window: UIWindow?
-  var reactNativeDelegate: ReactNativeDelegate?
-  var reactNativeFactory: RCTReactNativeFactory?
 
+  var window: UIWindow?
+  
   func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -18,20 +16,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // Init Telematics
     RPEntry.initializeSDK()
-
-    let delegate = ReactNativeDelegate()
-    let factory = RCTReactNativeFactory(delegate: delegate)
-    delegate.dependencyProvider = RCTAppDependencyProvider()
-    
-    reactNativeDelegate = delegate
-    reactNativeFactory = factory
-    
-    window = UIWindow(frame: UIScreen.main.bounds)
-    factory.startReactNative(
-      withModuleName: "TelematicsSdkExample",
-      in: window,
-      launchOptions: launchOptions
-    )
     
     RPEntry.instance.application(
       application,
@@ -62,17 +46,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     RPEntry.instance.applicationWillTerminate(application)
   }
   
-  func applicationDidEnterBackground(_ application: UIApplication) {
-    RPEntry.instance.applicationDidEnterBackground(application)
-  }
-  
-  func applicationWillEnterForeground(_ application: UIApplication) {
-    RPEntry.instance.applicationWillEnterForeground(application)
-  }
-  
-  func applicationDidBecomeActive(_ application: UIApplication) {
-    RPEntry.instance.applicationDidBecomeActive(application)
-  }
+//  func applicationDidEnterBackground(_ application: UIApplication) {
+//    RPEntry.instance.applicationDidEnterBackground(application)
+//  }
+//  
+//  func applicationWillEnterForeground(_ application: UIApplication) {
+//    RPEntry.instance.applicationWillEnterForeground(application)
+//  }
+//  
+//  func applicationDidBecomeActive(_ application: UIApplication) {
+//    RPEntry.instance.applicationDidBecomeActive(application)
+//  }
 
   func application(
     _ application: UIApplication,
@@ -83,18 +67,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
   }
   
-}
-
-class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
+  func application(
+      _ application: UIApplication,
+      configurationForConnecting connectingSceneSession: UISceneSession,
+      options: UIScene.ConnectionOptions
+  ) -> UISceneConfiguration {
+      UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
+  }
   
-  override func sourceURL(for bridge: RCTBridge) -> URL? { self.bundleURL() }
-  
-  override func bundleURL() -> URL? {
-    #if DEBUG
-    RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
-    #else
-    Bundle.main.url(forResource: "main", withExtension: "jsbundle")
-    #endif
+  func application(
+      _ application: UIApplication,
+      didDiscardSceneSessions sceneSessions: Set<UISceneSession>
+  ) {
+      
   }
   
 }
