@@ -130,56 +130,72 @@ And run in your project ios folder:
 pod install
 ```
 
-### lifecycle handlers
+### Lifecycle handlers
 
----
+Proper application lifecycle handling is extremely important for the TelematicsSdk. In order to use SDK you need to add lifecycle handlers to your application AppDelegate and Scene Delegate:
 
-Proper application lifecycle handling is extremely important for the TelematicsSdk. In order to use SDK you need to add lifecycle handlers to your application AppDelegate.mm:
+##### App and Scene delegate methods
 
-```obj-c
-// AppDelegate.mm
+```swift
+import TelematicsSDK
 
-#import <TelematicsSDK/TelematicsSDK-Swift.h>
 
-// ....
-
-- (void)application:(UIApplication *)application handleEventsForBackgroundURLSession:(nonnull NSString *)identifier completionHandler:(nonnull void (^)(void))completionHandler {
-    [[RPEntry instance] application:application handleEventsForBackgroundURLSession:identifier completionHandler:completionHandler];
+//AppDelegate
+func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    RPEntry.initializeSDK()
+    RPEntry.instance.application(application, didFinishLaunchingWithOptions: launchOptions)
+    return true
 }
 
-- (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
-    [[RPEntry instance] applicationDidReceiveMemoryWarning:application];
+func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
+    RPEntry.instance.application(application, handleEventsForBackgroundURLSession: identifier, completionHandler: completionHandler)
 }
 
-- (void)applicationWillTerminate:(UIApplication *)application {
-    [[RPEntry instance] applicationWillTerminate:application];
+func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
+    RPEntry.instance.applicationDidReceiveMemoryWarning(application)
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application {
-    [[RPEntry instance] applicationDidEnterBackground:application];
+func applicationWillTerminate(_ application: UIApplication) {
+    RPEntry.instance.applicationWillTerminate(application)
 }
 
-- (void)applicationDidBecomeActive:(UIApplication *)application {
-    [[RPEntry instance] applicationDidBecomeActive:application];
-}
-
-- (void)application:(UIApplication *)application performFetchWithCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    [[RPEntry instance] application:application performFetchWithCompletionHandler:^{
-        completionHandler(UIBackgroundFetchResultNewData);
-    }];
+func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    RPEntry.instance.application(application) {
+        completionHandler(.newData)
+    }
 }
 ```
 
-Also add the SDK initialization before React Native bridge initialization
+If you use AppDelegate, then you have to implement next methods:
 
-```obj-c
+```swift
+func applicationDidEnterBackground(_ application: UIApplication) {
+    RPEntry.instance.applicationDidEnterBackground(application)
+}
 
-  [RPEntry initializeSDK];
-  [[RPEntry instance] application:application didFinishLaunchingWithOptions:launchOptions];
+func applicationWillEnterForeground(_ application: UIApplication) {
+    RPEntry.instance.applicationWillEnterForeground(application)
+}
 
-  // before this line
-  // RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
+func applicationDidBecomeActive(_ application: UIApplication) {
+    RPEntry.instance.applicationDidBecomeActive(application)
+}
+```
 
+If you use SceneDelegate, then you have to implement next methods:
+
+```swift
+func sceneDidBecomeActive(_ scene: UIScene) {
+    RPEntry.instance.sceneDidBecomeActive(scene)
+}
+
+func sceneWillEnterForeground(_ scene: UIScene) {
+    RPEntry.instance.sceneWillEnterForeground(scene)
+}
+
+func sceneDidEnterBackground(_ scene: UIScene) {
+    RPEntry.instance.sceneDidEnterBackground(scene)
+}
 ```
 
 ## React Native wrapper usage
