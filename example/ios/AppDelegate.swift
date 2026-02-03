@@ -1,10 +1,15 @@
 import UIKit
 import TelematicsSDK
+import React
+import React_RCTAppDelegate
+import ReactAppDependencyProvider
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
+  
   var window: UIWindow?
+  var reactNativeDelegate: ReactNativeDelegate?
+  var reactNativeFactory: RCTReactNativeFactory?
 
   func application(
     _ application: UIApplication,
@@ -13,19 +18,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // Init Telematics
     RPEntry.initializeSDK()
+
+    let delegate = ReactNativeDelegate()
+    let factory = RCTReactNativeFactory(delegate: delegate)
+    delegate.dependencyProvider = RCTAppDependencyProvider()
+    
+    reactNativeDelegate = delegate
+    reactNativeFactory = factory
+    
+    window = UIWindow(frame: UIScreen.main.bounds)
+    factory.startReactNative(
+      withModuleName: "TelematicsSdkExample",
+      in: window,
+      launchOptions: launchOptions
+    )
+    
     RPEntry.instance.application(
       application,
       didFinishLaunchingWithOptions: launchOptions
     )
-
-    // Init React Native
-    window = UIWindow(frame: UIScreen.main.bounds)
-    window?.rootViewController = ReactViewController()
-    window?.makeKeyAndVisible()
-
     return true
   }
-
 
   // MARK: - Background / Lifecycle forwarding
 
@@ -48,15 +61,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   func applicationWillTerminate(_ application: UIApplication) {
     RPEntry.instance.applicationWillTerminate(application)
   }
-
+  
   func applicationDidEnterBackground(_ application: UIApplication) {
     RPEntry.instance.applicationDidEnterBackground(application)
   }
-
+  
   func applicationWillEnterForeground(_ application: UIApplication) {
     RPEntry.instance.applicationWillEnterForeground(application)
   }
-
+  
   func applicationDidBecomeActive(_ application: UIApplication) {
     RPEntry.instance.applicationDidBecomeActive(application)
   }
@@ -69,4 +82,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       completionHandler(.newData)
     }
   }
+  
+}
+
+class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
+  
+  override func sourceURL(for bridge: RCTBridge) -> URL? { self.bundleURL() }
+  
+  override func bundleURL() -> URL? {
+    #if DEBUG
+    RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
+    #else
+    Bundle.main.url(forResource: "main", withExtension: "jsbundle")
+    #endif
+  }
+  
 }

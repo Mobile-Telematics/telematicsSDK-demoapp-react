@@ -14,8 +14,6 @@
 		CFE8391B7C398F53CE134238 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 51CEAF9A64F8635FE6F0EBBC /* PrivacyInfo.xcprivacy */; };
 		E336561E2F32052700A412EF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E336561D2F32052700A412EF /* AppDelegate.swift */; };
 		E336561F2F32052700A412EF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E336561D2F32052700A412EF /* AppDelegate.swift */; };
-		E33656212F3206F600A412EF /* ReactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E33656202F3206F600A412EF /* ReactViewController.swift */; };
-		E33656222F3206F600A412EF /* ReactViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E33656202F3206F600A412EF /* ReactViewController.swift */; };
 		E3F9FD142ED611B60085485B /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3F9FD132ED611B60085485B /* File.swift */; };
 		E3F9FD152ED611B60085485B /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3F9FD132ED611B60085485B /* File.swift */; };
 		F9D2A41EF246EB4296691788 /* libPods-TelematicsSdkExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 69CA6ECFD147ED5DF7B09D0E /* libPods-TelematicsSdkExample.a */; };
@@ -52,7 +50,6 @@
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = TelematicsSdkExample/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BFE28BEEE5CF97F58EF263C9 /* Pods-TelematicsSdkExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TelematicsSdkExample.debug.xcconfig"; path = "Target Support Files/Pods-TelematicsSdkExample/Pods-TelematicsSdkExample.debug.xcconfig"; sourceTree = "<group>"; };
 		E336561D2F32052700A412EF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		E33656202F3206F600A412EF /* ReactViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReactViewController.swift; sourceTree = "<group>"; };
 		E3F9FD122ED611B60085485B /* TelematicsSdkExample-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TelematicsSdkExample-Bridging-Header.h"; sourceTree = "<group>"; };
 		E3F9FD132ED611B60085485B /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
@@ -96,7 +93,6 @@
 			isa = PBXGroup;
 			children = (
 				E336561D2F32052700A412EF /* AppDelegate.swift */,
-				E33656202F3206F600A412EF /* ReactViewController.swift */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
@@ -469,7 +465,6 @@
 			files = (
 				E336561E2F32052700A412EF /* AppDelegate.swift in Sources */,
 				E3F9FD142ED611B60085485B /* File.swift in Sources */,
-				E33656222F3206F600A412EF /* ReactViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -479,7 +474,6 @@
 			files = (
 				E336561F2F32052700A412EF /* AppDelegate.swift in Sources */,
 				E3F9FD152ED611B60085485B /* File.swift in Sources */,
-				E33656212F3206F600A412EF /* ReactViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
