@@ -107,6 +107,16 @@ export default function App() {
     );
   };
 
+  const showInfoAlert = (text: string) => {
+    console.log(text);
+    Alert.alert(
+      '✅ Success',
+      text,
+      [{ text: 'OK', style: 'default' }],
+      { cancelable: true }
+    );
+  };
+
   const clearSdkTag = () => setSdkTag('');
 
   // methods
@@ -130,8 +140,8 @@ export default function App() {
 
   const checkInitialized = async () => {
     try {
-      const v = await TelematicsSdk.isInitialized();
-      console.log(`isInitialized: ${v}`);
+      const v = await TelematicsSdk.isInitialized()
+      showInfoAlert(`isInitialized: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -140,7 +150,7 @@ export default function App() {
   const checkTracking = async () => {
     try {
       const v = await TelematicsSdk.isTracking();
-      console.log(`isTracking: ${v}`);
+      showInfoAlert(`isTracking: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -149,7 +159,7 @@ export default function App() {
   const uploadTrips = async () => {
     try {
       await TelematicsSdk.uploadUnsentTrips();
-      console.log('uploadUnsentTrips: OK');
+      showInfoAlert('uploadUnsentTrips: OK');
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -158,7 +168,7 @@ export default function App() {
   const getUnsentCount = async () => {
     try {
       const v = await TelematicsSdk.getUnsentTripCount();
-      console.log(`getUnsentTripCount: ${v}`);
+      showInfoAlert(`getUnsentTripCount: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -167,7 +177,7 @@ export default function App() {
   const sendHeartbeat = async () => {
     try {
       await TelematicsSdk.sendCustomHeartbeats(heartbeatReason);
-      console.log(`sendCustomHeartbeats: ${heartbeatReason}`);
+      showInfoAlert(`sendCustomHeartbeats: ${heartbeatReason}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -177,7 +187,7 @@ export default function App() {
     try {
       setAccidentSensitivity(s);
       await TelematicsSdk.setAccidentDetectionSensitivity(s);
-      console.log(`setAccidentDetectionSensitivity: ${AccidentDetectionSensitivity[s]}`);
+      showInfoAlert(`setAccidentDetectionSensitivity: ${AccidentDetectionSensitivity[s]}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -186,7 +196,7 @@ export default function App() {
   const checkRtld = async () => {
     try {
       const v = await TelematicsSdk.isRTLDEnabled();
-      console.log(`isRTLDEnabled: ${v}`);
+      showInfoAlert(`isRTLDEnabled: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -196,7 +206,7 @@ export default function App() {
     try {
       await TelematicsSdk.enableAccidents(enable);
       const v = await TelematicsSdk.isEnabledAccidents();
-      console.log(`enableAccidents(${enable}) => isEnabledAccidents: ${v}`);
+      showInfoAlert(`enableAccidents(${enable}) => isEnabledAccidents: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -210,7 +220,7 @@ export default function App() {
         speedLimitKmH: Number.isFinite(kmh) ? kmh : 80,
         speedLimitTimeout: Number.isFinite(timeout) ? timeout : 10,
       });
-      console.log(`registerSpeedViolations: ${speedLimitKmH} km/h, ${speedLimitTimeout}s`);
+      showInfoAlert(`registerSpeedViolations: ${speedLimitKmH} km/h, ${speedLimitTimeout}s`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -221,7 +231,7 @@ export default function App() {
       setApiLanguage(lang);
       await TelematicsSdk.setApiLanguage(lang);
       const current = await TelematicsSdk.getApiLanguage();
-      console.log(`setApiLanguage: ${lang} => getApiLanguage: ${current}`);
+      showInfoAlert(`setApiLanguage: ${lang} => getApiLanguage: ${current}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -230,7 +240,7 @@ export default function App() {
   const checkApiLang = async () => {
     try {
       const current = await TelematicsSdk.getApiLanguage();
-      console.log(`getApiLanguage: ${current}`);
+      showInfoAlert(`getApiLanguage: ${current}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -243,7 +253,7 @@ export default function App() {
         return;
       }
       const v = await TelematicsSdk.isAggressiveHeartbeat();
-      console.log(`isAggressiveHeartbeat: ${v}`);
+      showInfoAlert(`isAggressiveHeartbeat: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -257,7 +267,7 @@ export default function App() {
       }
       setIosAggressiveHeartbeats(enable);
       await TelematicsSdk.setAggressiveHeartbeats(enable);
-      console.log(`setAggressiveHeartbeats: ${enable}`);
+      showInfoAlert(`setAggressiveHeartbeats: ${enable}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -271,7 +281,7 @@ export default function App() {
       }
       setIosDisableTracking(value);
       await TelematicsSdk.setDisableTracking(value);
-      console.log(`setDisableTracking: ${value}`);
+      showInfoAlert(`setDisableTracking: ${value}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -284,7 +294,7 @@ export default function App() {
         return;
       }
       const v = await TelematicsSdk.isDisableTracking();
-      console.log(`isDisableTracking: ${v}`);
+      showInfoAlert(`isDisableTracking: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -297,7 +307,7 @@ export default function App() {
         return;
       }
       const v = await TelematicsSdk.isWrongAccuracyState();
-      console.log(`isWrongAccuracyState: ${v}`);
+      showInfoAlert(`isWrongAccuracyState: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -310,7 +320,7 @@ export default function App() {
         return;
       }
       const v = await TelematicsSdk.requestIOSLocationAlwaysPermission();
-      console.log(`requestIOSLocationAlwaysPermission: ${v}`);
+      showInfoAlert(`requestIOSLocationAlwaysPermission: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -323,7 +333,7 @@ export default function App() {
         return;
       }
       const v = await TelematicsSdk.requestIOSMotionPermission();
-      console.log(`requestIOSMotionPermission: ${v}`);
+      showInfoAlert(`requestIOSMotionPermission: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -340,7 +350,7 @@ export default function App() {
         permanent: androidAutoStartPermanent,
       });
       const v = await TelematicsSdk.isAndroidAutoStartEnabled();
-      console.log(`setAndroidAutoStartEnabled => isAndroidAutoStartEnabled: ${v}`);
+      showInfoAlert(`setAndroidAutoStartEnabled => isAndroidAutoStartEnabled: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -353,7 +363,7 @@ export default function App() {
         return;
       }
       const v = await TelematicsSdk.isAndroidAutoStartEnabled();
-      console.log(`isAndroidAutoStartEnabled: ${v}`);
+      showInfoAlert(`isAndroidAutoStartEnabled: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
