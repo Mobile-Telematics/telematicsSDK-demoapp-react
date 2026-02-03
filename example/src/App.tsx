@@ -434,7 +434,7 @@ export default function App() {
   };
 
   const logout = async () => {
-    console.log('Logout');
+    showInfoAlert('Logout');
     await TelematicsSdk.logout();
     setDeviceToken('');
     updateSdkStatus();
@@ -479,7 +479,7 @@ export default function App() {
   const startPersistentTracking = async () => {
     try {
       await TelematicsSdk.startManualPersistentTracking();
-      setSdkTag('startManualPersistentTracking');
+      showInfoAlert('startManualPersistentTracking');
     } catch (error: any) {
       showErrorAlert(error);
     }
@@ -488,7 +488,7 @@ export default function App() {
   const startTracking = async () => {
     try {
       await TelematicsSdk.startManualTracking();
-      setSdkTag('startManualTracking');
+      showInfoAlert('startManualTracking');
     } catch (error: any) {
       showErrorAlert(error);
     }
@@ -497,7 +497,7 @@ export default function App() {
   const stopTracking = async () => {
     try {
       await TelematicsSdk.stopManualTracking();
-      setSdkTag('stopManualTracking');
+      showInfoAlert('stopManualTracking');
     } catch (error: any) {
       showErrorAlert(error);
     }
