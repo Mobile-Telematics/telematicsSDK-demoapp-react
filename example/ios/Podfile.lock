@@ -1835,7 +1835,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-telematics-sdk (1.0.16):
+  - react-native-telematics-sdk (2.0.0):
     - React-Core
     - TelematicsSDK (~> 7.0.3)
   - React-NativeModulesApple (0.81.4):
@@ -2620,7 +2620,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 9d2434a42701d6144ca18f0ca1c4507808ca7696
   React-microtasksnativemodule: 75b6604b667d297292345302cc5bfb6b6aeccc1b
   react-native-safe-area-context: c00143b4823773bba23f2f19f85663ae89ceb460
-  react-native-telematics-sdk: 997477a710dd32e79dd3eb7d167752a314353c51
+  react-native-telematics-sdk: 80bdbd4b211cdef55f89a38ad8d2223f79dddedc
   React-NativeModulesApple: 879fbdc5dcff7136abceb7880fe8a2022a1bd7c3
   React-oscompat: 93b5535ea7f7dff46aaee4f78309a70979bdde9d
   React-perflogger: 5536d2df3d18fe0920263466f7b46a56351c0510

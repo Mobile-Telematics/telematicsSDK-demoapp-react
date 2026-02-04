@@ -2,8 +2,8 @@
 
 All notable changes to this repository are documented here.
 
-## [Unreleased]
-- TBD
+## [2.0.0] - 2026-02-03
+- Added all public APIs from native SDKs. Sync APIs naming.
 
 ## [1.1.0] - 2025-10-31
 ### Added
