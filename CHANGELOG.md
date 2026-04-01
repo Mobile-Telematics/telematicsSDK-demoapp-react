@@ -2,10 +2,30 @@
 
 All notable changes to this repository are documented here.
 
-## [2.0.0] - 2026-02-03
+## [2.0.1]
+### Android updates
+- Motion detection algorithms update 
+- Implemented continuation of track recording after SDK reboot 
+- Added database protection against corruption 
+- Enhance SDK Logging 
+- All Bluetooth-related permissions will be removed from the SDK:
+  android.permission.BLUETOOTH_CONNECT
+  android.permission.BLUETOOTH_SCAN
+  android.permission.BLUETOOTH
+  android.permission.BLUETOOTH_ADMIN
+  android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE 
+- All health-related permissions will be removed from the SDK:
+  android.permission.FOREGROUND_SERVICE_HEALTH
+  So you don't need to remove anything else from your app-level manifest.
+  And all our Foreground services will run with only one type: location 
+- Other changes related to improving reliability and stability
+### iOS updates
+- Support Xcode 26.4 (fix ftm library issue)
+
+## [2.0.0]
 - Added all public APIs from native SDKs. Sync APIs naming.
 
-## [1.1.0] - 2025-10-31
+## [1.1.0]
 ### Added
 - iOS: Launch screen now shows a centered Image View bound to the `DamoovLogo` asset.
 - Android: Native splash via `@drawable/splash` with centered `@drawable/damoov_logo`.
