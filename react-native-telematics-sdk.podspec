@@ -1,6 +1,10 @@
 require "json"
 
+react_native_pods = File.join(__dir__, "example", "node_modules", "react-native", "scripts", "react_native_pods.rb")
+require react_native_pods if File.exist?(react_native_pods)
+
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
+new_arch_enabled = ENV["RCT_NEW_ARCH_ENABLED"] == "1"
 
 Pod::Spec.new do |s|
   s.name         = "react-native-telematics-sdk"
@@ -18,4 +22,8 @@ Pod::Spec.new do |s|
 
   s.dependency "React-Core"
   s.dependency 'TelematicsSDK', '~> 7.0.3'
+
+  if new_arch_enabled
+    install_modules_dependencies(s)
+  end
 end

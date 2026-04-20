@@ -21,9 +21,9 @@ import {
   type EventSubscription,
   type NativeModule,
   NativeEventEmitter,
-  NativeModules,
   Platform
 } from 'react-native';
+import NativeTelematicsSdk from './NativeTelematicsSdk';
 
 /**
  * Accident detection sensitivity levels.
@@ -208,10 +208,7 @@ interface TelematicsSdkType {
    *
    * Speed violation events are delivered via {@link addOnSpeedViolationListener}.
    */
-  registerSpeedViolations: (params: {
-    speedLimitKmH: number;
-    speedLimitTimeout: number; // seconds
-  }) => Promise<void>;
+  registerSpeedViolations: (speedLimitKmH: number, speedLimitTimeout: number) => Promise<void>;
 
   // iOS only
 
@@ -250,15 +247,15 @@ interface TelematicsSdkType {
    * @param params.enable Whether autostart is enabled.
    * @param params.permanent Whether the choice should be persisted permanently.
    */
-  setAndroidAutoStartEnabled: (params: { enable: boolean; permanent: boolean }) => Promise<void>;
+  setAndroidAutoStartEnabled: (enable: boolean, permanent: boolean) => Promise<void>;
 
   /** Android only: returns whether SDK autostart is enabled. */
   isAndroidAutoStartEnabled: () => Promise<boolean | null>;
 }
 
 
-const { TelematicsSdk } = NativeModules;
-export default TelematicsSdk as TelematicsSdkType & EventSubscription & NativeModule;
+const TelematicsSdk = NativeTelematicsSdk as TelematicsSdkType & EventSubscription & NativeModule;
+export default TelematicsSdk;
 const telematicsEmitter = new NativeEventEmitter(TelematicsSdk);
 
 /**

@@ -32,15 +32,10 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPermissionsGranted, setIsPermissionsGranted] = useState(false);
   const [heartbeatReason, setHeartbeatReason] = useState('RN_Heartbeat_Test');
-  const [accidentSensitivity, setAccidentSensitivity] = useState<AccidentDetectionSensitivity>(AccidentDetectionSensitivity.Normal);
   const [speedLimitKmH, setSpeedLimitKmH] = useState('80');
   const [speedLimitTimeout, setSpeedLimitTimeout] = useState('10');
-  const [apiLanguage, setApiLanguage] = useState<ApiLanguage>(ApiLanguage.english);
-  const [androidAutoStartEnable, setAndroidAutoStartEnable] = useState(true);
-  const [androidAutoStartPermanent, setAndroidAutoStartPermanent] = useState(true);
-  const [iosDisableTracking, setIosDisableTracking] = useState(false);
-  const [iosAggressiveHeartbeats, setIosAggressiveHeartbeats] = useState(false);
-
+  const androidAutoStartEnable = true;
+  const androidAutoStartPermanent = true;
 
   useEffect(() => {
     TelematicsSdk.initialize();
@@ -185,7 +180,6 @@ export default function App() {
 
   const setSensitivity = async (s: AccidentDetectionSensitivity) => {
     try {
-      setAccidentSensitivity(s);
       await TelematicsSdk.setAccidentDetectionSensitivity(s);
       showInfoAlert(`setAccidentDetectionSensitivity: ${AccidentDetectionSensitivity[s]}`);
     } catch (e: any) {
@@ -216,10 +210,10 @@ export default function App() {
     try {
       const kmh = Number(speedLimitKmH);
       const timeout = Number(speedLimitTimeout);
-      await TelematicsSdk.registerSpeedViolations({
-        speedLimitKmH: Number.isFinite(kmh) ? kmh : 80,
-        speedLimitTimeout: Number.isFinite(timeout) ? timeout : 10,
-      });
+      await TelematicsSdk.registerSpeedViolations(
+        Number.isFinite(kmh) ? kmh : 80,
+        Number.isFinite(timeout) ? timeout : 10
+      );
       showInfoAlert(`registerSpeedViolations: ${speedLimitKmH} km/h, ${speedLimitTimeout}s`);
     } catch (e: any) {
       showErrorAlert(e);
@@ -228,7 +222,6 @@ export default function App() {
 
   const setApiLang = async (lang: ApiLanguage) => {
     try {
-      setApiLanguage(lang);
       await TelematicsSdk.setApiLanguage(lang);
       const current = await TelematicsSdk.getApiLanguage();
       showInfoAlert(`setApiLanguage: ${lang} => getApiLanguage: ${current}`);
@@ -265,7 +258,6 @@ export default function App() {
         Alert.alert('iOS only', 'This method is only available on iOS');
         return;
       }
-      setIosAggressiveHeartbeats(enable);
       await TelematicsSdk.setAggressiveHeartbeats(enable);
       showInfoAlert(`setAggressiveHeartbeats: ${enable}`);
     } catch (e: any) {
@@ -279,7 +271,6 @@ export default function App() {
         Alert.alert('iOS only', 'This method is only available on iOS');
         return;
       }
-      setIosDisableTracking(value);
       await TelematicsSdk.setDisableTracking(value);
       showInfoAlert(`setDisableTracking: ${value}`);
     } catch (e: any) {
@@ -345,10 +336,10 @@ export default function App() {
         Alert.alert('Android only', 'This method is only available on Android');
         return;
       }
-      await TelematicsSdk.setAndroidAutoStartEnabled({
-        enable: androidAutoStartEnable,
-        permanent: androidAutoStartPermanent,
-      });
+      await TelematicsSdk.setAndroidAutoStartEnabled(
+        androidAutoStartEnable,
+        androidAutoStartPermanent
+      );
       const v = await TelematicsSdk.isAndroidAutoStartEnabled();
       showInfoAlert(`setAndroidAutoStartEnabled => isAndroidAutoStartEnabled: ${v}`);
     } catch (e: any) {
@@ -510,6 +501,12 @@ export default function App() {
           <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}
           >
             {sdkTag === '' ? <View /> : <ClearButton onPress={clearSdkTag} />}
+            <Text style={styles.status}>
+              SDK status: <Text style={styles.value}>{isSdkEnabled ? 'enabled' : 'disabled'}</Text>
+            </Text>
+            <Text style={styles.status}>
+              Permissions: <Text style={styles.value}>{isPermissionsGranted ? 'granted' : 'pending'}</Text>
+            </Text>
             <Input
               placeholder={'Your device token'}
               value={deviceToken}

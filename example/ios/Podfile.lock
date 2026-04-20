@@ -1836,8 +1836,34 @@ PODS:
     - SocketRocket
     - Yoga
   - react-native-telematics-sdk (2.0.1):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
     - TelematicsSDK (~> 7.0.3)
+    - Yoga
   - React-NativeModulesApple (0.81.4):
     - boost
     - DoubleConversion
@@ -2620,7 +2646,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 9d2434a42701d6144ca18f0ca1c4507808ca7696
   React-microtasksnativemodule: 75b6604b667d297292345302cc5bfb6b6aeccc1b
   react-native-safe-area-context: c00143b4823773bba23f2f19f85663ae89ceb460
-  react-native-telematics-sdk: 9f1b3648a84a86e6a973805b9cfd302d09c0acc4
+  react-native-telematics-sdk: 0ce9189aead8967a7b6dff1e62b67b0ef738605f
   React-NativeModulesApple: 879fbdc5dcff7136abceb7880fe8a2022a1bd7c3
   React-oscompat: 93b5535ea7f7dff46aaee4f78309a70979bdde9d
   React-perflogger: 5536d2df3d18fe0920263466f7b46a56351c0510
@@ -2655,6 +2681,6 @@ SPEC CHECKSUMS:
   TelematicsSDK: 674997aa9eb9bca1a9b02e0dd9dd2b4a93b6cb2f
   Yoga: a3ed390a19db0459bd6839823a6ac6d9c6db198d
 
-PODFILE CHECKSUM: c145f4df8d0d0dc5685616ba327324b9e9d430c0
+PODFILE CHECKSUM: bf44ec20dd42f891aa797ea4a609c6ab9a1e698e
 
 COCOAPODS: 1.16.2

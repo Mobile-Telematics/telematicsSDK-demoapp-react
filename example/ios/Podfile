@@ -1,5 +1,7 @@
 source 'https://github.com/CocoaPods/Specs.git'
 
+ENV['RCT_NEW_ARCH_ENABLED'] = '1'
+
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
@@ -27,9 +29,6 @@ target 'TelematicsSdkExample' do
     # to enable hermes on iOS, change `false` to `true` and then install pods
     :hermes_enabled => false
   )
-
-  pod 'react-native-telematics-sdk', :path => '../..'
-
   # Enables Flipper.
   #
   # Note that if you have use_frameworks! enabled, Flipper will not work and

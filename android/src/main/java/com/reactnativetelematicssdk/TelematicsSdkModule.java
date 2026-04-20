@@ -3,7 +3,6 @@ package com.reactnativetelematicssdk;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -14,14 +13,13 @@ import android.location.Location;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReactApplicationContext;
-
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.ActivityEventListener;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.module.annotations.ReactModule;
 
 import com.telematicssdk.tracking.TrackingApi;
 import com.telematicssdk.tracking.Settings;
@@ -29,7 +27,8 @@ import com.telematicssdk.tracking.utils.permissions.PermissionsWizardActivity;
 import com.telematicssdk.tracking.model.realtime.configuration.AccidentDetectionSensitivity;
 import com.telematicssdk.tracking.SpeedViolation;
 
-public class TelematicsSdkModule extends ReactContextBaseJavaModule implements PreferenceManager.OnActivityResultListener {
+@ReactModule(name = TelematicsSdkModule.NAME)
+public class TelematicsSdkModule extends NativeTelematicsSdkSpec implements ActivityEventListener {
   public static final String NAME = "TelematicsSdk";
   private static final String TAG = "TelematicsSdkModule";
 
@@ -48,6 +47,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
     this.reactContext = reactContext;
     this.locationListener = new LocationListenerImpl(this);
     this.trackingStateListener = new TrackingStateListenerImpl(this);
+    reactContext.addActivityEventListener(this);
   }
 
   @Override
@@ -251,9 +251,12 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
     return false;
   }
 
+  @Override
+  public void onNewIntent(Intent intent) {}
+
   @ReactMethod
-  public void setAccidentDetectionSensitivity(int value, Promise promise) {
-    AccidentDetectionSensitivity sensitivity = switch (value) {
+  public void setAccidentDetectionSensitivity(double value, Promise promise) {
+    AccidentDetectionSensitivity sensitivity = switch ((int) value) {
       case 1 -> AccidentDetectionSensitivity.Sensitive;
       case 2 -> AccidentDetectionSensitivity.Tough;
       default -> AccidentDetectionSensitivity.Normal;
@@ -280,15 +283,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
   }
 
   @ReactMethod
-  public void setAndroidAutoStartEnabled(ReadableMap params, Promise promise) {
-    if (!params.hasKey("enable") || !params.hasKey("permanent")) {
-      promise.reject("INVALID_PARAMS", "Missing 'enable' or 'permanent'");
-      return;
-    }
-
-    boolean enable = params.getBoolean("enable");
-    boolean permanent = params.getBoolean("permanent");
-
+  public void setAndroidAutoStartEnabled(boolean enable, boolean permanent, Promise promise) {
     api.setAutoStartEnabled(enable, permanent);
     promise.resolve(null);
   }
@@ -343,14 +338,8 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
   }
 
   @ReactMethod
-  public void registerSpeedViolations(ReadableMap params, Promise promise) {
-    if (!params.hasKey("speedLimitKmH") || !params.hasKey("speedLimitTimeout")) {
-      promise.reject("INVALID_PARAMS", "Missing speedLimitKmH/speedLimitTimeout");
-      return;
-    }
-
-    double speedLimitKmH = params.getDouble("speedLimitKmH");
-    int speedLimitTimeoutSeconds = params.getInt("speedLimitTimeout");
+  public void registerSpeedViolations(double speedLimitKmH, double speedLimitTimeout, Promise promise) {
+    int speedLimitTimeoutSeconds = (int) speedLimitTimeout;
     long timeoutMs = (long) speedLimitTimeoutSeconds * 1000L;
 
     api.registerSpeedViolations(
@@ -358,6 +347,52 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
       timeoutMs,
       new SpeedViolationsListenerImpl(this)
     );
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void isAggressiveHeartbeat(Promise promise) {
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void setAggressiveHeartbeats(boolean enable, Promise promise) {
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void setDisableTracking(boolean value, Promise promise) {
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void isDisableTracking(Promise promise) {
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void isWrongAccuracyState(Promise promise) {
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void requestIOSLocationAlwaysPermission(Promise promise) {
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void requestIOSMotionPermission(Promise promise) {
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void getApiLanguage(Promise promise) {
+    promise.resolve(null);
+  }
+
+  @ReactMethod
+  public void setApiLanguage(String language, Promise promise) {
+    promise.resolve(null);
   }
 
   void emitSpeedViolation(SpeedViolation speedViolation) {

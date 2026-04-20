@@ -2,6 +2,24 @@
 
 All notable changes to this repository are documented here.
 
+## [3.0.0]
+### Changed
+- Migrated the library and example app to React Native New Architecture.
+- Switched the JS bridge implementation to TurboModule/codegen-based bindings.
+
+### Breaking changes
+- `registerSpeedViolations` now accepts positional arguments:
+  `registerSpeedViolations(speedLimitKmH, speedLimitTimeout)`
+  instead of
+  `registerSpeedViolations({ speedLimitKmH, speedLimitTimeout })`
+- `setAndroidAutoStartEnabled` now accepts positional arguments:
+  `setAndroidAutoStartEnabled(enable, permanent)`
+  instead of
+  `setAndroidAutoStartEnabled({ enable, permanent })`
+
+### Migration
+- Replace object-style calls for the two methods above with positional arguments.
+
 ## [2.0.1]
 ### Android updates
 - Motion detection algorithms update 

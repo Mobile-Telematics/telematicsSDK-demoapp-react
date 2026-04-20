@@ -54,6 +54,39 @@ npx react-native run-ios
 yarn add react-native-telematics
 ```
 
+## Migration to 3.0.0
+
+---
+
+Version `3.0.0` includes the React Native New Architecture migration for the library and example app.
+
+This release contains two JavaScript API breaking changes:
+
+1. `registerSpeedViolations` now accepts positional arguments instead of a params object.
+2. `setAndroidAutoStartEnabled` now accepts positional arguments instead of a params object.
+
+Before:
+
+```js
+await TelematicsSdk.registerSpeedViolations({
+  speedLimitKmH: 80,
+  speedLimitTimeout: 10,
+});
+
+await TelematicsSdk.setAndroidAutoStartEnabled({
+  enable: true,
+  permanent: true,
+});
+```
+
+After:
+
+```js
+await TelematicsSdk.registerSpeedViolations(80, 10);
+
+await TelematicsSdk.setAndroidAutoStartEnabled(true, true);
+```
+
 ## Getting started
 
 ---
@@ -352,10 +385,7 @@ const rtldEnabled = await TelematicsSdk.isRTLDEnabled();
 ### Speed violations
 ```js
 // Configure speed limit monitoring
-await TelematicsSdk.registerSpeedViolations({
-  speedLimitKmH: 80,
-  speedLimitTimeout: 10, // seconds
-});
+await TelematicsSdk.registerSpeedViolations(80, 10);
 ```
 
 ## Events (listeners)
@@ -465,6 +495,6 @@ await TelematicsSdk.requestIOSMotionPermission();
 
 ```js
 // Configure SDK autostart (Android only)
-await TelematicsSdk.setAndroidAutoStartEnabled({ enable: true, permanent: true });
+await TelematicsSdk.setAndroidAutoStartEnabled(true, true);
 const autoStartEnabled = await TelematicsSdk.isAndroidAutoStartEnabled();
 ```

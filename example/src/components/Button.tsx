@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import type { ViewStyle } from 'react-native';
 
 interface ButtonProps {
   onPress: () => void;
@@ -10,14 +11,14 @@ interface ButtonProps {
 
 export const Button = ({ onPress, text, variant = 'primary', disabled = false }: ButtonProps) => {
   const buttonStyle: ViewStyle[] = [
-    styles.button, 
+    styles.button,
     styles[variant],
-    disabled && styles.disabled
+    ...(disabled ? [styles.disabled] : []),
   ];
 
   return (
-    <TouchableOpacity 
-      onPress={onPress} 
+    <TouchableOpacity
+      onPress={onPress}
       style={buttonStyle}
       activeOpacity={0.8}
       disabled={disabled}
