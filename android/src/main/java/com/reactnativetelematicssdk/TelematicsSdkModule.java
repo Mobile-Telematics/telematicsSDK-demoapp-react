@@ -120,7 +120,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements P
       true,
       true,
       false
-    );
+    ).adOn(true);
     Log.d(TAG, "setTelematicsSettings");
     return settings;
   }
