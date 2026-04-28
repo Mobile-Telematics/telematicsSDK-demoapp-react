@@ -138,6 +138,15 @@ export default function App() {
     await TelematicsSdk.showPermissionWizard(false, false);
   };
 
+  const checkRequiredPermissions = async () => {
+    try {
+      const v = await TelematicsSdk.areAllRequiredPermissionsGranted();
+      showInfoAlert(`areAllRequiredPermissionsGranted: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
   const checkInitialized = async () => {
     try {
       const v = await TelematicsSdk.isInitialized()
@@ -543,6 +552,7 @@ export default function App() {
               <Button text="Stop tracking" onPress={stopTracking} variant="primary" />
               <Button text="isInitialized" onPress={checkInitialized} variant="secondary" />
               <Button text="isTracking" onPress={checkTracking} variant="secondary" />
+              <Button text="Check required permissions" onPress={checkRequiredPermissions} variant="secondary" />
               <Button text="Upload unsent trips" onPress={uploadTrips} variant="secondary" />
               <Button text="Get unsent trip count" onPress={getUnsentCount} variant="secondary" />
               <Button text="Send custom heartbeat" onPress={sendHeartbeat} variant="secondary" />
