@@ -110,10 +110,15 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements A
   public void initialize() {
     if (!api.isInitialized()) {
       api.initialize(this.getReactApplicationContext(), setTelematicsSettings());
-      api.addTagsProcessingCallback(tagsProcessor);
-      api.setLocationListener(locationListener);
-      api.registerCallback(trackingStateListener);
     }
+    // Always register the React-side callbacks. If the host app pre-initialized the
+    // TrackingApi (e.g. in MainApplication.onCreate), the if-block above is skipped
+    // but our listeners still need to be wired up — otherwise tag operations hang
+    // (no onAllTagsRemove/onTagAdd/onTagRemove callbacks) and onLocationChanged /
+    // onTrackingStateChanged events never reach JS.
+    api.addTagsProcessingCallback(tagsProcessor);
+    api.setLocationListener(locationListener);
+    api.registerCallback(trackingStateListener);
   }
   public Settings setTelematicsSettings() {
     Settings settings = new Settings(
@@ -368,6 +373,7 @@ public class TelematicsSdkModule extends ReactContextBaseJavaModule implements A
       timeoutMs,
       new SpeedViolationsListenerImpl(this)
     );
+    promise.resolve(null);
   }
 
   void emitSpeedViolation(SpeedViolation speedViolation) {
