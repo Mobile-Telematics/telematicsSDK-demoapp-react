@@ -319,8 +319,8 @@ export default function App() {
         Alert.alert('iOS only', 'This method is only available on iOS');
         return;
       }
-      const v = await TelematicsSdk.requestIOSLocationAlwaysPermission();
-      showInfoAlert(`requestIOSLocationAlwaysPermission: ${v}`);
+      await TelematicsSdk.requestIOSLocationAlwaysPermission();
+      showInfoAlert('requestIOSLocationAlwaysPermission: OK');
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -332,8 +332,8 @@ export default function App() {
         Alert.alert('iOS only', 'This method is only available on iOS');
         return;
       }
-      const v = await TelematicsSdk.requestIOSMotionPermission();
-      showInfoAlert(`requestIOSMotionPermission: ${v}`);
+      await TelematicsSdk.requestIOSMotionPermission();
+      showInfoAlert('requestIOSMotionPermission: OK');
     } catch (e: any) {
       showErrorAlert(e);
     }

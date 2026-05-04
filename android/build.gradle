@@ -9,12 +9,12 @@ buildscript {
             classpath("com.android.tools.build:gradle:8.11.0")
             classpath("com.facebook.react:react-native-gradle-plugin:0.81.4")
             classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20")
-
         }
     }
 }
 
 apply plugin: 'com.android.library'
+apply plugin: 'com.facebook.react'
 
 def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
@@ -69,8 +69,6 @@ rootProject.allprojects {
 
     }
 }
-
-
 
 dependencies {
     //noinspection GradleDynamicVersion

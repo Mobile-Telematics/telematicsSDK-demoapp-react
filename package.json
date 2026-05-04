@@ -154,5 +154,13 @@
         }
       ]
     ]
+  },
+  "codegenConfig": {
+    "name": "TelematicsSdkSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.reactnativetelematicssdk"
+    }
   }
 }

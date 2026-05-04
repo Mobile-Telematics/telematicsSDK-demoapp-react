@@ -16,6 +16,6 @@ Pod::Spec.new do |s|
   s.source_files = "ios/**/*.{h,m,mm,swift}"
   s.swift_version = '5.0'
 
-  s.dependency "React-Core"
+  install_modules_dependencies(s)
   s.dependency 'TelematicsSDK', '~> 7.0.3'
 end
