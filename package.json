@@ -164,7 +164,7 @@
     },
     "ios": {
       "modulesProvider": {
-        "NativeTelematicsSdk": "TelematicsSdk"
+        "TelematicsSdk": "TelematicsSdk"
       }
     }
   }
