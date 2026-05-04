@@ -1,4 +1,5 @@
 import Foundation
+import React
 import TelematicsSDK
 import UIKit
 
@@ -44,9 +45,12 @@ public class TelematicsSdk: RCTEventEmitter {
 
   // MARK: - Lifecycle
 
-  @objc(initializeSdk)
-  public func initializeSdk() {
-    
+  @objc(initializeSdk:reject:)
+  public func initializeSdk(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(nil)
   }
 
   @objc(isInitializedSdk:reject:)

@@ -13,13 +13,8 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => "13.0" }
   s.source       = { :git => "https://github.com/Mobile-Telematics/telematicsSDK-demoapp-react.git", :tag => "#{s.version}" }
 
-  s.source_files = "ios/**/*.{h,m,mm,swift}"
-  s.exclude_files = "ios/TelematicsSdk-Bridging-Header.h"
+  s.source_files = "ios/**/*.{m,mm,swift}"
   s.swift_version = '5.0'
-
-  s.pod_target_xcconfig = {
-    'SWIFT_OBJC_BRIDGING_HEADER' => '$(PODS_TARGET_SRCROOT)/ios/TelematicsSdk-Bridging-Header.h'
-  }
 
   install_modules_dependencies(s)
   s.dependency 'TelematicsSDK', '~> 7.0.3'

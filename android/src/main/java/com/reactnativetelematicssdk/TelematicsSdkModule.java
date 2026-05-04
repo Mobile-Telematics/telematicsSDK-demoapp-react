@@ -105,7 +105,7 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   // MARK: - Lifecycle
 
   @Override
-  public void initializeSdk() {
+  public void initializeSdk(Promise promise) {
     if (!api.isInitialized()) {
       api.initialize(this.getReactApplicationContext(), setTelematicsSettings());
       api.addTagsProcessingCallback(tagsProcessor);
@@ -113,6 +113,7 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
       api.registerCallback(trackingStateListener);
       hasListeners = true;
     }
+    promise.resolve(null);
   }
 
   private Settings setTelematicsSettings() {

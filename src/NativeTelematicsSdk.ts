@@ -5,7 +5,7 @@ import type { Double, Int32 } from 'react-native/Libraries/Types/CodegenTypes';
 
 export interface Spec extends TurboModule {
   // Lifecycle
-  initializeSdk(): void;
+  initializeSdk(): Promise<void>;
   isInitializedSdk(): Promise<boolean>;
 
   // Device token
