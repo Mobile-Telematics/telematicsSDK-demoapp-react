@@ -55,12 +55,12 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
 
   @Override
   public void addListener(String eventName) {
-    hasListeners = true;
+    
   }
 
   @Override
   public void removeListeners(double count) {
-    hasListeners = false;
+    
   }
 
   boolean hasListeners() {
@@ -73,6 +73,7 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
     try {
       api.setLocationListener(null);
       api.unregisterCallback(trackingStateListener);
+      hasListeners = false;
     } catch (Exception ignored) {
     }
   }
@@ -110,6 +111,7 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
       api.addTagsProcessingCallback(tagsProcessor);
       api.setLocationListener(locationListener);
       api.registerCallback(trackingStateListener);
+      hasListeners = true;
     }
   }
 

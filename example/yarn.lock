@@ -7332,9 +7332,19 @@ __metadata:
     react: 19.1.0
     react-native: 0.81.4
     react-native-safe-area-context: ^5.6.2
+    react-native-telematics: "portal:.."
     react-test-renderer: 19.1.0
     typescript: ^5.1.6
   languageName: unknown
+  linkType: soft
+
+"react-native-telematics@portal:..::locator=react-native-telematics-sdk-example%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "react-native-telematics@portal:..::locator=react-native-telematics-sdk-example%40workspace%3A."
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  languageName: node
   linkType: soft
 
 "react-native@npm:0.81.4":

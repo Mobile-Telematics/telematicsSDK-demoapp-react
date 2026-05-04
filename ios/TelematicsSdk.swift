@@ -12,19 +12,19 @@ fileprivate enum Events: String, CaseIterable {
 }
 
 @objc(TelematicsSdk)
-class TelematicsSdk: RCTEventEmitter {
+public class TelematicsSdk: RCTEventEmitter {
 
   private var hasListeners = false
   private var speedLimitKmH: Double = 0
   private var speedLimitTimeThreshold: TimeInterval = 0
 
-  @objc override static func requiresMainQueueSetup() -> Bool { true }
+  @objc override public static func requiresMainQueueSetup() -> Bool { true }
 
-  override func supportedEvents() -> [String]! {
+  override public func supportedEvents() -> [String]! {
     Events.allCases.map(\.rawValue)
   }
 
-  override func startObserving() {
+  override public func startObserving() {
     hasListeners = true
     RPEntry.instance.lowPowerModeDelegate = self
     RPEntry.instance.locationDelegate = self
@@ -33,7 +33,7 @@ class TelematicsSdk: RCTEventEmitter {
     RPEntry.instance.rtldDelegate = self
   }
 
-  override func stopObserving() {
+  override public func stopObserving() {
     hasListeners = false
     RPEntry.instance.lowPowerModeDelegate = nil
     RPEntry.instance.locationDelegate = nil
@@ -45,12 +45,12 @@ class TelematicsSdk: RCTEventEmitter {
   // MARK: - Lifecycle
 
   @objc(initializeSdk)
-  func initializeSdk() {
+  public func initializeSdk() {
     
   }
 
   @objc(isInitializedSdk:reject:)
-  func isInitializedSdk(
+  public func isInitializedSdk(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -60,7 +60,7 @@ class TelematicsSdk: RCTEventEmitter {
   // MARK: - Device token
 
   @objc(getDeviceId:reject:)
-  func getDeviceId(
+  public func getDeviceId(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -68,7 +68,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(setDeviceId:resolve:reject:)
-  func setDeviceId(
+  public func setDeviceId(
     _ deviceId: String,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
@@ -78,7 +78,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(logout:reject:)
-  func logout(
+  public func logout(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -89,7 +89,7 @@ class TelematicsSdk: RCTEventEmitter {
   // MARK: - Permissions & tracking
 
   @objc(isAllRequiredPermissionsAndSensorsGranted:reject:)
-  func isAllRequiredPermissionsAndSensorsGranted(
+  public func isAllRequiredPermissionsAndSensorsGranted(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -97,7 +97,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(isSdkEnabled:reject:)
-  func isSdkEnabled(
+  public func isSdkEnabled(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -105,7 +105,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(isTracking:reject:)
-  func isTracking(
+  public func isTracking(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -113,7 +113,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(setEnableSdk:resolve:reject:)
-  func setEnableSdk(
+  public func setEnableSdk(
     _ enable: Bool,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
@@ -123,7 +123,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(startManualTracking:reject:)
-  func startManualTracking(
+  public func startManualTracking(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -132,7 +132,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(startManualPersistentTracking:reject:)
-  func startManualPersistentTracking(
+  public func startManualPersistentTracking(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -141,7 +141,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(stopManualTracking:reject:)
-  func stopManualTracking(
+  public func stopManualTracking(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -152,7 +152,7 @@ class TelematicsSdk: RCTEventEmitter {
   // MARK: - Upload
 
   @objc(uploadUnsentTrips:reject:)
-  func uploadUnsentTrips(
+  public func uploadUnsentTrips(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -161,7 +161,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(getUnsentTripCount:reject:)
-  func getUnsentTripCount(
+  public func getUnsentTripCount(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -171,7 +171,7 @@ class TelematicsSdk: RCTEventEmitter {
   // MARK: - Heartbeats
 
   @objc(sendCustomHeartbeats:resolve:reject:)
-  func sendCustomHeartbeats(
+  public func sendCustomHeartbeats(
     _ reason: String,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
@@ -183,7 +183,7 @@ class TelematicsSdk: RCTEventEmitter {
   // MARK: - Wizard
 
   @objc(showPermissionWizard:enableAggressivePermissionsWizardPage:resolve:reject:)
-  func showPermissionWizard(
+  public func showPermissionWizard(
     _ enableAggressivePermissionsWizard: Bool,
     enableAggressivePermissionsWizardPage: Bool,
     resolve: @escaping RCTPromiseResolveBlock,
@@ -204,7 +204,7 @@ class TelematicsSdk: RCTEventEmitter {
   // MARK: - Accidents / RTLD
 
   @objc(setAccidentDetectionSensitivity:resolve:reject:)
-  func setAccidentDetectionSensitivity(
+  public func setAccidentDetectionSensitivity(
     _ value: Double,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
@@ -218,7 +218,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(isRTLDEnabled:reject:)
-  func isRTLDEnabled(
+  public func isRTLDEnabled(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -226,7 +226,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(enableAccidents:resolve:reject:)
-  func enableAccidents(
+  public func enableAccidents(
     _ enable: Bool,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
@@ -236,7 +236,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(isEnabledAccidents:reject:)
-  func isEnabledAccidents(
+  public func isEnabledAccidents(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -246,7 +246,7 @@ class TelematicsSdk: RCTEventEmitter {
   // MARK: - Tags API
 
   @objc(getFutureTrackTags:reject:)
-  func getFutureTrackTags(
+  public func getFutureTrackTags(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -258,7 +258,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(addFutureTrackTag:source:resolve:reject:)
-  func addFutureTrackTag(
+  public func addFutureTrackTag(
     _ tag: String,
     source: String?,
     resolve: @escaping RCTPromiseResolveBlock,
@@ -279,7 +279,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(removeFutureTrackTag:resolve:reject:)
-  func removeFutureTrackTag(
+  public func removeFutureTrackTag(
     _ tag: String,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
@@ -296,7 +296,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(removeAllFutureTrackTags:reject:)
-  func removeAllFutureTrackTags(
+  public func removeAllFutureTrackTags(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -312,7 +312,7 @@ class TelematicsSdk: RCTEventEmitter {
   // MARK: - Speed violations (flattened params)
 
   @objc(registerSpeedViolations:speedLimitTimeout:resolve:reject:)
-  func registerSpeedViolations(
+  public func registerSpeedViolations(
     _ speedLimitKmH: Double,
     speedLimitTimeout: Double,
     resolve: @escaping RCTPromiseResolveBlock,
@@ -328,7 +328,7 @@ class TelematicsSdk: RCTEventEmitter {
   // MARK: - iOS-only
 
   @objc(isAggressiveHeartbeat:reject:)
-  func isAggressiveHeartbeat(
+  public func isAggressiveHeartbeat(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -336,7 +336,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(setAggressiveHeartbeats:resolve:reject:)
-  func setAggressiveHeartbeats(
+  public func setAggressiveHeartbeats(
     _ enable: Bool,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
@@ -346,7 +346,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(setDisableTracking:resolve:reject:)
-  func setDisableTracking(
+  public func setDisableTracking(
     _ value: Bool,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
@@ -356,7 +356,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(isDisableTracking:reject:)
-  func isDisableTracking(
+  public func isDisableTracking(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -364,7 +364,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(isWrongAccuracyState:reject:)
-  func isWrongAccuracyState(
+  public func isWrongAccuracyState(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -372,7 +372,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(requestIOSLocationAlwaysPermission:reject:)
-  func requestIOSLocationAlwaysPermission(
+  public func requestIOSLocationAlwaysPermission(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -381,7 +381,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(requestIOSMotionPermission:reject:)
-  func requestIOSMotionPermission(
+  public func requestIOSMotionPermission(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -390,7 +390,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(getApiLanguage:reject:)
-  func getApiLanguage(
+  public func getApiLanguage(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -411,7 +411,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(setApiLanguage:resolve:reject:)
-  func setApiLanguage(
+  public func setApiLanguage(
     _ language: String,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
@@ -437,7 +437,7 @@ class TelematicsSdk: RCTEventEmitter {
   // MARK: - Android-only stubs (no-op on iOS, required by codegen protocol)
 
   @objc(setAndroidAutoStartEnabled:permanent:resolve:reject:)
-  func setAndroidAutoStartEnabled(
+  public func setAndroidAutoStartEnabled(
     _ enable: Bool,
     permanent: Bool,
     resolve: @escaping RCTPromiseResolveBlock,
@@ -447,7 +447,7 @@ class TelematicsSdk: RCTEventEmitter {
   }
 
   @objc(isAndroidAutoStartEnabled:reject:)
-  func isAndroidAutoStartEnabled(
+  public func isAndroidAutoStartEnabled(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -475,14 +475,14 @@ class TelematicsSdk: RCTEventEmitter {
 // MARK: - Event delegates
 
 extension TelematicsSdk: RPLowPowerModeDelegate {
-  func lowPowerMode(_ state: Bool) {
+  public func lowPowerMode(_ state: Bool) {
     guard hasListeners else { return }
     sendEvent(withName: Events.onLowPowerMode.rawValue, body: ["enabled": state])
   }
 }
 
 extension TelematicsSdk: RPLocationDelegate {
-  func onLocationChanged(_ location: CLLocation) {
+  public func onLocationChanged(_ location: CLLocation) {
     guard hasListeners else { return }
     let coordinate: [String: Any] = [
       "latitude": location.coordinate.latitude,
@@ -491,35 +491,35 @@ extension TelematicsSdk: RPLocationDelegate {
     sendEvent(withName: Events.onLocationChanged.rawValue, body: coordinate)
   }
 
-  func onNewEvents(_ events: [TelematicsSDK.RPEventPoint]) {}
+  public func onNewEvents(_ events: [TelematicsSDK.RPEventPoint]) {}
 }
 
 extension TelematicsSdk: RPTrackingStateListenerDelegate {
-  func trackingStateChanged(_ state: Bool) {
+  public func trackingStateChanged(_ state: Bool) {
     guard hasListeners else { return }
     sendEvent(withName: Events.onTrackingStateChanged.rawValue, body: state)
   }
 }
 
 extension TelematicsSdk: RPAccuracyAuthorizationDelegate {
-  func wrongAccuracyAuthorization() {
+  public func wrongAccuracyAuthorization() {
     guard hasListeners else { return }
     sendEvent(withName: Events.onWrongAccuracyAuthorization.rawValue, body: nil)
   }
 }
 
 extension TelematicsSdk: RPRTDLDelegate {
-  func rtldColectedData() {
+  public func rtldColectedData() {
     guard hasListeners else { return }
     sendEvent(withName: Events.onRtldColectedData.rawValue, body: nil)
   }
 }
 
 extension TelematicsSdk: RPSpeedLimitDelegate {
-  var timeThreshold: TimeInterval { speedLimitTimeThreshold }
-  var speedLimit: Double { speedLimitKmH }
+  public var timeThreshold: TimeInterval { speedLimitTimeThreshold }
+  public var speedLimit: Double { speedLimitKmH }
 
-  func speedLimitNotification(
+  public func speedLimitNotification(
     _ speedLimit: Double,
     speed: Double,
     latitude: Double,

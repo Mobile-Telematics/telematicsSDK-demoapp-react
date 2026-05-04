@@ -43,7 +43,7 @@ export default function App() {
 
 
   useEffect(() => {
-    TelematicsSdk.initialize();
+    TelematicsSdk.initializeSdk();
     const checkPermissions = async () => {
       const isGranted = await TelematicsSdk.showPermissionWizard(false, false);
       setIsPermissionsGranted(isGranted);
@@ -75,7 +75,9 @@ export default function App() {
 
     subs.push(
       addOnLocationChangedListener((e) => {
-        console.log(`onLocationChanged: latitude=${e.latitude}, longitude=${e.longitude}`);
+        const text = `onLocationChanged: latitude=${e.latitude}, longitude=${e.longitude}`; 
+        console.log(text);
+        Alert.alert('Location event', text);
       })
     );
 
@@ -140,7 +142,7 @@ export default function App() {
 
   const checkInitialized = async () => {
     try {
-      const v = await TelematicsSdk.isInitialized()
+      const v = await TelematicsSdk.isInitializedSdk()
       showInfoAlert(`isInitialized: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
