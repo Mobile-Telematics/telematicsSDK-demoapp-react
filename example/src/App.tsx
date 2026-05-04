@@ -77,7 +77,6 @@ export default function App() {
       addOnLocationChangedListener((e) => {
         const text = `onLocationChanged: latitude=${e.latitude}, longitude=${e.longitude}`; 
         console.log(text);
-        Alert.alert('Location event', text);
       })
     );
 
