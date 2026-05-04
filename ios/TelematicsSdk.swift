@@ -44,13 +44,13 @@ class TelematicsSdk: RCTEventEmitter {
 
   // MARK: - Lifecycle
 
-  @objc(initialize)
-  func initialize() {
-    RPEntry.initializeSDK()
+  @objc(initializeSdk)
+  func initializeSdk() {
+    
   }
 
-  @objc(isInitialized:reject:)
-  func isInitialized(
+  @objc(isInitializedSdk:reject:)
+  func isInitializedSdk(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {

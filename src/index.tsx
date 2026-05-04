@@ -56,8 +56,8 @@ export type SpeedViolationEvent = {
 export type TrackingStateChangedEvent = boolean;
 
 interface TelematicsSdkType {
-  initialize: () => void;
-  isInitialized: () => Promise<boolean>;
+  initializeSdk: () => void;
+  isInitializedSdk: () => Promise<boolean>;
   getDeviceId: () => Promise<string>;
   setDeviceId: (deviceId: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -113,8 +113,8 @@ interface TelematicsSdkType {
 }
 
 const TelematicsSdk: TelematicsSdkType = {
-  initialize: () => NativeTelematicsSdk.initialize(),
-  isInitialized: () => NativeTelematicsSdk.isInitialized(),
+  initializeSdk: () => NativeTelematicsSdk.initializeSdk(),
+  isInitializedSdk: () => NativeTelematicsSdk.isInitializedSdk(),
   getDeviceId: () => NativeTelematicsSdk.getDeviceId(),
   setDeviceId: (deviceId) => NativeTelematicsSdk.setDeviceId(deviceId),
   logout: () => NativeTelematicsSdk.logout(),

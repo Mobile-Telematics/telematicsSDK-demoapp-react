@@ -104,7 +104,7 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   // MARK: - Lifecycle
 
   @Override
-  public void initialize() {
+  public void initializeSdk() {
     if (!api.isInitialized()) {
       api.initialize(this.getReactApplicationContext(), setTelematicsSettings());
       api.addTagsProcessingCallback(tagsProcessor);
@@ -126,7 +126,7 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   }
 
   @Override
-  public void isInitialized(Promise promise) {
+  public void isInitializedSdk(Promise promise) {
     promise.resolve(api.isInitialized());
   }
 
