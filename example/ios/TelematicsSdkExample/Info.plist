@@ -49,7 +49,7 @@
 	<key>NSMotionUsageDescription</key>
 	<string>We're using location services to determine your driving style.</string>
 	<key>RCTNewArchEnabled</key>
-	<false/>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
