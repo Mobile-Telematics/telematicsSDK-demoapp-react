@@ -11,30 +11,15 @@
  * - iOS-only methods/listeners throw an `Error` when called on a non-iOS platform.
  * - Android-only methods/listeners throw an `Error` when called on a non-Android platform.
  */
-import {
-  NativeEventEmitter,
-  Platform,
-} from 'react-native';
-import NativeTelematicsSdk from './NativeTelematicsSdk';
+import { NativeEventEmitter, Platform } from 'react-native';
+import { getNativeTelematicsSdk } from './createTelematicsSdk';
+import { createTelematicsSdk } from './TelematicsSdk';
+import type { TelematicsSdk } from './TelematicsSdk';
+import { AccidentDetectionSensitivity, ApiLanguage } from './types';
 
-export enum AccidentDetectionSensitivity {
-  Normal = 0,
-  Sensitive = 1,
-  Tough = 2,
-}
+const NativeTelematicsSdk = getNativeTelematicsSdk();
 
-export enum ApiLanguage {
-  none = 'None',
-  english = 'English',
-  russian = 'Russian',
-  portuguese = 'Portuguese',
-  spanish = 'Spanish',
-}
-
-interface Tag {
-  tag: string;
-  source?: string;
-}
+export { AccidentDetectionSensitivity, ApiLanguage };
 
 export type LowPowerModeEvent = {
   enabled: boolean;
@@ -55,136 +40,11 @@ export type SpeedViolationEvent = {
 
 export type TrackingStateChangedEvent = boolean;
 
-interface TelematicsSdkType {
-  initializeSdk: () => Promise<void>;
-  isInitializedSdk: () => Promise<boolean>;
-  getDeviceId: () => Promise<string>;
-  setDeviceId: (deviceId: string) => Promise<void>;
-  logout: () => Promise<void>;
-  isAllRequiredPermissionsAndSensorsGranted: () => Promise<boolean>;
-  isSdkEnabled: () => Promise<boolean>;
-  isTracking: () => Promise<boolean>;
-  setEnableSdk: (enable: boolean) => Promise<void>;
-  startManualTracking: () => Promise<void>;
-  startManualPersistentTracking: () => Promise<void>;
-  stopManualTracking: () => Promise<void>;
-  uploadUnsentTrips: () => Promise<void>;
-  getUnsentTripCount: () => Promise<number>;
-  sendCustomHeartbeats: (reason: string) => Promise<void>;
-  showPermissionWizard: (
-    enableAggressivePermissionsWizard: boolean,
-    enableAggressivePermissionsWizardPage: boolean
-  ) => Promise<boolean>;
-  setAccidentDetectionSensitivity: (
-    accidentDetectionSensitivity: AccidentDetectionSensitivity
-  ) => Promise<void>;
-  isRTLDEnabled: () => Promise<boolean>;
-  enableAccidents: (enable: boolean) => Promise<void>;
-  isEnabledAccidents: () => Promise<boolean>;
-  getFutureTrackTags: () => Promise<{ status: string; tags: Tag[] }>;
-  addFutureTrackTag: (
-    tag: string,
-    source?: string
-  ) => Promise<{ status: string; tag: Tag }>;
-  removeFutureTrackTag: (tag: string) => Promise<{ status: string; tag: Tag }>;
-  removeAllFutureTrackTags: () => Promise<string>;
-  registerSpeedViolations: (params: {
-    speedLimitKmH: number;
-    speedLimitTimeout: number;
-  }) => Promise<void>;
+export type { TelematicsSdk };
 
-  // iOS only
-  isAggressiveHeartbeat: () => Promise<boolean>;
-  setAggressiveHeartbeats: (enable: boolean) => Promise<void>;
-  setDisableTracking: (value: boolean) => Promise<void>;
-  isDisableTracking: () => Promise<boolean>;
-  isWrongAccuracyState: () => Promise<boolean>;
-  requestIOSLocationAlwaysPermission: () => Promise<void>;
-  requestIOSMotionPermission: () => Promise<void>;
-  getApiLanguage: () => Promise<ApiLanguage>;
-  setApiLanguage: (language: ApiLanguage) => Promise<void>;
+const telematicsSdk = createTelematicsSdk();
 
-  // Android only
-  setAndroidAutoStartEnabled: (params: {
-    enable: boolean;
-    permanent: boolean;
-  }) => Promise<void>;
-  isAndroidAutoStartEnabled: () => Promise<boolean>;
-}
-
-const TelematicsSdk: TelematicsSdkType = {
-  initializeSdk: () => NativeTelematicsSdk.initializeSdk(),
-  isInitializedSdk: () => NativeTelematicsSdk.isInitializedSdk(),
-  getDeviceId: () => NativeTelematicsSdk.getDeviceId(),
-  setDeviceId: (deviceId) => NativeTelematicsSdk.setDeviceId(deviceId),
-  logout: () => NativeTelematicsSdk.logout(),
-  isAllRequiredPermissionsAndSensorsGranted: () =>
-    NativeTelematicsSdk.isAllRequiredPermissionsAndSensorsGranted(),
-  isSdkEnabled: () => NativeTelematicsSdk.isSdkEnabled(),
-  isTracking: () => NativeTelematicsSdk.isTracking(),
-  setEnableSdk: (enable) => NativeTelematicsSdk.setEnableSdk(enable),
-  startManualTracking: () => NativeTelematicsSdk.startManualTracking(),
-  startManualPersistentTracking: () =>
-    NativeTelematicsSdk.startManualPersistentTracking(),
-  stopManualTracking: () => NativeTelematicsSdk.stopManualTracking(),
-  uploadUnsentTrips: () => NativeTelematicsSdk.uploadUnsentTrips(),
-  getUnsentTripCount: () => NativeTelematicsSdk.getUnsentTripCount(),
-  sendCustomHeartbeats: (reason) =>
-    NativeTelematicsSdk.sendCustomHeartbeats(reason),
-  showPermissionWizard: (wizard, page) =>
-    NativeTelematicsSdk.showPermissionWizard(wizard, page),
-  setAccidentDetectionSensitivity: (v) =>
-    NativeTelematicsSdk.setAccidentDetectionSensitivity(v),
-  isRTLDEnabled: () => NativeTelematicsSdk.isRTLDEnabled(),
-  enableAccidents: (enable) => NativeTelematicsSdk.enableAccidents(enable),
-  isEnabledAccidents: () => NativeTelematicsSdk.isEnabledAccidents(),
-  getFutureTrackTags: () =>
-    NativeTelematicsSdk.getFutureTrackTags() as Promise<{
-      status: string;
-      tags: Tag[];
-    }>,
-  addFutureTrackTag: (tag, source) =>
-    NativeTelematicsSdk.addFutureTrackTag(tag, source ?? null) as Promise<{
-      status: string;
-      tag: Tag;
-    }>,
-  removeFutureTrackTag: (tag) =>
-    NativeTelematicsSdk.removeFutureTrackTag(tag) as Promise<{
-      status: string;
-      tag: Tag;
-    }>,
-  removeAllFutureTrackTags: () =>
-    NativeTelematicsSdk.removeAllFutureTrackTags(),
-  registerSpeedViolations: (params) =>
-    NativeTelematicsSdk.registerSpeedViolations(
-      params.speedLimitKmH,
-      params.speedLimitTimeout
-    ),
-  isAggressiveHeartbeat: () => NativeTelematicsSdk.isAggressiveHeartbeat(),
-  setAggressiveHeartbeats: (enable) =>
-    NativeTelematicsSdk.setAggressiveHeartbeats(enable),
-  setDisableTracking: (value) =>
-    NativeTelematicsSdk.setDisableTracking(value),
-  isDisableTracking: () => NativeTelematicsSdk.isDisableTracking(),
-  isWrongAccuracyState: () => NativeTelematicsSdk.isWrongAccuracyState(),
-  requestIOSLocationAlwaysPermission: () =>
-    NativeTelematicsSdk.requestIOSLocationAlwaysPermission(),
-  requestIOSMotionPermission: () =>
-    NativeTelematicsSdk.requestIOSMotionPermission(),
-  getApiLanguage: () =>
-    NativeTelematicsSdk.getApiLanguage() as Promise<ApiLanguage>,
-  setApiLanguage: (language) =>
-    NativeTelematicsSdk.setApiLanguage(language),
-  setAndroidAutoStartEnabled: (params) =>
-    NativeTelematicsSdk.setAndroidAutoStartEnabled(
-      params.enable,
-      params.permanent
-    ),
-  isAndroidAutoStartEnabled: () =>
-    NativeTelematicsSdk.isAndroidAutoStartEnabled(),
-};
-
-export default TelematicsSdk;
+export default telematicsSdk;
 
 const telematicsEmitter = new NativeEventEmitter(NativeTelematicsSdk);
 
@@ -209,9 +69,7 @@ export function addOnTrackingStateChangedListener(
   return telematicsEmitter.addListener('onTrackingStateChanged', handler);
 }
 
-export function addOnWrongAccuracyAuthorizationListener(
-  handler: () => void
-) {
+export function addOnWrongAccuracyAuthorizationListener(handler: () => void) {
   if (Platform.OS !== 'ios') {
     throw new Error(
       'addOnWrongAccuracyAuthorizationListener is only available on iOS.'

@@ -33,7 +33,7 @@ public class TelematicsSdkPackage extends TurboReactPackage {
         false, // canOverrideExistingModule
         false, // needsEagerInit
         false, // isCxxModule
-        true   // isTurboModule
+        BuildConfig.IS_NEW_ARCHITECTURE_ENABLED // isTurboModule
       ));
       return map;
     };

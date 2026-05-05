@@ -2,6 +2,13 @@
 #
 .DS_Store
 
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
 # XDE
 .expo/
 
@@ -29,6 +36,12 @@ DerivedData
 *.xcuserstate
 **/.xcode.env.local
 project.xcworkspace
+*.xcworkspace
+*.xcodeproj/xcuserdata/
+*.xcodeproj/*.pbxuser
+*.xcodeproj/*.mode1v3
+*.xcodeproj/*.mode2v3
+*.xcodeproj/*.perspectivev3
 
 # Android/IJ
 #
@@ -36,17 +49,28 @@ project.xcworkspace
 .gradle
 local.properties
 android.iml
+*.iml
+**/.idea/
+**/.gradle/
+**/.kotlin/
+**/.cxx/
+**/.externalNativeBuild/
+**/captures/
+**/build/
+**/.classpath
+**/.project
+**/.settings/
 
 # Cocoapods
 #
 example/ios/Pods
+ios/Pods
+Pods
 
 # node.js
 #
 node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
+**/node_modules/
 
 # BUCK
 buck-out/
@@ -63,13 +87,12 @@ lib/
 # example app build files
 example/android/app/src/main/assets/index.android.bundle
 example/android/app/src/main/res/raw/app.json
-.yarn/*
-example/.yarn/*
 
 # Android example build outputs
 example/android/app/build/
 example/android/app/debug/
 example/android/app/release/
+example/android/app/.cxx/
 
 # Yarn
 .yarn/*
@@ -78,3 +101,21 @@ example/android/app/release/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Example app Yarn cache
+example/.yarn/
+
+# React Native / Metro / Watchman
+metro-cache/
+**/metro-cache/
+*.map
+.watchmanconfig
+.buckconfig
+
+# Tests / Coverage
+coverage/
+
+# Env files (keep your real secrets out of git)
+.env
+.env.*
+!.env.example

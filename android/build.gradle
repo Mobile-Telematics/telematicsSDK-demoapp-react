@@ -29,6 +29,9 @@ android {
         targetSdkVersion safeExtGet('TelematicsSdk_targetSdkVersion', 36)
         versionCode 3
         versionName "1.0"
+
+        def isNewArchEnabled = (project.findProperty("newArchEnabled") ?: "false").toString().toBoolean()
+        buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchEnabled.toString()
         }
 
     packaging {
@@ -53,6 +56,10 @@ android {
         coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        buildConfig true
     }
 }
 

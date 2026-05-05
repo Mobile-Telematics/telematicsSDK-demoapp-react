@@ -3,7 +3,6 @@ package com.reactnativetelematicssdk;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -12,8 +11,8 @@ import androidx.core.app.ActivityCompat;
 
 import android.location.Location;
 
+import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Promise;
-import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
@@ -26,7 +25,7 @@ import com.telematicssdk.tracking.model.realtime.configuration.AccidentDetection
 import com.telematicssdk.tracking.SpeedViolation;
 
 public class TelematicsSdkModule extends NativeTelematicsSdkSpec
-    implements PreferenceManager.OnActivityResultListener {
+    implements ActivityEventListener {
 
   public static final String NAME = "TelematicsSdk";
   private static final String TAG = "TelematicsSdkModule";
@@ -45,6 +44,7 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
     this.reactContext = reactContext;
     this.locationListener = new LocationListenerImpl(this);
     this.trackingStateListener = new TrackingStateListenerImpl(this);
+    this.reactContext.addActivityEventListener(this);
   }
 
   @Override
@@ -55,12 +55,26 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
 
   @Override
   public void addListener(String eventName) {
-    
+    if (!hasListeners) {
+      hasListeners = true;
+      try {
+        api.setLocationListener(locationListener);
+        api.registerCallback(trackingStateListener);
+      } catch (Exception ignored) {
+      }
+    }
   }
 
   @Override
   public void removeListeners(double count) {
-    
+    if (hasListeners) {
+      hasListeners = false;
+      try {
+        api.setLocationListener(null);
+        api.unregisterCallback(trackingStateListener);
+      } catch (Exception ignored) {
+      }
+    }
   }
 
   boolean hasListeners() {
@@ -243,9 +257,8 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
     }
   }
 
-  @Override
-  public boolean onActivityResult(int requestCode, int resultCode, Intent data) {
-    if (requestCode == 50005) {
+  private void handleWizardActivityResult(int requestCode, int resultCode, Intent data) {
+    if (requestCode == PermissionsWizardActivity.WIZARD_PERMISSIONS_CODE) {
       switch (resultCode) {
         case -1:
           if (permissionsPromise == null) break;
@@ -258,7 +271,20 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
           break;
       }
     }
-    return false;
+  }
+
+  @Override
+  public void onActivityResult(
+      android.app.Activity activity,
+      int requestCode,
+      int resultCode,
+      Intent data) {
+    handleWizardActivityResult(requestCode, resultCode, data);
+  }
+
+  @Override
+  public void onNewIntent(Intent intent) {
+    // no-op
   }
 
   // MARK: - Accidents / RTLD
