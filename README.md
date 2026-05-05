@@ -130,6 +130,33 @@ And run in your project ios folder:
 pod install
 ```
 
+#### iOS dependency manager notes (CocoaPods + Swift Package Manager)
+
+This React Native wrapper uses **CocoaPods** for React Native iOS integration, but the native **TelematicsSDK** itself is pulled via **Swift Package Manager** (SPM) using React Native's `spm_dependency` support.
+
+Because TelematicsSDK is a **dynamic framework**, and many apps call TelematicsSDK from both:
+- the **React Native module** (this package), and
+- the app's **AppDelegate / SceneDelegate** (native project code),
+
+we recommend the following integration.
+
+##### Option 1 (recommended): add TelematicsSDK via SPM to your app target
+
+1) In your app `ios/Podfile`, enable dynamic frameworks:
+- `use_frameworks! :linkage => :dynamic`
+
+2) In Xcode, add the TelematicsSDK SPM package to your **app target**:
+- Open your `.xcworkspace`
+- Select the **app project** → **Package Dependencies** → **+**
+- Add package URL: `https://github.com/Mobile-Telematics/telematicsSDK-iOS-new-SPM.git`
+- Select product **TelematicsSDK**
+- Set dependency rule to **Exact Version** and use version **7.0.3**
+- Ensure it’s added to your **app target** (not only to Pods targets)
+
+3) Verify TelematicsSDK is embedded:
+- Target → **General** → **Frameworks, Libraries, and Embedded Content**
+- `TelematicsSDK.framework` should be present and set to **Embed & Sign**
+
 ### Lifecycle handlers
 
 Proper application lifecycle handling is extremely important for the TelematicsSdk. In order to use SDK you need to add lifecycle handlers to your application AppDelegate and Scene Delegate:

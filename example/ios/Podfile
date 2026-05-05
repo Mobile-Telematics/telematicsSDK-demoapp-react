@@ -11,12 +11,7 @@ require Pod::Executable.execute_command('node', ['-p',
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
- 
-linkage = ENV['USE_FRAMEWORKS']
-if linkage != nil
-  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
-  use_frameworks! :linkage => linkage.to_sym
-end
+use_frameworks! :linkage => :dynamic
 
 
 target 'TelematicsSdkExample' do
@@ -24,7 +19,8 @@ target 'TelematicsSdkExample' do
 
   use_react_native!(
     :path => config[:reactNativePath],
-    :hermes_enabled => true
+    :hermes_enabled => true,
+    :new_arch_enabled => true
   )
 
   pod 'react-native-telematics-sdk', :path => '../..'
@@ -44,6 +40,45 @@ target 'TelematicsSdkExample' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # Ensure TelematicsSDK SPM binary framework is also added to the app target.
+    # Without this, the app may link against a dynamic TelematicsSDK.framework
+    # (via a pod target) but not embed it into the final .app, causing a dyld crash.
+    
+    # telematics_spm_url = 'https://github.com/Mobile-Telematics/telematicsSDK-iOS-new-SPM.git'
+    # telematics_spm_requirement = { kind: 'exactVersion', version: '7.0.3' }
+    # telematics_spm_product = 'TelematicsSDK'
+
+    # installer.aggregate_targets
+    #   .map { |t| t.user_project }
+    #   .uniq { |p| p.path }
+    #   .each do |project|
+    #     app_target = project.targets.find { |t| t.name == 'TelematicsSdkExample' }
+    #     next unless app_target
+
+    #     pkg_class = Xcodeproj::Project::Object::XCRemoteSwiftPackageReference
+    #     ref_class = Xcodeproj::Project::Object::XCSwiftPackageProductDependency
+
+    #     pkg = project.root_object.package_references.find { |p| p.class == pkg_class && p.repositoryURL == telematics_spm_url }
+    #     unless pkg
+    #       pkg = project.new(pkg_class)
+    #       pkg.repositoryURL = telematics_spm_url
+    #       pkg.requirement = telematics_spm_requirement
+    #       project.root_object.package_references << pkg
+    #     end
+
+    #     already = app_target.package_product_dependencies.find do |r|
+    #       r.class == ref_class && r.package == pkg && r.product_name == telematics_spm_product
+    #     end
+    #     unless already
+    #       ref = project.new(ref_class)
+    #       ref.package = pkg
+    #       ref.product_name = telematics_spm_product
+    #       app_target.package_product_dependencies << ref
+    #     end
+
+    #     project.save
+    #   end
 
     # Workaround for Xcode 26: newer Apple Clang breaks consteval in fmt 11.0.2.
 
