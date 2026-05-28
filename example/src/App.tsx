@@ -15,6 +15,7 @@ import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import TelematicsSdk, {
   AccidentDetectionSensitivity,
   ApiLanguage,
+  TrackingMode,
   addOnLowPowerModeListener,
   addOnLocationChangedListener,
   addOnTrackingStateChangedListener,
@@ -36,6 +37,8 @@ export default function App() {
     useState<AccidentDetectionSensitivity>(AccidentDetectionSensitivity.Normal);
   const [speedLimitKmH, setSpeedLimitKmH] = useState('80');
   const [speedLimitTimeout, setSpeedLimitTimeout] = useState('10');
+  const [maxPersistentTrackingInterval, setMaxPersistentTrackingInterval] =
+    useState('60');
   const [apiLanguage, setApiLanguage] = useState<ApiLanguage>(
     ApiLanguage.english
   );
@@ -178,6 +181,73 @@ export default function App() {
     try {
       await TelematicsSdk.sendCustomHeartbeats(heartbeatReason);
       showInfoAlert(`sendCustomHeartbeats: ${heartbeatReason}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const getDeviceIdRegistrationState = async () => {
+    try {
+      const state = await TelematicsSdk.getDeviceIdRegistrationState();
+      const checkedAt =
+        state.checkedAtMillis > 0
+          ? new Date(state.checkedAtMillis).toISOString()
+          : 'not checked';
+      showInfoAlert(
+        `getDeviceIdRegistrationState:\nstatus=${state.status}\ncheckedAtMillis=${state.checkedAtMillis}\ncheckedAt=${checkedAt}`
+      );
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const getTrackingState = async () => {
+    try {
+      const state = await TelematicsSdk.getTrackingState();
+      showInfoAlert(
+        `getTrackingState:\nautomaticTrackingStatus=${state.automaticTrackingStatus}\nmanualTrackingStatus=${state.manualTrackingStatus}`
+      );
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const setPersistentTrackingInterval = async () => {
+    try {
+      const minutes = Number(maxPersistentTrackingInterval);
+      if (!Number.isFinite(minutes)) {
+        Alert.alert('Invalid value', 'Enter interval in minutes');
+        return;
+      }
+      await TelematicsSdk.setMaxPersistentTrackingInterval(minutes);
+      showInfoAlert(`setMaxPersistentTrackingInterval: ${minutes} minutes`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const getPersistentTrackingInterval = async () => {
+    try {
+      const minutes = await TelematicsSdk.getMaxPersistentTrackingInterval();
+      showInfoAlert(`getMaxPersistentTrackingInterval: ${minutes} minutes`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const setTrackingMode = async (mode: TrackingMode) => {
+    try {
+      await TelematicsSdk.setTrackingMode(mode);
+      showInfoAlert(`setTrackingMode: ${TrackingMode[mode]} (${mode})`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const getTrackingMode = async () => {
+    try {
+      const mode = await TelematicsSdk.getTrackingMode();
+      showInfoAlert(`getTrackingMode: ${TrackingMode[mode]} (${mode})`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -565,6 +635,11 @@ export default function App() {
               value={speedLimitTimeout}
               onChangeText={setSpeedLimitTimeout}
             />
+            <Input
+              placeholder={'Max persistent tracking interval minutes (5..600)'}
+              value={maxPersistentTrackingInterval}
+              onChangeText={setMaxPersistentTrackingInterval}
+            />
             <Text style={styles.status}>
               SDK enabled:{' '}
               <Text style={styles.value}>{String(isSdkEnabled)}</Text>
@@ -656,6 +731,41 @@ export default function App() {
               <Button
                 text="Send custom heartbeat"
                 onPress={sendHeartbeat}
+                variant="secondary"
+              />
+              <Button
+                text="Get device ID registration state"
+                onPress={getDeviceIdRegistrationState}
+                variant="secondary"
+              />
+              <Button
+                text="Get tracking state"
+                onPress={getTrackingState}
+                variant="secondary"
+              />
+              <Button
+                text="Set max persistent interval"
+                onPress={setPersistentTrackingInterval}
+                variant="secondary"
+              />
+              <Button
+                text="Get max persistent interval"
+                onPress={getPersistentTrackingInterval}
+                variant="secondary"
+              />
+              <Button
+                text="Tracking mode: Standard"
+                onPress={() => setTrackingMode(TrackingMode.Standard)}
+                variant="secondary"
+              />
+              <Button
+                text="Tracking mode: Persistent"
+                onPress={() => setTrackingMode(TrackingMode.Persistent)}
+                variant="secondary"
+              />
+              <Button
+                text="Get tracking mode"
+                onPress={getTrackingMode}
                 variant="secondary"
               />
               <Button
