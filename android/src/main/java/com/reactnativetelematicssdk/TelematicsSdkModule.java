@@ -135,7 +135,8 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
     Settings settings = new Settings()
       .stopTrackingTimeout(Settings.getStopTrackingTimeHigh())
       .accuracy(Settings.getAccuracyHigh())
-      .autoStartOn(true);
+      .autoStartOn(true)
+      .passiveDetectionOn(true);
     Log.d(TAG, "setTelematicsSettings");
     return settings;
   }
