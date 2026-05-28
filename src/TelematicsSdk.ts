@@ -1,4 +1,11 @@
-import type { AccidentDetectionSensitivity, ApiLanguage, Tag } from './types';
+import type {
+  AccidentDetectionSensitivity,
+  ApiLanguage,
+  DeviceIdRegistrationState,
+  Tag,
+  TrackingState,
+} from './types';
+import { TrackingMode } from './types';
 import { getNativeTelematicsSdk } from './createTelematicsSdk';
 
 /**
@@ -11,7 +18,7 @@ import { getNativeTelematicsSdk } from './createTelematicsSdk';
  * 1. Create an instance via {@link createTelematicsSdk}.
  * 2. Initialize on the native side via {@link TelematicsSdk.initializeSdk}.
  * 3. Configure the virtual device id/token via {@link TelematicsSdk.setDeviceId}.
- * 4. Start tracking via {@link TelematicsSdk.startManualTracking} or {@link TelematicsSdk.startManualPersistentTracking}.
+ * 4. Start tracking via {@link TelematicsSdk.startManualTracking} or {@link TelematicsSdk.startTrackAsPersistent}.
  */
 export interface TelematicsSdk {
   // Lifecycle
@@ -30,6 +37,9 @@ export interface TelematicsSdk {
 
   /** Returns the current virtual device identifier (token) configured in the native SDK. */
   getDeviceId(): Promise<string>;
+
+  /** Returns the latest known device identifier registration state. */
+  getDeviceIdRegistrationState(): Promise<DeviceIdRegistrationState>;
 
   /**
    * Sets the virtual device identifier (token) used by the native SDK.
@@ -71,10 +81,25 @@ export interface TelematicsSdk {
   startManualTracking(): Promise<void>;
 
   /** Starts persistent tracking manually (continues across background/app restarts). */
-  startManualPersistentTracking(): Promise<void>;
+  startTrackAsPersistent(): Promise<void>;
 
   /** Stops tracking manually. */
   stopManualTracking(): Promise<void>;
+
+  /** Sets the maximum duration, in minutes, for a single persistent tracking session. */
+  setMaxPersistentTrackingInterval(minutes: number): Promise<void>;
+
+  /** Returns the maximum duration, in minutes, for a single persistent tracking session. */
+  getMaxPersistentTrackingInterval(): Promise<number>;
+
+  /** Sets whether SDK-started and manually-started tracking runs in standard or persistent mode. */
+  setTrackingMode(trackingMode: TrackingMode): Promise<void>;
+
+  /** Returns the current tracking mode. */
+  getTrackingMode(): Promise<TrackingMode>;
+
+  /** Returns the current automatic and manual tracking availability state. */
+  getTrackingState(): Promise<TrackingState>;
 
   // Upload
 
@@ -162,7 +187,7 @@ export interface TelematicsSdk {
   // iOS only
 
   /** iOS only: returns whether aggressive heartbeat mode is enabled. */
-  isAggressiveHeartbeat(): Promise<boolean>;
+  isAggressiveHeartbeats(): Promise<boolean>;
 
   /** iOS only: enables or disables aggressive heartbeat mode. */
   setAggressiveHeartbeats(enable: boolean): Promise<void>;
@@ -225,6 +250,9 @@ class TelematicsSdkImpl implements TelematicsSdk {
   getDeviceId() {
     return this.native.getDeviceId();
   }
+  getDeviceIdRegistrationState() {
+    return this.native.getDeviceIdRegistrationState() as Promise<DeviceIdRegistrationState>;
+  }
   setDeviceId(deviceId: string) {
     return this.native.setDeviceId(deviceId);
   }
@@ -247,11 +275,26 @@ class TelematicsSdkImpl implements TelematicsSdk {
   startManualTracking() {
     return this.native.startManualTracking();
   }
-  startManualPersistentTracking() {
-    return this.native.startManualPersistentTracking();
+  startTrackAsPersistent() {
+    return this.native.startTrackAsPersistent();
   }
   stopManualTracking() {
     return this.native.stopManualTracking();
+  }
+  setMaxPersistentTrackingInterval(minutes: number) {
+    return this.native.setMaxPersistentTrackingInterval(minutes);
+  }
+  getMaxPersistentTrackingInterval() {
+    return this.native.getMaxPersistentTrackingInterval();
+  }
+  setTrackingMode(trackingMode: TrackingMode) {
+    return this.native.setTrackingMode(trackingMode);
+  }
+  getTrackingMode() {
+    return this.native.getTrackingMode() as Promise<TrackingMode>;
+  }
+  getTrackingState() {
+    return this.native.getTrackingState() as Promise<TrackingState>;
   }
 
   uploadUnsentTrips() {
@@ -324,8 +367,8 @@ class TelematicsSdkImpl implements TelematicsSdk {
     );
   }
 
-  isAggressiveHeartbeat() {
-    return this.native.isAggressiveHeartbeat();
+  isAggressiveHeartbeats() {
+    return this.native.isAggressiveHeartbeats();
   }
   setAggressiveHeartbeats(enable: boolean) {
     return this.native.setAggressiveHeartbeats(enable);

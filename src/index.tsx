@@ -15,11 +15,24 @@ import { NativeEventEmitter, Platform } from 'react-native';
 import { getNativeTelematicsSdk } from './createTelematicsSdk';
 import { createTelematicsSdk } from './TelematicsSdk';
 import type { TelematicsSdk } from './TelematicsSdk';
-import { AccidentDetectionSensitivity, ApiLanguage } from './types';
+import {
+  AccidentDetectionSensitivity,
+  ApiLanguage,
+  DeviceIdRegistrationStatus,
+  TrackingMode,
+  TrackingStatus,
+} from './types';
 
 const NativeTelematicsSdk = getNativeTelematicsSdk();
 
-export { AccidentDetectionSensitivity, ApiLanguage };
+export {
+  AccidentDetectionSensitivity,
+  ApiLanguage,
+  DeviceIdRegistrationStatus,
+  TrackingMode,
+  TrackingStatus,
+};
+export type { DeviceIdRegistrationState, TrackingState } from './types';
 
 export type LowPowerModeEvent = {
   enabled: boolean;

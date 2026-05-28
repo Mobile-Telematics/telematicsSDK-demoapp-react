@@ -256,8 +256,8 @@ export default function App() {
         Alert.alert('iOS only', 'This method is only available on iOS');
         return;
       }
-      const v = await TelematicsSdk.isAggressiveHeartbeat();
-      showInfoAlert(`isAggressiveHeartbeat: ${v}`);
+      const v = await TelematicsSdk.isAggressiveHeartbeats();
+      showInfoAlert(`isAggressiveHeartbeats: ${v}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -511,8 +511,8 @@ export default function App() {
 
   const startPersistentTracking = async () => {
     try {
-      await TelematicsSdk.startManualPersistentTracking();
-      showInfoAlert('startManualPersistentTracking');
+      await TelematicsSdk.startTrackAsPersistent();
+      showInfoAlert('startTrackAsPersistent');
     } catch (error: any) {
       showErrorAlert(error);
     }
@@ -702,7 +702,7 @@ export default function App() {
               />
 
               <Button
-                text="iOS: isAggressiveHeartbeat"
+                text="iOS: isAggressiveHeartbeats"
                 onPress={iosAggressiveHeartbeat}
                 variant="primary"
               />

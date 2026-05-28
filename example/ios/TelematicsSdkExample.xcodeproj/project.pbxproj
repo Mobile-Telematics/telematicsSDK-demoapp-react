@@ -980,7 +980,7 @@
 			repositoryURL = "https://github.com/Mobile-Telematics/telematicsSDK-iOS-new-SPM.git";
 			requirement = {
 				kind = exactVersion;
-				version = 7.0.3;
+				version = 7.1.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

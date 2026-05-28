@@ -24,6 +24,8 @@ export interface Spec extends TurboModule {
   // Device token
   /** Returns the current virtual device identifier (token). */
   getDeviceId(): Promise<string>;
+  /** Returns the latest known device identifier registration state. */
+  getDeviceIdRegistrationState(): Promise<Object>;
   /** Sets the virtual device identifier (token). */
   setDeviceId(deviceId: string): Promise<void>;
   /** Performs a full logout on the native SDK. */
@@ -41,9 +43,19 @@ export interface Spec extends TurboModule {
   /** Starts tracking manually. */
   startManualTracking(): Promise<void>;
   /** Starts persistent tracking manually. */
-  startManualPersistentTracking(): Promise<void>;
+  startTrackAsPersistent(): Promise<void>;
   /** Stops tracking manually. */
   stopManualTracking(): Promise<void>;
+  /** Sets the maximum duration, in minutes, for a single persistent tracking session. */
+  setMaxPersistentTrackingInterval(minutes: Int32): Promise<void>;
+  /** Returns the maximum duration, in minutes, for a single persistent tracking session. */
+  getMaxPersistentTrackingInterval(): Promise<Double>;
+  /** Sets whether tracking runs in standard or persistent mode. */
+  setTrackingMode(trackingMode: Int32): Promise<void>;
+  /** Returns the current tracking mode. */
+  getTrackingMode(): Promise<Int32>;
+  /** Returns current automatic and manual tracking availability state. */
+  getTrackingState(): Promise<Object>;
 
   // Upload
   /** Triggers upload of locally stored, unsent trips if any. */
@@ -91,7 +103,7 @@ export interface Spec extends TurboModule {
 
   // iOS-only
   /** iOS only: returns whether aggressive heartbeat mode is enabled. */
-  isAggressiveHeartbeat(): Promise<boolean>;
+  isAggressiveHeartbeats(): Promise<boolean>;
   /** iOS only: enables or disables aggressive heartbeat mode. */
   setAggressiveHeartbeats(enable: boolean): Promise<void>;
   /** iOS only: disables or enables user-initiated tracking. */

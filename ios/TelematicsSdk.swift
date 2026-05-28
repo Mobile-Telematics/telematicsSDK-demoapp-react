@@ -58,7 +58,7 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.isInitialized)
+    resolve(RPEntry.isInitialized())
   }
 
   // MARK: - Device token
@@ -68,7 +68,26 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.virtualDeviceToken ?? "")
+    resolve(RPEntry.instance.getDeviceId())
+  }
+
+  @objc(getDeviceIdRegistrationState:reject:)
+  public func getDeviceIdRegistrationState(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    let state = RPEntry.instance.getDeviceIdRegistrationState()
+    let checkedAtMillis: Int
+    if state.checkedAt > 0 {
+      checkedAtMillis = Int((state.checkedAt * 1000).rounded())
+    } else {
+      checkedAtMillis = 0
+    }
+
+    resolve([
+      "status": deviceIdRegistrationStatusString(from: state.status),
+      "checkedAtMillis": checkedAtMillis,
+    ])
   }
 
   @objc(setDeviceId:resolve:reject:)
@@ -77,8 +96,12 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.virtualDeviceToken = deviceId
-    resolve(nil)
+    do {
+      try RPEntry.instance.setDeviceID(deviceId: deviceId)
+      resolve(nil)
+    } catch {
+      reject("ERROR", error.localizedDescription, error)
+    }
   }
 
   @objc(logout:reject:)
@@ -97,7 +120,7 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.isAllRequiredPermissionsGranted())
+    resolve(RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted())
   }
 
   @objc(isSdkEnabled:reject:)
@@ -113,7 +136,7 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.isTrackingActive())
+    resolve(RPEntry.instance.isTracking())
   }
 
   @objc(setEnableSdk:resolve:reject:)
@@ -135,12 +158,12 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve(nil)
   }
 
-  @objc(startManualPersistentTracking:reject:)
-  public func startManualPersistentTracking(
+  @objc(startTrackAsPersistent:reject:)
+  public func startTrackAsPersistent(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.startPersistentTracking()
+    RPEntry.instance.startTrackAsPersistent()
     resolve(nil)
   }
 
@@ -151,6 +174,64 @@ public class TelematicsSdk: RCTEventEmitter {
   ) {
     RPEntry.instance.stopTracking()
     resolve(nil)
+  }
+
+  @objc(setMaxPersistentTrackingInterval:resolve:reject:)
+  public func setMaxPersistentTrackingInterval(
+    _ minutes: Double,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    do {
+      try RPEntry.instance.setMaxPersistentTrackingInterval(minutes: Int(minutes))
+      resolve(nil)
+    } catch {
+      reject("INVALID_ARGUMENT", error.localizedDescription, error)
+    }
+  }
+
+  @objc(getMaxPersistentTrackingInterval:reject:)
+  public func getMaxPersistentTrackingInterval(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(RPEntry.instance.getMaxPersistentTrackingInterval())
+  }
+
+  @objc(setTrackingMode:resolve:reject:)
+  public func setTrackingMode(
+    _ trackingMode: Double,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard let mode = RPTrackingMode(rawValue: Int(trackingMode)) else {
+      reject("INVALID_ARGUMENT", "trackingMode is invalid", nil)
+      return
+    }
+
+    RPEntry.instance.setTrackingMode(mode)
+    resolve(nil)
+  }
+
+  @objc(getTrackingMode:reject:)
+  public func getTrackingMode(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(RPEntry.instance.getTrackingMode().rawValue)
+  }
+
+  @objc(getTrackingState:reject:)
+  public func getTrackingState(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    RPEntry.instance.getTrackingState { [weak self] state in
+      resolve([
+        "automaticTrackingStatus": self?.trackingStatusString(from: state.automaticTrackingStatus) ?? "UNKNOWN",
+        "manualTrackingStatus": self?.trackingStatusString(from: state.manualTrackingStatus) ?? "UNKNOWN",
+      ])
+    }
   }
 
   // MARK: - Upload
@@ -169,7 +250,9 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.getUnsentTripCount())
+    RPEntry.instance.getUnsentTripCount { unsentTripsCount in
+      resolve(unsentTripsCount)
+    }
   }
 
   // MARK: - Heartbeats
@@ -217,7 +300,7 @@ public class TelematicsSdk: RCTEventEmitter {
       reject("INVALID_PARAMS", "Invalid accidentDetectionSensitivity value", nil)
       return
     }
-    RPEntry.instance.accidentDetectionSensitivity = sensitivity
+    RPEntry.instance.setAccidentDetectionSensitivity(sensitivity: sensitivity)
     resolve(nil)
   }
 
@@ -226,7 +309,7 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.isRTDEnabled())
+    resolve(RPEntry.instance.isRTLDEnabled())
   }
 
   @objc(enableAccidents:resolve:reject:)
@@ -235,7 +318,7 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.enableAccidents(enable)
+    RPEntry.instance.setAccidentDetectionEnabled(enable)
     resolve(nil)
   }
 
@@ -244,7 +327,7 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.isEnabledAccidents())
+    resolve(RPEntry.instance.isAccidentDetectionEnabled())
   }
 
   // MARK: - Tags API
@@ -331,12 +414,12 @@ public class TelematicsSdk: RCTEventEmitter {
 
   // MARK: - iOS-only
 
-  @objc(isAggressiveHeartbeat:reject:)
-  public func isAggressiveHeartbeat(
+  @objc(isAggressiveHeartbeats:reject:)
+  public func isAggressiveHeartbeats(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.aggressiveHeartbeat())
+    resolve(RPEntry.instance.isAggressiveHeartbeats())
   }
 
   @objc(setAggressiveHeartbeats:resolve:reject:)
@@ -355,7 +438,7 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.disableTracking = value
+    RPEntry.instance.setDisableTracking(disableTracking: value)
     resolve(nil)
   }
 
@@ -364,7 +447,7 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.disableTracking)
+    resolve(RPEntry.instance.isDisableTracking())
   }
 
   @objc(isWrongAccuracyState:reject:)
@@ -372,7 +455,7 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.wrongAccuracyState)
+    resolve(RPEntry.instance.isWrongAccuracyState())
   }
 
   @objc(requestIOSLocationAlwaysPermission:reject:)
@@ -398,7 +481,7 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    switch RPEntry.instance.apiLanguage {
+    switch RPEntry.instance.getApiLanguage() {
     case .none:
       resolve("None")
     case .english:
@@ -422,15 +505,15 @@ public class TelematicsSdk: RCTEventEmitter {
   ) {
     switch language {
     case "None":
-      RPEntry.instance.apiLanguage = .none
+      RPEntry.instance.setApiLanguage(apiLanguage: .none)
     case "English":
-      RPEntry.instance.apiLanguage = .english
+      RPEntry.instance.setApiLanguage(apiLanguage: .english)
     case "Russian":
-      RPEntry.instance.apiLanguage = .russian
+      RPEntry.instance.setApiLanguage(apiLanguage: .russian)
     case "Portuguese":
-      RPEntry.instance.apiLanguage = .portuguese
+      RPEntry.instance.setApiLanguage(apiLanguage: .portuguese)
     case "Spanish":
-      RPEntry.instance.apiLanguage = .spanish
+      RPEntry.instance.setApiLanguage(apiLanguage: .spanish)
     default:
       reject("INVALID_PARAMS", "Unsupported language: \(language)", nil)
       return
@@ -460,6 +543,42 @@ public class TelematicsSdk: RCTEventEmitter {
 
   // MARK: - Helpers
 
+  private func deviceIdRegistrationStatusString(
+    from status: RPDeviceIdRegistrationStatus
+  ) -> String {
+    switch status {
+    case .notSet:
+      return "NOT_SET"
+    case .unknown:
+      return "UNKNOWN"
+    case .registered:
+      return "REGISTERED"
+    case .notRegistered:
+      return "NOT_REGISTERED"
+    @unknown default:
+      return "UNKNOWN"
+    }
+  }
+
+  private func trackingStatusString(from status: RPTrackingStatus) -> String {
+    switch status {
+    case .enabled:
+      return "ENABLED"
+    case .deviceIdNotSet:
+      return "DEVICE_ID_NOT_SET"
+    case .sdkDisabled:
+      return "SDK_DISABLED"
+    case .disabledBySettings:
+      return "DISABLED_BY_SETTINGS"
+    case .disabledByServer:
+      return "DISABLED_BY_SERVER"
+    case .disabledBySchedule:
+      return "DISABLED_BY_SCHEDULE"
+    @unknown default:
+      return "UNKNOWN"
+    }
+  }
+
   private func parseTagStatus(status: RPTagStatus) -> String {
     switch status {
     case .success:
@@ -468,7 +587,7 @@ public class TelematicsSdk: RCTEventEmitter {
       return "Offline"
     case .errorTagOperation:
       return "Wrong tag operation"
-    case .invalidDeviceToken:
+    case .invalidDeviceId:
       return "Invalid device token"
     @unknown default:
       return "Unknown error"
@@ -512,7 +631,7 @@ extension TelematicsSdk: RPAccuracyAuthorizationDelegate {
   }
 }
 
-extension TelematicsSdk: RPRTDLDelegate {
+extension TelematicsSdk: RPRTLDDelegate {
   public func rtldColectedData() {
     guard hasListeners else { return }
     sendEvent(withName: Events.onRtldColectedData.rawValue, body: nil)

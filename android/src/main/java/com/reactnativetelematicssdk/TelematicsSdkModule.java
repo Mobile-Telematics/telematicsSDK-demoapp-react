@@ -20,6 +20,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import com.telematicssdk.tracking.TrackingApi;
 import com.telematicssdk.tracking.Settings;
+import com.telematicssdk.tracking.model.track.TrackingMode;
 import com.telematicssdk.tracking.utils.permissions.PermissionsWizardActivity;
 import com.telematicssdk.tracking.model.realtime.configuration.AccidentDetectionSensitivity;
 import com.telematicssdk.tracking.SpeedViolation;
@@ -131,13 +132,10 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   }
 
   private Settings setTelematicsSettings() {
-    Settings settings = new Settings(
-      Settings.getStopTrackingTimeHigh(),
-      Settings.getAccuracyHigh(),
-      true,
-      true,
-      false
-    );
+    Settings settings = new Settings()
+      .stopTrackingTimeout(Settings.getStopTrackingTimeHigh())
+      .accuracy(Settings.getAccuracyHigh())
+      .autoStartOn(true);
     Log.d(TAG, "setTelematicsSettings");
     return settings;
   }
@@ -152,6 +150,17 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   @Override
   public void getDeviceId(Promise promise) {
     promise.resolve(api.getDeviceId());
+  }
+
+  @Override
+  public void getDeviceIdRegistrationState(Promise promise) {
+    var state = api.getDeviceIdRegistrationState();
+    Long checkedAtMillis = state.getCheckedAtMillis();
+
+    WritableMap payload = Arguments.createMap();
+    payload.putString("status", state.getStatus().name());
+    payload.putDouble("checkedAtMillis", checkedAtMillis == null ? 0 : checkedAtMillis.doubleValue());
+    promise.resolve(payload);
   }
 
   @Override
@@ -206,7 +215,7 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   }
 
   @Override
-  public void startManualPersistentTracking(Promise promise) {
+  public void startTrackAsPersistent(Promise promise) {
     api.startPersistentTracking();
     promise.resolve(null);
   }
@@ -215,6 +224,59 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   public void stopManualTracking(Promise promise) {
     api.stopTracking();
     promise.resolve(null);
+  }
+
+  @Override
+  public void setMaxPersistentTrackingInterval(double minutes, Promise promise) {
+    try {
+      api.setMaxPersistentTrackingInterval((int) minutes);
+      promise.resolve(null);
+    } catch (IllegalArgumentException e) {
+      promise.reject("INVALID_ARGUMENT", e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public void getMaxPersistentTrackingInterval(Promise promise) {
+    promise.resolve((double) api.getMaxPersistentTrackingInterval());
+  }
+
+  @Override
+  public void setTrackingMode(double trackingMode, Promise promise) {
+    int value = (int) trackingMode;
+    TrackingMode mode = switch (value) {
+      case 0 -> TrackingMode.Standard;
+      case 1 -> TrackingMode.Persistent;
+      default -> null;
+    };
+
+    if (mode == null) {
+      promise.reject("INVALID_ARGUMENT", "trackingMode is invalid");
+      return;
+    }
+
+    api.setTrackingMode(mode);
+    promise.resolve(null);
+  }
+
+  @Override
+  public void getTrackingMode(Promise promise) {
+    int mode = switch (api.getTrackingMode()) {
+      case Standard -> 0;
+      case Persistent -> 1;
+    };
+
+    promise.resolve(mode);
+  }
+
+  @Override
+  public void getTrackingState(Promise promise) {
+    var state = api.getTrackingState();
+
+    WritableMap payload = Arguments.createMap();
+    payload.putString("automaticTrackingStatus", state.getAutomaticTrackingStatus().name());
+    payload.putString("manualTrackingStatus", state.getManualTrackingStatus().name());
+    promise.resolve(payload);
   }
 
   // MARK: - Upload
@@ -409,8 +471,8 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   // MARK: - iOS-only stubs (required by codegen, no-op on Android)
 
   @Override
-  public void isAggressiveHeartbeat(Promise promise) {
-    promise.reject("PLATFORM_ERROR", "isAggressiveHeartbeat is not available on Android");
+  public void isAggressiveHeartbeats(Promise promise) {
+    promise.reject("PLATFORM_ERROR", "isAggressiveHeartbeats is not available on Android");
   }
 
   @Override

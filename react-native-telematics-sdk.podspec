@@ -19,7 +19,7 @@ Pod::Spec.new do |s|
   install_modules_dependencies(s)
   spm_dependency(s,
     url: 'https://github.com/Mobile-Telematics/telematicsSDK-iOS-new-SPM.git',
-    requirement: { kind: 'exactVersion', version: '7.0.3' },
+    requirement: { kind: 'exactVersion', version: '7.1.0' },
     products: ['TelematicsSDK']
   )
 end

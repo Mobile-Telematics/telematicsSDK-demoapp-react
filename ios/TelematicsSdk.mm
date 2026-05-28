@@ -14,6 +14,8 @@ RCT_EXTERN_METHOD(isInitializedSdk:(RCTPromiseResolveBlock)resolve
 // MARK: - Device token
 RCT_EXTERN_METHOD(getDeviceId:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(getDeviceIdRegistrationState:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(setDeviceId:(NSString *)deviceId
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
@@ -32,9 +34,21 @@ RCT_EXTERN_METHOD(setEnableSdk:(BOOL)enable
                   reject:(RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(startManualTracking:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(startManualPersistentTracking:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(startTrackAsPersistent:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(stopManualTracking:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(setMaxPersistentTrackingInterval:(double)minutes
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(getMaxPersistentTrackingInterval:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(setTrackingMode:(double)trackingMode
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(getTrackingMode:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(getTrackingState:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
 // MARK: - Upload
@@ -86,7 +100,7 @@ RCT_EXTERN_METHOD(registerSpeedViolations:(double)speedLimitKmH
                   reject:(RCTPromiseRejectBlock)reject)
 
 // MARK: - iOS-only
-RCT_EXTERN_METHOD(isAggressiveHeartbeat:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(isAggressiveHeartbeats:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(setAggressiveHeartbeats:(BOOL)enable
                   resolve:(RCTPromiseResolveBlock)resolve

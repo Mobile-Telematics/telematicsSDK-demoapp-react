@@ -6,9 +6,9 @@ buildscript {
         }
 
         dependencies {
-            classpath("com.android.tools.build:gradle:8.11.0")
+            classpath("com.android.tools.build:gradle:8.12.0")
             classpath("com.facebook.react:react-native-gradle-plugin:0.81.4")
-            classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20")
+            classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20")
         }
     }
 }
@@ -81,5 +81,5 @@ dependencies {
     //noinspection GradleDynamicVersion
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
     implementation("com.facebook.react:react-android:0.81.4")
-    implementation("com.telematicssdk:tracking:3.3.0")
+    implementation("com.telematicssdk:tracking:4.0.0")
 }
