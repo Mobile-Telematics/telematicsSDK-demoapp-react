@@ -276,14 +276,14 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    if RPEntry.instance.isAllRequiredPermissionsGranted() {
+    if RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted() {
       resolve(true)
       return
     }
 
     DispatchQueue.main.async {
       RPPermissionsWizard.returnInstance().launch { _ in
-        RPEntry.instance.isAllRequiredPermissionsGranted() ? resolve(true) : resolve(false)
+        RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted() ? resolve(true) : resolve(false)
       }
     }
   }
