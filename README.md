@@ -130,6 +130,37 @@ And run in your project ios folder:
 pod install
 ```
 
+#### iOS dependency manager notes (CocoaPods + Swift Package Manager)
+
+This React Native wrapper uses **CocoaPods** for React Native iOS integration, but the native **TelematicsSDK** itself is pulled via **Swift Package Manager** (SPM) using React Native's `spm_dependency` support.
+
+Because TelematicsSDK is a **dynamic framework**, and many apps call TelematicsSDK from both:
+
+- the **React Native module** (this package), and
+- the app's **AppDelegate / SceneDelegate** (native project code),
+
+we recommend the following integration.
+
+##### Option 1 (recommended): add TelematicsSDK via SPM to your app target
+
+1. In your app `ios/Podfile`, enable dynamic frameworks:
+
+- `use_frameworks! :linkage => :dynamic`
+
+2. In Xcode, add the TelematicsSDK SPM package to your **app target**:
+
+- Open your `.xcworkspace`
+- Select the **app project** → **Package Dependencies** → **+**
+- Add package URL: `https://github.com/Mobile-Telematics/telematicsSDK-iOS-new-SPM.git`
+- Select product **TelematicsSDK**
+- Set dependency rule to **Exact Version** and use version **7.0.3**
+- Ensure it’s added to your **app target** (not only to Pods targets)
+
+3. Verify TelematicsSDK is embedded:
+
+- Target → **General** → **Frameworks, Libraries, and Embedded Content**
+- `TelematicsSDK.framework` should be present and set to **Embed & Sign**
+
 ### Lifecycle handlers
 
 Proper application lifecycle handling is extremely important for the TelematicsSdk. In order to use SDK you need to add lifecycle handlers to your application AppDelegate and Scene Delegate:
@@ -210,10 +241,11 @@ import TelematicsSdk, {
   addOnWrongAccuracyAuthorizationListener,
   addOnRtldColectedData,
   addOnSpeedViolationListener,
-} from "react-native-telematics";
+} from 'react-native-telematics';
 ```
 
 ### SDK initializing
+
 ```js
 // Must be called before any other API
 await TelematicsSdk.initialize();
@@ -225,6 +257,7 @@ const initialized = await TelematicsSdk.isInitialized();
 ```
 
 ### Device Id (virtual token)
+
 ```js
 // Get current device id/token
 const deviceId = await TelematicsSdk.getDeviceId();
@@ -232,19 +265,22 @@ const deviceId = await TelematicsSdk.getDeviceId();
 
 ```js
 // Set device id/token
-await TelematicsSdk.setDeviceId("YOUR_DEVICE_ID");
+await TelematicsSdk.setDeviceId('YOUR_DEVICE_ID');
 ```
 
 ### Logout
+
 ```js
 // Performs a full logout and disable SDK
 await TelematicsSdk.logout();
 ```
 
 ### Permissions & Sensors
+
 ```js
 // Checks whether all required permissions and sensors are granted/available
-const allGranted = await TelematicsSdk.isAllRequiredPermissionsAndSensorsGranted();
+const allGranted =
+  await TelematicsSdk.isAllRequiredPermissionsAndSensorsGranted();
 ```
 
 ```js
@@ -254,6 +290,7 @@ const isGranted = await TelematicsSdk.showPermissionWizard(false, false);
 ```
 
 ### Enabling and disabling SDK
+
 ```js
 // Enable or disable SDK globally
 await TelematicsSdk.setEnableSdk(true);
@@ -266,6 +303,7 @@ const isEnabled = await TelematicsSdk.isSdkEnabled();
 ```
 
 ### Tracking
+
 ```js
 // Start tracking
 await TelematicsSdk.startManualTracking();
@@ -273,7 +311,7 @@ await TelematicsSdk.startManualTracking();
 
 ```js
 // Start persistent tracking (continues across background/app restarts)
-await TelematicsSdk.startManualPersistentTracking();
+await TelematicsSdk.startTrackAsPersistent();
 ```
 
 ```js
@@ -287,6 +325,7 @@ const tracking = await TelematicsSdk.isTracking();
 ```
 
 ### Trips
+
 ```js
 // Upload locally stored, unsent trips
 await TelematicsSdk.uploadUnsentTrips();
@@ -298,15 +337,20 @@ const unsentTripCount = await TelematicsSdk.getUnsentTripCount();
 ```
 
 ### Heartbeats
+
 ```js
 // Send custom heartbeat with an app-defined reason
-await TelematicsSdk.sendCustomHeartbeats("RN_HEARTBEAT_TEST");
+await TelematicsSdk.sendCustomHeartbeats('RN_HEARTBEAT_TEST');
 ```
 
 ### Future Tags API
+
 ```js
 // Add future tag
-const addResult = await TelematicsSdk.addFutureTrackTag("future_tag_name", "future_tag_source");
+const addResult = await TelematicsSdk.addFutureTrackTag(
+  'future_tag_name',
+  'future_tag_source'
+);
 ```
 
 ```js
@@ -316,7 +360,8 @@ const tagsResult = await TelematicsSdk.getFutureTrackTags();
 
 ```js
 // Remove single future tag
-const removeResult = await TelematicsSdk.removeFutureTrackTag("future_tag_name");
+const removeResult =
+  await TelematicsSdk.removeFutureTrackTag('future_tag_name');
 ```
 
 ```js
@@ -325,6 +370,7 @@ const clearResult = await TelematicsSdk.removeAllFutureTrackTags();
 ```
 
 ### Accident detection
+
 ```js
 // Enable or disable accident detection
 await TelematicsSdk.enableAccidents(true);
@@ -338,18 +384,26 @@ const accidentsEnabled = await TelematicsSdk.isEnabledAccidents();
 
 ```js
 // Set accident detection sensitivity
-await TelematicsSdk.setAccidentDetectionSensitivity(AccidentDetectionSensitivity.Normal);
-await TelematicsSdk.setAccidentDetectionSensitivity(AccidentDetectionSensitivity.Sensitive);
-await TelematicsSdk.setAccidentDetectionSensitivity(AccidentDetectionSensitivity.Tough);
+await TelematicsSdk.setAccidentDetectionSensitivity(
+  AccidentDetectionSensitivity.Normal
+);
+await TelematicsSdk.setAccidentDetectionSensitivity(
+  AccidentDetectionSensitivity.Sensitive
+);
+await TelematicsSdk.setAccidentDetectionSensitivity(
+  AccidentDetectionSensitivity.Tough
+);
 ```
 
 ### RTLD (Real-Time tracking)
+
 ```js
 // Check whether RTLD (real-time data logging) is enabled
 const rtldEnabled = await TelematicsSdk.isRTLDEnabled();
 ```
 
 ### Speed violations
+
 ```js
 // Configure speed limit monitoring
 await TelematicsSdk.registerSpeedViolations({
@@ -359,12 +413,14 @@ await TelematicsSdk.registerSpeedViolations({
 ```
 
 ## Events (listeners)
+
 > All listeners return a subscription with `.remove()`.
 
 ### Low Power Mode (iOS only)
+
 ```js
 const lowPowerSub = addOnLowPowerModeListener(({ enabled }) => {
-  console.log("Low power mode:", enabled);
+  console.log('Low power mode:', enabled);
 });
 
 // Don't forget to remove listener
@@ -375,7 +431,7 @@ lowPowerSub.remove();
 
 ```js
 const locationSub = addOnLocationChangedListener(({ latitude, longitude }) => {
-  console.log("Location:", latitude, longitude);
+  console.log('Location:', latitude, longitude);
 });
 
 // Don't forget to remove listener
@@ -386,7 +442,7 @@ locationSub.remove();
 
 ```js
 const trackingSub = addOnTrackingStateChangedListener((state) => {
-  console.log("Tracking state:", state);
+  console.log('Tracking state:', state);
 });
 
 // Don't forget to remove listener
@@ -397,7 +453,7 @@ trackingSub.remove();
 
 ```js
 const speedSub = addOnSpeedViolationListener((event) => {
-  console.log("Speed violation:", event);
+  console.log('Speed violation:', event);
 });
 
 // Don't forget to remove listener
@@ -408,7 +464,7 @@ speedSub.remove();
 
 ```js
 const wrongAccuracySub = addOnWrongAccuracyAuthorizationListener(() => {
-  console.log("Wrong accuracy authorization (iOS)");
+  console.log('Wrong accuracy authorization (iOS)');
 });
 
 // Don't forget to remove listener
@@ -419,9 +475,8 @@ wrongAccuracySub.remove();
 
 ```js
 const rtldCollectedSub = addOnRtldColectedData(() => {
-  console.log("RTLD data collected (iOS)");
+  console.log('RTLD data collected (iOS)');
 });
-
 
 // Don't forget to remove listener
 rtldCollectedSub.remove();
@@ -439,7 +494,7 @@ await TelematicsSdk.setApiLanguage(ApiLanguage.english);
 
 ```js
 // Aggressive heartbeat mode (iOS only)
-const aggressive = await TelematicsSdk.isAggressiveHeartbeat();
+const aggressive = await TelematicsSdk.isAggressiveHeartbeats();
 await TelematicsSdk.setAggressiveHeartbeats(true);
 await TelematicsSdk.setAggressiveHeartbeats(false);
 ```
@@ -465,6 +520,9 @@ await TelematicsSdk.requestIOSMotionPermission();
 
 ```js
 // Configure SDK autostart (Android only)
-await TelematicsSdk.setAndroidAutoStartEnabled({ enable: true, permanent: true });
+await TelematicsSdk.setAndroidAutoStartEnabled({
+  enable: true,
+  permanent: true,
+});
 const autoStartEnabled = await TelematicsSdk.isAndroidAutoStartEnabled();
 ```

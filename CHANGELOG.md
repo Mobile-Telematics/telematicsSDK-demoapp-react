@@ -2,6 +2,12 @@
 
 All notable changes to this repository are documented here.
 
+## [3.0.0]
+- Added support Telematics iOS SDK v7.1.0.
+- Added support Telematics Android SDK v4.0.0.
+- Added support React Native New Architecture (TurboModule).
+- Migrated native Telematics iOS SDK from CocoaPods to Swift Package Manager.
+
 ## [2.0.1]
 ### Android updates
 - Motion detection algorithms update 

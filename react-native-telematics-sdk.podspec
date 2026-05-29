@@ -11,11 +11,15 @@ Pod::Spec.new do |s|
   s.authors      = package["author"]
 
   s.platforms    = { :ios => "13.0" }
-  s.source       = { :git => "https://github.com/maximcodm/react-native-telematics-sdk.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/Mobile-Telematics/telematicsSDK-demoapp-react.git", :tag => "#{s.version}" }
 
-  s.source_files = "ios/**/*.{h,m,mm,swift}"
+  s.source_files = "ios/**/*.{m,mm,swift}"
   s.swift_version = '5.0'
 
-  s.dependency "React-Core"
-  s.dependency 'TelematicsSDK', '~> 7.0.3'
+  install_modules_dependencies(s)
+  spm_dependency(s,
+    url: 'https://github.com/Mobile-Telematics/telematicsSDK-iOS-new-SPM.git',
+    requirement: { kind: 'exactVersion', version: '7.1.0' },
+    products: ['TelematicsSDK']
+  )
 end

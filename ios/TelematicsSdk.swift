@@ -1,4 +1,5 @@
 import Foundation
+import React
 import TelematicsSDK
 import UIKit
 
@@ -12,20 +13,19 @@ fileprivate enum Events: String, CaseIterable {
 }
 
 @objc(TelematicsSdk)
-class TelematicsSdk: RCTEventEmitter {
-  
+public class TelematicsSdk: RCTEventEmitter {
+
   private var hasListeners = false
   private var speedLimitKmH: Double = 0
   private var speedLimitTimeThreshold: TimeInterval = 0
-    
-  // used to allow UI operations
-  @objc override static func requiresMainQueueSetup() -> Bool { true }
-  
-  override func supportedEvents() -> [String]! {
+
+  @objc override public static func requiresMainQueueSetup() -> Bool { true }
+
+  override public func supportedEvents() -> [String]! {
     Events.allCases.map(\.rawValue)
   }
-  
-  override func startObserving() {
+
+  override public func startObserving() {
     hasListeners = true
     RPEntry.instance.lowPowerModeDelegate = self
     RPEntry.instance.locationDelegate = self
@@ -33,8 +33,8 @@ class TelematicsSdk: RCTEventEmitter {
     RPEntry.instance.accuracyAuthorizationDelegate = self
     RPEntry.instance.rtldDelegate = self
   }
-  
-  override func stopObserving() {
+
+  override public func stopObserving() {
     hasListeners = false
     RPEntry.instance.lowPowerModeDelegate = nil
     RPEntry.instance.locationDelegate = nil
@@ -42,266 +42,446 @@ class TelematicsSdk: RCTEventEmitter {
     RPEntry.instance.accuracyAuthorizationDelegate = nil
     RPEntry.instance.rtldDelegate = nil
   }
-  
-  @objc(initialize)
-  func initialize() {
-    
-  }
-  
-  @objc(isInitialized:rejecter:)
-  func isInitialized(
+
+  // MARK: - Lifecycle
+
+  @objc(initializeSdk:reject:)
+  public func initializeSdk(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    let isInitialized = RPEntry.isInitialized
-    resolve(isInitialized)
-  }
-  
-  @objc(getDeviceId:rejecter:)
-  func getDeviceId(
-    _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
-  ) {
-    resolve(RPEntry.instance.virtualDeviceToken ?? "")
-  }
-  
-  @objc(setDeviceId:resolver:rejecter:)
-  func setDeviceId(
-    _ deviceId: NSString,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
-  ) {
-    RPEntry.instance.virtualDeviceToken = String(deviceId)
     resolve(nil)
   }
-  
-  @objc(logout:rejecter:)
-  func logout(
+
+  @objc(isInitializedSdk:reject:)
+  public func isInitializedSdk(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(RPEntry.isInitialized())
+  }
+
+  // MARK: - Device token
+
+  @objc(getDeviceId:reject:)
+  public func getDeviceId(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(RPEntry.instance.getDeviceId())
+  }
+
+  @objc(getDeviceIdRegistrationState:reject:)
+  public func getDeviceIdRegistrationState(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    let state = RPEntry.instance.getDeviceIdRegistrationState()
+    let checkedAtMillis: Int
+    if state.checkedAt > 0 {
+      checkedAtMillis = Int((state.checkedAt * 1000).rounded())
+    } else {
+      checkedAtMillis = 0
+    }
+
+    resolve([
+      "status": deviceIdRegistrationStatusString(from: state.status),
+      "checkedAtMillis": checkedAtMillis,
+    ])
+  }
+
+  @objc(setDeviceId:resolve:reject:)
+  public func setDeviceId(
+    _ deviceId: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    do {
+      try RPEntry.instance.setDeviceID(deviceId: deviceId)
+      resolve(nil)
+    } catch {
+      reject("ERROR", error.localizedDescription, error)
+    }
+  }
+
+  @objc(logout:reject:)
+  public func logout(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
   ) {
     RPEntry.instance.logout()
     resolve(nil)
   }
-  
-  @objc(isAllRequiredPermissionsAndSensorsGranted:rejecter:)
-  func isAllRequiredPermissionsAndSensorsGranted(
+
+  // MARK: - Permissions & tracking
+
+  @objc(isAllRequiredPermissionsAndSensorsGranted:reject:)
+  public func isAllRequiredPermissionsAndSensorsGranted(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.isAllRequiredPermissionsGranted())
+    resolve(RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted())
   }
-  
-  @objc(isSdkEnabled:rejecter:)
-  func isSdkEnabled(
+
+  @objc(isSdkEnabled:reject:)
+  public func isSdkEnabled(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
     resolve(RPEntry.instance.isSDKEnabled())
   }
-  
-  @objc(isTracking:rejecter:)
-  func isTracking(
+
+  @objc(isTracking:reject:)
+  public func isTracking(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.isTrackingActive())
+    resolve(RPEntry.instance.isTracking())
   }
-  
-  @objc(setEnableSdk:resolver:rejecter:)
-  func setEnableSdk(
+
+  @objc(setEnableSdk:resolve:reject:)
+  public func setEnableSdk(
     _ enable: Bool,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
   ) {
     RPEntry.instance.setEnableSdk(enable)
     resolve(nil)
   }
-  
-  @objc(startManualTracking:rejecter:)
-  func startManualTracking(
+
+  @objc(startManualTracking:reject:)
+  public func startManualTracking(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
     RPEntry.instance.startTracking()
     resolve(nil)
   }
-  
-  @objc(startManualPersistentTracking:rejecter:)
-  func startManualPersistentTracking(
+
+  @objc(startTrackAsPersistent:reject:)
+  public func startTrackAsPersistent(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.startPersistentTracking()
+    RPEntry.instance.startTrackAsPersistent()
     resolve(nil)
   }
-  
-  @objc(stopManualTracking:rejecter:)
-  func stopManualTracking(
+
+  @objc(stopManualTracking:reject:)
+  public func stopManualTracking(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
     RPEntry.instance.stopTracking()
     resolve(nil)
   }
-  
-  @objc(uploadUnsentTrips:rejecter:)
-  func uploadUnsentTrips(
+
+  @objc(setMaxPersistentTrackingInterval:resolve:reject:)
+  public func setMaxPersistentTrackingInterval(
+    _ minutes: Double,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    do {
+      try RPEntry.instance.setMaxPersistentTrackingInterval(minutes: Int(minutes))
+      resolve(nil)
+    } catch {
+      reject("INVALID_ARGUMENT", error.localizedDescription, error)
+    }
+  }
+
+  @objc(getMaxPersistentTrackingInterval:reject:)
+  public func getMaxPersistentTrackingInterval(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(RPEntry.instance.getMaxPersistentTrackingInterval())
+  }
+
+  @objc(setTrackingMode:resolve:reject:)
+  public func setTrackingMode(
+    _ trackingMode: Double,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard let mode = RPTrackingMode(rawValue: Int(trackingMode)) else {
+      reject("INVALID_ARGUMENT", "trackingMode is invalid", nil)
+      return
+    }
+
+    RPEntry.instance.setTrackingMode(mode)
+    resolve(nil)
+  }
+
+  @objc(getTrackingMode:reject:)
+  public func getTrackingMode(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(RPEntry.instance.getTrackingMode().rawValue)
+  }
+
+  @objc(getTrackingState:reject:)
+  public func getTrackingState(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    RPEntry.instance.getTrackingState { [weak self] state in
+      resolve([
+        "automaticTrackingStatus": self?.trackingStatusString(from: state.automaticTrackingStatus) ?? "UNKNOWN",
+        "manualTrackingStatus": self?.trackingStatusString(from: state.manualTrackingStatus) ?? "UNKNOWN",
+      ])
+    }
+  }
+
+  // MARK: - Upload
+
+  @objc(uploadUnsentTrips:reject:)
+  public func uploadUnsentTrips(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
   ) {
     RPEntry.instance.uploadUnsentTrips()
     resolve(nil)
   }
-  
-  @objc(getUnsentTripCount:rejecter:)
-  func getUnsentTripCount(
+
+  @objc(getUnsentTripCount:reject:)
+  public func getUnsentTripCount(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.getUnsentTripCount())
+    RPEntry.instance.getUnsentTripCount { unsentTripsCount in
+      resolve(unsentTripsCount)
+    }
   }
-  
-  @objc(sendCustomHeartbeats:resolver:rejecter:)
-  func sendCustomHeartbeats(
-    _ reason: NSString,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+
+  // MARK: - Heartbeats
+
+  @objc(sendCustomHeartbeats:resolve:reject:)
+  public func sendCustomHeartbeats(
+    _ reason: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.sendCustomHeartbeat(String(reason))
+    RPEntry.instance.sendCustomHeartbeat(reason)
     resolve(nil)
   }
-  
-  @objc(showPermissionWizard:enableAggressivePermissionsWizardPage:resolver:rejecter:)
-  func showPermissionWizard(
+
+  // MARK: - Wizard
+
+  @objc(showPermissionWizard:enableAggressivePermissionsWizardPage:resolve:reject:)
+  public func showPermissionWizard(
     _ enableAggressivePermissionsWizard: Bool,
     enableAggressivePermissionsWizardPage: Bool,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    if RPEntry.instance.isAllRequiredPermissionsGranted() {
+    if RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted() {
       resolve(true)
       return
     }
-    
+
     DispatchQueue.main.async {
       RPPermissionsWizard.returnInstance().launch { _ in
-        RPEntry.instance.isAllRequiredPermissionsGranted() ? resolve(true) : resolve(false)
+        RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted() ? resolve(true) : resolve(false)
       }
     }
   }
-  
-  @objc(setAccidentDetectionSensitivity:resolver:rejecter:)
-  func setAccidentDetectionSensitivity(
-    value: NSNumber,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+
+  // MARK: - Accidents / RTLD
+
+  @objc(setAccidentDetectionSensitivity:resolve:reject:)
+  public func setAccidentDetectionSensitivity(
+    _ value: Double,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    guard let sensitivity = RPAccidentDetectionSensitivity(rawValue: value.intValue) else {
-      reject("INVALID_PARAMS", "Missing accidentDetectionSensitivity", nil)
+    guard let sensitivity = RPAccidentDetectionSensitivity(rawValue: Int(value)) else {
+      reject("INVALID_PARAMS", "Invalid accidentDetectionSensitivity value", nil)
       return
     }
-    RPEntry.instance.accidentDetectionSensitivity = sensitivity
+    RPEntry.instance.setAccidentDetectionSensitivity(sensitivity: sensitivity)
     resolve(nil)
   }
-  
-  @objc(isRTLDEnabled:rejecter:)
-  func isRTLDEnabled(
+
+  @objc(isRTLDEnabled:reject:)
+  public func isRTLDEnabled(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.isRTDEnabled())
+    resolve(RPEntry.instance.isRTLDEnabled())
   }
-  
-  @objc(enableAccidents:resolver:rejecter:)
-  func enableAccidents(
+
+  @objc(enableAccidents:resolve:reject:)
+  public func enableAccidents(
     _ enable: Bool,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.enableAccidents(enable)
+    RPEntry.instance.setAccidentDetectionEnabled(enable)
     resolve(nil)
   }
-  
-  @objc(isEnabledAccidents:rejecter:)
-  func isEnabledAccidents(
+
+  @objc(isEnabledAccidents:reject:)
+  public func isEnabledAccidents(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.isEnabledAccidents())
+    resolve(RPEntry.instance.isAccidentDetectionEnabled())
   }
-  
-  @objc(isAggressiveHeartbeat:rejecter:)
-  func isAggressiveHeartbeat(
+
+  // MARK: - Tags API
+
+  @objc(getFutureTrackTags:reject:)
+  public func getFutureTrackTags(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-      resolve(RPEntry.instance.aggressiveHeartbeat())
+    RPEntry.instance.api.getFutureTrackTag { status, tags in
+      let tagsList = tags.map { ["tag": $0.tag, "source": $0.source ?? ""] }
+      let result: [String: Any] = ["status": self.parseTagStatus(status: status), "tags": tagsList]
+      resolve(result)
+    }
   }
-  
-  @objc(setAggressiveHeartbeats:resolver:rejecter:)
-  func setAggressiveHeartbeats(
+
+  @objc(addFutureTrackTag:source:resolve:reject:)
+  public func addFutureTrackTag(
+    _ tag: String,
+    source: String?,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    let futureTag = RPFutureTag(tag: tag, source: source ?? "")
+    RPEntry.instance.api.addFutureTrackTag(futureTag) { status, error in
+      if let err = error {
+        reject("ERROR", err.localizedDescription, err)
+      } else {
+        let result: [String: Any] = [
+          "status": self.parseTagStatus(status: status),
+          "tag": ["tag": tag, "source": source ?? ""],
+        ]
+        resolve(result)
+      }
+    }
+  }
+
+  @objc(removeFutureTrackTag:resolve:reject:)
+  public func removeFutureTrackTag(
+    _ tag: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    let futureTag = RPFutureTag(tag: tag, source: nil)
+    RPEntry.instance.api.removeFutureTrackTag(futureTag) { status, error in
+      if let err = error {
+        reject("ERROR", err.localizedDescription, err)
+      } else {
+        let result: [String: Any] = ["status": self.parseTagStatus(status: status), "tag": ["tag": tag]]
+        resolve(result)
+      }
+    }
+  }
+
+  @objc(removeAllFutureTrackTags:reject:)
+  public func removeAllFutureTrackTags(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    RPEntry.instance.api.removeAllFutureTrackTags { status, error in
+      if let err = error {
+        reject("ERROR", err.localizedDescription, err)
+      } else {
+        resolve(self.parseTagStatus(status: status))
+      }
+    }
+  }
+
+  // MARK: - Speed violations (flattened params)
+
+  @objc(registerSpeedViolations:speedLimitTimeout:resolve:reject:)
+  public func registerSpeedViolations(
+    _ speedLimitKmH: Double,
+    speedLimitTimeout: Double,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    self.speedLimitKmH = speedLimitKmH
+    self.speedLimitTimeThreshold = speedLimitTimeout
+
+    RPEntry.instance.speedLimitDelegate = self
+    resolve(nil)
+  }
+
+  // MARK: - iOS-only
+
+  @objc(isAggressiveHeartbeats:reject:)
+  public func isAggressiveHeartbeats(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    resolve(RPEntry.instance.isAggressiveHeartbeats())
+  }
+
+  @objc(setAggressiveHeartbeats:resolve:reject:)
+  public func setAggressiveHeartbeats(
     _ enable: Bool,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-      RPEntry.instance.setAggressiveHeartbeats(enable)
-      resolve(nil)
+    RPEntry.instance.setAggressiveHeartbeats(enable)
+    resolve(nil)
   }
-  
-  
-  @objc(setDisableTracking:resolver:rejecter:)
-  func setDisableTracking(
+
+  @objc(setDisableTracking:resolve:reject:)
+  public func setDisableTracking(
     _ value: Bool,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-      RPEntry.instance.disableTracking = value
-      resolve(nil)
+    RPEntry.instance.setDisableTracking(disableTracking: value)
+    resolve(nil)
   }
 
-  @objc(isDisableTracking:rejecter:)
-  func isDisableTracking(
+  @objc(isDisableTracking:reject:)
+  public func isDisableTracking(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-      resolve(RPEntry.instance.disableTracking)
+    resolve(RPEntry.instance.isDisableTracking())
   }
 
-
-  @objc(isWrongAccuracyState:rejecter:)
-  func isWrongAccuracyState(
+  @objc(isWrongAccuracyState:reject:)
+  public func isWrongAccuracyState(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-      resolve(RPEntry.instance.wrongAccuracyState)
+    resolve(RPEntry.instance.isWrongAccuracyState())
   }
 
-
-  @objc(requestIOSLocationAlwaysPermission:rejecter:)
-  func requestIOSLocationAlwaysPermission(
+  @objc(requestIOSLocationAlwaysPermission:reject:)
+  public func requestIOSLocationAlwaysPermission(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-      RPEntry.instance.requestLocationAlwaysPermission()
-      resolve(nil)
+    RPEntry.instance.requestLocationAlwaysPermission()
+    resolve(nil)
   }
 
-  @objc(requestIOSMotionPermission:rejecter:)
-  func requestIOSMotionPermission(
+  @objc(requestIOSMotionPermission:reject:)
+  public func requestIOSMotionPermission(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-      RPEntry.instance.requestMotionPermission()
-      resolve(nil)
+    RPEntry.instance.requestMotionPermission()
+    resolve(nil)
   }
-  
-  @objc(getApiLanguage:rejecter:)
-  func getApiLanguage(
+
+  @objc(getApiLanguage:reject:)
+  public func getApiLanguage(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    switch RPEntry.instance.apiLanguage {
+    switch RPEntry.instance.getApiLanguage() {
     case .none:
       resolve("None")
     case .english:
@@ -313,120 +493,92 @@ class TelematicsSdk: RCTEventEmitter {
     case .spanish:
       resolve("Spanish")
     @unknown default:
-      resolve(nil)
+      resolve("English")
     }
   }
-  
-  @objc(setApiLanguage:resolver:rejecter:)
-  func setApiLanguage(
-    _ language: NSString,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
+
+  @objc(setApiLanguage:resolve:reject:)
+  public func setApiLanguage(
+    _ language: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    let lang = String(language)
-    
-    switch lang {
+    switch language {
     case "None":
-      RPEntry.instance.apiLanguage = .none
+      RPEntry.instance.setApiLanguage(apiLanguage: .none)
     case "English":
-      RPEntry.instance.apiLanguage = .english
+      RPEntry.instance.setApiLanguage(apiLanguage: .english)
     case "Russian":
-      RPEntry.instance.apiLanguage = .russian
+      RPEntry.instance.setApiLanguage(apiLanguage: .russian)
     case "Portuguese":
-      RPEntry.instance.apiLanguage = .portuguese
+      RPEntry.instance.setApiLanguage(apiLanguage: .portuguese)
     case "Spanish":
-      RPEntry.instance.apiLanguage = .spanish
+      RPEntry.instance.setApiLanguage(apiLanguage: .spanish)
     default:
-      RPEntry.instance.apiLanguage = .english
+      reject("INVALID_PARAMS", "Unsupported language: \(language)", nil)
       return
     }
     resolve(nil)
   }
-  
-  @objc(addFutureTrackTag:source:resolver:rejecter:)
-  func addFutureTrackTag(
-    _ tag: NSString,
-    _ source: NSString,
+
+  // MARK: - Android-only stubs (no-op on iOS, required by codegen protocol)
+
+  @objc(setAndroidAutoStartEnabled:permanent:resolve:reject:)
+  public func setAndroidAutoStartEnabled(
+    _ enable: Bool,
+    permanent: Bool,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    reject("PLATFORM_ERROR", "setAndroidAutoStartEnabled is not available on iOS", nil)
+  }
+
+  @objc(isAndroidAutoStartEnabled:reject:)
+  public func isAndroidAutoStartEnabled(
     _ resolve: @escaping RCTPromiseResolveBlock,
-    _ reject: @escaping RCTPromiseRejectBlock
+    reject: @escaping RCTPromiseRejectBlock
   ) {
-    
-    let futureTag = RPFutureTag(tag: String(tag), source: String(source))
-    RPEntry.instance.api.addFutureTrackTag(futureTag) { status, error in
-      if let err = error {
-        reject("ERROR", err.localizedDescription, err)
-      } else {
-        let result: [String: Any] = ["status": self.parseTagStatus(status: status), "tag": ["tag": tag, "source": source]]
-        resolve(result)
-      }
+    reject("PLATFORM_ERROR", "isAndroidAutoStartEnabled is not available on iOS", nil)
+  }
+
+  // MARK: - Helpers
+
+  private func deviceIdRegistrationStatusString(
+    from status: RPDeviceIdRegistrationStatus
+  ) -> String {
+    switch status {
+    case .notSet:
+      return "NOT_SET"
+    case .unknown:
+      return "UNKNOWN"
+    case .registered:
+      return "REGISTERED"
+    case .notRegistered:
+      return "NOT_REGISTERED"
+    @unknown default:
+      return "UNKNOWN"
     }
   }
-  
-  @objc(removeFutureTrackTag:resolver:rejecter:)
-  func removeFutureTrackTag(
-    _ tag: NSString,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
-  ) {
-    let futureTag = RPFutureTag(tag: String(tag), source: nil)
-    RPEntry.instance.api.removeFutureTrackTag(futureTag) { status, error in
-      if let err = error {
-        reject("ERROR", err.localizedDescription, err)
-      } else {
-        let result: [String: Any] = ["status": self.parseTagStatus(status: status), "tag": ["tag": tag]]
-        resolve(result)
-      }
+
+  private func trackingStatusString(from status: RPTrackingStatus) -> String {
+    switch status {
+    case .enabled:
+      return "ENABLED"
+    case .deviceIdNotSet:
+      return "DEVICE_ID_NOT_SET"
+    case .sdkDisabled:
+      return "SDK_DISABLED"
+    case .disabledBySettings:
+      return "DISABLED_BY_SETTINGS"
+    case .disabledByServer:
+      return "DISABLED_BY_SERVER"
+    case .disabledBySchedule:
+      return "DISABLED_BY_SCHEDULE"
+    @unknown default:
+      return "UNKNOWN"
     }
   }
-  
-  @objc(removeAllFutureTrackTags:rejecter:)
-  func removeAllFutureTrackTags(
-    _ resolve: @escaping RCTPromiseResolveBlock,
-    _ reject: @escaping RCTPromiseRejectBlock
-  ) {
-    RPEntry.instance.api.removeAllFutureTrackTags { status, error in
-      if let err = error {
-        reject("ERROR", err.localizedDescription, err)
-      } else {
-        resolve(self.parseTagStatus(status: status))
-      }
-    }
-  }
-  
-  @objc(getFutureTrackTags:rejecter:)
-  func getFutureTrackTags(
-    _ resolve: @escaping RCTPromiseResolveBlock,
-    _ reject: @escaping RCTPromiseRejectBlock
-  ) {
-    RPEntry.instance.api.getFutureTrackTag { status, tags in
-      let tagsList = tags.map { ["tag": $0.tag, "source": $0.source ?? ""] }
-      let result: [String: Any] = ["status": self.parseTagStatus(status: status), "tags": tagsList]
-      resolve(result)
-    }
-  }
-  
-  @objc(registerSpeedViolations:resolver:rejecter:)
-  func registerSpeedViolations(
-    _ params: NSDictionary,
-    resolver resolve: @escaping RCTPromiseResolveBlock,
-    rejecter reject: @escaping RCTPromiseRejectBlock
-  ) {
-    guard
-      let speedLimitKmH = params["speedLimitKmH"] as? NSNumber,
-      let speedLimitTimeout = params["speedLimitTimeout"] as? NSNumber
-    else {
-      reject("INVALID_PARAMS", "Missing speedLimitKmH/speedLimitTimeout", nil)
-      return
-    }
-    
-    self.speedLimitKmH = speedLimitKmH.doubleValue
-    self.speedLimitTimeThreshold = speedLimitTimeout.doubleValue // seconds, как во Flutter
-    
-    RPEntry.instance.speedLimitDelegate = self
-    resolve(nil)
-  }
-  
-  // Helper method to parse tag status
+
   private func parseTagStatus(status: RPTagStatus) -> String {
     switch status {
     case .success:
@@ -435,7 +587,7 @@ class TelematicsSdk: RCTEventEmitter {
       return "Offline"
     case .errorTagOperation:
       return "Wrong tag operation"
-    case .invalidDeviceToken:
+    case .invalidDeviceId:
       return "Invalid device token"
     @unknown default:
       return "Unknown error"
@@ -443,63 +595,54 @@ class TelematicsSdk: RCTEventEmitter {
   }
 }
 
+// MARK: - Event delegates
+
 extension TelematicsSdk: RPLowPowerModeDelegate {
-  
-  func lowPowerMode(_ state: Bool) {
+  public func lowPowerMode(_ state: Bool) {
     guard hasListeners else { return }
     sendEvent(withName: Events.onLowPowerMode.rawValue, body: ["enabled": state])
   }
-  
 }
 
 extension TelematicsSdk: RPLocationDelegate {
-  
-  func onLocationChanged(_ location: CLLocation) {
+  public func onLocationChanged(_ location: CLLocation) {
     guard hasListeners else { return }
     let coordinate: [String: Any] = [
       "latitude": location.coordinate.latitude,
-      "longitude": location.coordinate.longitude
+      "longitude": location.coordinate.longitude,
     ]
     sendEvent(withName: Events.onLocationChanged.rawValue, body: coordinate)
   }
-  
-  func onNewEvents(_ events: [TelematicsSDK.RPEventPoint]) {}
-  
+
+  public func onNewEvents(_ events: [TelematicsSDK.RPEventPoint]) {}
 }
 
 extension TelematicsSdk: RPTrackingStateListenerDelegate {
-  
-  func trackingStateChanged(_ state: Bool) {
+  public func trackingStateChanged(_ state: Bool) {
     guard hasListeners else { return }
     sendEvent(withName: Events.onTrackingStateChanged.rawValue, body: state)
   }
-  
 }
 
 extension TelematicsSdk: RPAccuracyAuthorizationDelegate {
-  
-  func wrongAccuracyAuthorization() {
+  public func wrongAccuracyAuthorization() {
     guard hasListeners else { return }
     sendEvent(withName: Events.onWrongAccuracyAuthorization.rawValue, body: nil)
   }
-  
 }
 
-extension TelematicsSdk: RPRTDLDelegate {
-  
-  func rtldColectedData() {
+extension TelematicsSdk: RPRTLDDelegate {
+  public func rtldColectedData() {
     guard hasListeners else { return }
     sendEvent(withName: Events.onRtldColectedData.rawValue, body: nil)
   }
-  
 }
 
 extension TelematicsSdk: RPSpeedLimitDelegate {
-  
-  var timeThreshold: TimeInterval { speedLimitTimeThreshold }
-  var speedLimit: Double { speedLimitKmH }
-  
-  func speedLimitNotification(
+  public var timeThreshold: TimeInterval { speedLimitTimeThreshold }
+  public var speedLimit: Double { speedLimitKmH }
+
+  public func speedLimitNotification(
     _ speedLimit: Double,
     speed: Double,
     latitude: Double,
@@ -512,11 +655,8 @@ extension TelematicsSdk: RPSpeedLimitDelegate {
       "latitude": latitude,
       "longitude": longitude,
       "speed": speed,
-      "speedLimit": speedLimit
+      "speedLimit": speedLimit,
     ]
-    
     sendEvent(withName: Events.onSpeedViolation.rawValue, body: payload)
   }
-  
-  
 }
