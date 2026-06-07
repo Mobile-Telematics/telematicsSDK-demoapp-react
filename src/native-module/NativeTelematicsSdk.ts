@@ -90,7 +90,7 @@ export interface Spec extends TurboModule {
   /** Adds a Future Track tag. */
   addFutureTrackTag(tag: string, source: string | null): Promise<Object>;
   /** Removes a Future Track tag. */
-  removeFutureTrackTag(tag: string): Promise<Object>;
+  removeFutureTrackTag(tag: string, source: string | null): Promise<Object>;
   /** Removes all Future Track tags. */
   removeAllFutureTrackTags(): Promise<string>;
 

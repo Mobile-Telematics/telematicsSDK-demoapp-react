@@ -572,7 +572,10 @@ export default function App() {
 
   const removeTag = async () => {
     try {
-      const result = await TelematicsSdk.removeFutureTrackTag('RN_Demo_Tag');
+      const result = await TelematicsSdk.removeFutureTrackTag(
+        'RN_Demo_Tag',
+        'RN_Demo_Source'
+      );
       setSdkTag(JSON.stringify(result));
     } catch (error: any) {
       showErrorAlert(error);

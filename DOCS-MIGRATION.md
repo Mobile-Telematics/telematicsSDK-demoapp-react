@@ -17,7 +17,7 @@ This guide summarizes the migration performed in this repo and how to adapt your
   - `getStatus()`
   - `getDeviceToken()`
   - `disable()`
-  - Tags API: `addFutureTrackTag(tag, source?)`, `getFutureTrackTags()`, `removeFutureTrackTag(tag)`, `removeAllFutureTrackTags()`
+  - Tags API: `addFutureTrackTag(tag, source?)`, `getFutureTrackTags()`, `removeFutureTrackTag(tag, source?)`, `removeAllFutureTrackTags()`
   - `startPersistentTracking()`
   - `startTracking()`
   - `stopTracking()`
@@ -54,7 +54,7 @@ const token = await TelematicsSdk.getDeviceToken();
 
 await TelematicsSdk.addFutureTrackTag('my-tag', 'source');
 const tags = await TelematicsSdk.getFutureTrackTags();
-await TelematicsSdk.removeFutureTrackTag('my-tag');
+await TelematicsSdk.removeFutureTrackTag('my-tag', 'source');
 await TelematicsSdk.removeAllFutureTrackTags();
 
 await TelematicsSdk.startPersistentTracking();

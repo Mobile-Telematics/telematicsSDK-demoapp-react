@@ -168,8 +168,12 @@ export interface TelematicsSdk {
    * Removes a Future Track tag.
    *
    * @param tag Tag identifier.
+   * @param source Optional source string. Android accepts it for API compatibility and removes by tag.
    */
-  removeFutureTrackTag(tag: string): Promise<{ status: string; tag: Tag }>;
+  removeFutureTrackTag(
+    tag: string,
+    source?: string
+  ): Promise<{ status: string; tag: Tag }>;
 
   /** Removes all Future Track tags. */
   removeAllFutureTrackTags(): Promise<string>;
@@ -347,8 +351,8 @@ class TelematicsSdkImpl implements TelematicsSdk {
       tag: Tag;
     }>;
   }
-  removeFutureTrackTag(tag: string) {
-    return this.native.removeFutureTrackTag(tag) as Promise<{
+  removeFutureTrackTag(tag: string, source?: string) {
+    return this.native.removeFutureTrackTag(tag, source ?? null) as Promise<{
       status: string;
       tag: Tag;
     }>;

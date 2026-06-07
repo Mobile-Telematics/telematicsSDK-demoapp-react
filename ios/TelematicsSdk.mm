@@ -88,6 +88,7 @@ RCT_EXTERN_METHOD(addFutureTrackTag:(NSString *)tag
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(removeFutureTrackTag:(NSString *)tag
+                  source:(NSString * _Nullable)source
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(removeAllFutureTrackTags:(RCTPromiseResolveBlock)resolve

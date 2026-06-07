@@ -338,7 +338,7 @@ public class TelematicsSdk: RCTEventEmitter {
     reject: @escaping RCTPromiseRejectBlock
   ) {
     RPEntry.instance.api.getFutureTrackTag { status, tags in
-      let tagsList = tags.map { ["tag": $0.tag, "source": $0.source ?? ""] }
+      let tagsList = tags.map { self.tagPayload(tag: $0.tag, source: $0.source) }
       let result: [String: Any] = ["status": self.parseTagStatus(status: status), "tags": tagsList]
       resolve(result)
     }
@@ -351,32 +351,36 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    let futureTag = RPFutureTag(tag: tag, source: source ?? "")
+    let futureTag = RPFutureTag(tag: tag, source: source)
     RPEntry.instance.api.addFutureTrackTag(futureTag) { status, error in
       if let err = error {
         reject("ERROR", err.localizedDescription, err)
       } else {
         let result: [String: Any] = [
           "status": self.parseTagStatus(status: status),
-          "tag": ["tag": tag, "source": source ?? ""],
+          "tag": self.tagPayload(tag: tag, source: source),
         ]
         resolve(result)
       }
     }
   }
 
-  @objc(removeFutureTrackTag:resolve:reject:)
+  @objc(removeFutureTrackTag:source:resolve:reject:)
   public func removeFutureTrackTag(
     _ tag: String,
+    source: String?,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    let futureTag = RPFutureTag(tag: tag, source: nil)
+    let futureTag = RPFutureTag(tag: tag, source: source)
     RPEntry.instance.api.removeFutureTrackTag(futureTag) { status, error in
       if let err = error {
         reject("ERROR", err.localizedDescription, err)
       } else {
-        let result: [String: Any] = ["status": self.parseTagStatus(status: status), "tag": ["tag": tag]]
+        let result: [String: Any] = [
+          "status": self.parseTagStatus(status: status),
+          "tag": self.tagPayload(tag: tag, source: source),
+        ]
         resolve(result)
       }
     }
@@ -592,6 +596,13 @@ public class TelematicsSdk: RCTEventEmitter {
     @unknown default:
       return "Unknown error"
     }
+  }
+
+  private func tagPayload(tag: String, source: String?) -> [String: Any] {
+    [
+      "tag": tag,
+      "source": source as Any? ?? NSNull(),
+    ]
   }
 }
 

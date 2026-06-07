@@ -2,6 +2,13 @@
 
 All notable changes to this repository are documented here.
 
+## [3.0.1]
+- Fixed Future Track tag callbacks on Android to resolve React Native promises on the UI queue.
+- Fixed Android Future Track tag calls to preserve nullable `source` values and safely handle empty tag lists.
+- Added concurrency guards for pending Android Future Track tag operations.
+- Added optional `source` parameter to `removeFutureTrackTag` for API compatibility across platforms.
+- Fixed iOS Future Track tag add/remove calls to pass nullable `source` through to the native SDK.
+
 ## [3.0.0]
 - Added support Telematics iOS SDK v7.1.0.
 - Added support Telematics Android SDK v4.0.0.

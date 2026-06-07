@@ -34,15 +34,17 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   private Promise permissionsPromise = null;
   private final ReactApplicationContext reactContext;
   private boolean hasListeners = false;
+  private boolean tagsCallbackRegistered = false;
 
   private final TrackingApi api = TrackingApi.getInstance();
-  private final TagsProcessor tagsProcessor = new TagsProcessor();
+  private final TagsProcessor tagsProcessor;
   private final LocationListenerImpl locationListener;
   private final TrackingStateListenerImpl trackingStateListener;
 
   public TelematicsSdkModule(ReactApplicationContext reactContext) {
     super(reactContext);
     this.reactContext = reactContext;
+    this.tagsProcessor = new TagsProcessor(reactContext);
     this.locationListener = new LocationListenerImpl(this);
     this.trackingStateListener = new TrackingStateListenerImpl(this);
     this.reactContext.addActivityEventListener(this);
@@ -88,7 +90,11 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
     try {
       api.setLocationListener(null);
       api.unregisterCallback(trackingStateListener);
+      if (api.getTagsProcessingCallback() == tagsProcessor) {
+        api.removeTagsProcessingCallback();
+      }
       hasListeners = false;
+      tagsCallbackRegistered = false;
     } catch (Exception ignored) {
     }
   }
@@ -123,12 +129,19 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   public void initializeSdk(Promise promise) {
     if (!api.isInitialized()) {
       api.initialize(this.getReactApplicationContext(), setTelematicsSettings());
-      api.addTagsProcessingCallback(tagsProcessor);
       api.setLocationListener(locationListener);
       api.registerCallback(trackingStateListener);
       hasListeners = true;
     }
+    ensureTagsProcessingCallbackRegistered();
     promise.resolve(null);
+  }
+
+  private void ensureTagsProcessingCallbackRegistered() {
+    if (!tagsCallbackRegistered || api.getTagsProcessingCallback() != tagsProcessor) {
+      api.addTagsProcessingCallback(tagsProcessor);
+      tagsCallbackRegistered = true;
+    }
   }
 
   private Settings setTelematicsSettings() {
@@ -389,7 +402,10 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
       promise.reject("Error", "Tracking api is not initialized");
       return;
     }
-    tagsProcessor.setOnGetTags(promise);
+    ensureTagsProcessingCallbackRegistered();
+    if (!tagsProcessor.setOnGetTags(promise)) {
+      return;
+    }
     api.getFutureTrackTags();
   }
 
@@ -400,18 +416,24 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
       promise.reject("Error", "Tracking api is not initialized");
       return;
     }
-    tagsProcessor.setOnAddTag(promise);
-    api.addFutureTrackTag(tag, source == null ? "" : source);
+    ensureTagsProcessingCallbackRegistered();
+    if (!tagsProcessor.setOnAddTag(promise)) {
+      return;
+    }
+    api.addFutureTrackTag(tag, source);
   }
 
   @Override
-  public void removeFutureTrackTag(String tag, Promise promise) {
+  public void removeFutureTrackTag(String tag, @Nullable String source, Promise promise) {
     Log.d(TAG, "Removing track");
     if (!api.isInitialized()) {
       promise.reject("Error", "Tracking api is not initialized");
       return;
     }
-    tagsProcessor.setOnTagRemove(promise);
+    ensureTagsProcessingCallbackRegistered();
+    if (!tagsProcessor.setOnTagRemove(promise)) {
+      return;
+    }
     api.removeFutureTrackTag(tag);
   }
 
@@ -422,7 +444,10 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
       promise.reject("Error", "Tracking api is not initialized");
       return;
     }
-    tagsProcessor.setOnAllTagsRemove(promise);
+    ensureTagsProcessingCallbackRegistered();
+    if (!tagsProcessor.setOnAllTagsRemove(promise)) {
+      return;
+    }
     api.removeAllFutureTrackTags();
   }
 

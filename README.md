@@ -360,8 +360,10 @@ const tagsResult = await TelematicsSdk.getFutureTrackTags();
 
 ```js
 // Remove single future tag
-const removeResult =
-  await TelematicsSdk.removeFutureTrackTag('future_tag_name');
+const removeResult = await TelematicsSdk.removeFutureTrackTag(
+  'future_tag_name',
+  'future_tag_source'
+);
 ```
 
 ```js
