@@ -54,6 +54,129 @@ npx react-native run-ios
 yarn add react-native-telematics
 ```
 
+or:
+
+```sh
+npm install react-native-telematics
+```
+
+For iOS, install pods after adding the package:
+
+```sh
+cd ios
+pod install
+```
+
+For Android, React Native autolinking connects the native module automatically. Rebuild the app after installing the package:
+
+```sh
+npx react-native run-android
+```
+
+If Metro was already running, restart it with cache reset:
+
+```sh
+npx react-native start --reset-cache
+```
+
+## Importing the library into your app
+
+---
+
+Import the default SDK instance from `react-native-telematics`. Named exports provide enums and event listener helpers:
+
+```tsx
+import { useEffect } from 'react';
+import { Platform } from 'react-native';
+import TelematicsSdk, {
+  addOnLocationChangedListener,
+  addOnLowPowerModeListener,
+  addOnRtldColectedData,
+  addOnSpeedViolationListener,
+  addOnTrackingStateChangedListener,
+  addOnWrongAccuracyAuthorizationListener,
+} from 'react-native-telematics';
+```
+
+Initialize the SDK once when your app starts, then set the virtual device id/token that you received from your backend or DataHub flow:
+
+```tsx
+export function App() {
+  useEffect(() => {
+    const subscriptions: Array<{ remove: () => void }> = [];
+
+    const initTelematics = async () => {
+      await TelematicsSdk.initializeSdk();
+
+      const initialized = await TelematicsSdk.isInitializedSdk();
+      if (!initialized) {
+        return;
+      }
+
+      await TelematicsSdk.setDeviceId('YOUR_DEVICE_ID');
+      await TelematicsSdk.setEnableSdk(true);
+
+      const permissionsGranted = await TelematicsSdk.showPermissionWizard(
+        false,
+        false
+      );
+
+      if (permissionsGranted) {
+        await TelematicsSdk.startManualTracking();
+      }
+    };
+
+    initTelematics().catch(console.error);
+
+    subscriptions.push(
+      addOnLocationChangedListener(({ latitude, longitude }) => {
+        console.log('Location changed:', latitude, longitude);
+      })
+    );
+
+    subscriptions.push(
+      addOnTrackingStateChangedListener((isTracking) => {
+        console.log('Tracking state changed:', isTracking);
+      })
+    );
+
+    subscriptions.push(
+      addOnSpeedViolationListener((event) => {
+        console.log('Speed violation:', event);
+      })
+    );
+
+    if (Platform.OS === 'ios') {
+      subscriptions.push(
+        addOnLowPowerModeListener(({ enabled }) => {
+          console.log('Low power mode:', enabled);
+        })
+      );
+
+      subscriptions.push(
+        addOnWrongAccuracyAuthorizationListener(() => {
+          console.log('Wrong location accuracy authorization');
+        })
+      );
+
+      subscriptions.push(
+        addOnRtldColectedData(() => {
+          console.log('RTLD data collected');
+        })
+      );
+    }
+
+    return () => {
+      subscriptions.forEach((subscription) => subscription.remove());
+    };
+  }, []);
+
+  return null;
+}
+```
+
+Platform-specific listeners must only be registered on the matching platform. For example, `addOnLowPowerModeListener`, `addOnWrongAccuracyAuthorizationListener`, and `addOnRtldColectedData` are iOS-only.
+
 ## Getting started
 
 ---
@@ -153,7 +276,7 @@ we recommend the following integration.
 - Select the **app project** → **Package Dependencies** → **+**
 - Add package URL: `https://github.com/Mobile-Telematics/telematicsSDK-iOS-new-SPM.git`
 - Select product **TelematicsSDK**
-- Set dependency rule to **Exact Version** and use version **7.0.3**
+- Set dependency rule to **Exact Version** and use version **7.1.0**
 - Ensure it’s added to your **app target** (not only to Pods targets)
 
 3. Verify TelematicsSDK is embedded:
@@ -248,12 +371,12 @@ import TelematicsSdk, {
 
 ```js
 // Must be called before any other API
-await TelematicsSdk.initialize();
+await TelematicsSdk.initializeSdk();
 ```
 
 ```js
 // Returns whether the native SDK is initialized
-const initialized = await TelematicsSdk.isInitialized();
+const initialized = await TelematicsSdk.isInitializedSdk();
 ```
 
 ### Device Id (virtual token)
