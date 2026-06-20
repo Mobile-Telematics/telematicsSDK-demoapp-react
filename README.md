@@ -2,13 +2,17 @@
 
 A React Native wrapper for tracking the person's driving behavior such as speeding, turning, braking and several other things on iOS and Android.
 
-Disclaimer: This project uses Telematics SDK which belongs to DATA MOTION PTE. LTD. When using Telematics SDK refer to these [terms of use](https://docs.telematicssdk.com/license)
-
 Here you can find short video guides, how to add React Native Telematics SDK to your iOS and Android apps:
 
-[![Watch the video](https://github.com/Mobile-Telematics/telematicsSDK-demoapp-react/blob/main/iOS%20React%20Native%20Telematics%20SDK.png)](https://youtu.be/qHAaAw_-IXI)
+[Watch the video](https://youtu.be/qHAaAw_-IXI)
 
-[![Watch the video](https://github.com/Mobile-Telematics/telematicsSDK-demoapp-react/blob/main/iOS%20React%20Native%20Telematics%20SDK.png)](https://youtu.be/kZecA6hQi0Q)
+[Watch the video](https://youtu.be/kZecA6hQi0Q)
+
+## AI agent integration skill
+
+**We provide an AI agent skill that helps integrate Damoov TelematicsSDK into RN applications.** The skill can guide coding agents such as Claude Code, OpenAI Codex, and other AI coding tools through verified TelematicsSDK integration patterns, including dependency setup, lifecycle forwarding, tracking flows, tags, and migration away from deprecated APIs.
+
+Skill repository: [Mobile-Telematics/telematics-sdk-skills](https://github.com/Mobile-Telematics/telematics-sdk-skills).
 
 ## Example app
 
@@ -85,10 +89,11 @@ npx react-native start --reset-cache
 
 Import the default SDK instance from `react-native-telematics`. Named exports provide enums and event listener helpers:
 
-```tsx
+```js
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 import TelematicsSdk, {
+  TrackingMode,
   addOnLocationChangedListener,
   addOnLowPowerModeListener,
   addOnRtldColectedData,
@@ -100,7 +105,7 @@ import TelematicsSdk, {
 
 Initialize the SDK once when your app starts, then set the virtual device id/token that you received from your backend or DataHub flow:
 
-```tsx
+```js
 export function App() {
   useEffect(() => {
     const subscriptions: Array<{ remove: () => void }> = [];
@@ -190,6 +195,11 @@ For commercial use, you need create a developer workspace in [DataHub](https://u
 ### Android
 
 ---
+
+The Android SDK keeps a foreground notification to comply with Android background execution requirements. You can customize the notification text and icons from your app resources.
+
+Follow this way to configure it: [
+Assets for Android apps](https://docs.damoov.com/docs/android-sdk-integration)
 
 Add permissions in your project's AndroidManifest.xml:
 
@@ -358,6 +368,7 @@ func sceneDidEnterBackground(_ scene: UIScene) {
 import TelematicsSdk, {
   AccidentDetectionSensitivity,
   ApiLanguage,
+  TrackingMode,
   addOnLowPowerModeListener,
   addOnLocationChangedListener,
   addOnTrackingStateChangedListener,
@@ -384,6 +395,16 @@ const initialized = await TelematicsSdk.isInitializedSdk();
 ```js
 // Get current device id/token
 const deviceId = await TelematicsSdk.getDeviceId();
+```
+
+```js
+// Get the latest device id registration state and the time it was checked
+const deviceIdRegistrationState =
+  await TelematicsSdk.getDeviceIdRegistrationState();
+console.log(
+  deviceIdRegistrationState.status,
+  deviceIdRegistrationState.checkedAtMillis
+);
 ```
 
 ```js
@@ -445,6 +466,28 @@ await TelematicsSdk.stopManualTracking();
 ```js
 // Check tracking state
 const tracking = await TelematicsSdk.isTracking();
+```
+
+```js
+// Set and get the maximum persistent tracking session duration, in minutes
+await TelematicsSdk.setMaxPersistentTrackingInterval(120);
+const maxPersistentInterval =
+  await TelematicsSdk.getMaxPersistentTrackingInterval();
+```
+
+```js
+// Use standard or persistent mode for SDK-started and manually-started tracking
+await TelematicsSdk.setTrackingMode(TrackingMode.Persistent);
+const trackingMode = await TelematicsSdk.getTrackingMode();
+```
+
+```js
+// Get automatic and manual tracking availability states
+const trackingState = await TelematicsSdk.getTrackingState();
+console.log(
+  trackingState.automaticTrackingStatus,
+  trackingState.manualTrackingStatus
+);
 ```
 
 ### Trips
