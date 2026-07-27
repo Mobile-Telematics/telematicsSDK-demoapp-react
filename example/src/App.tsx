@@ -24,12 +24,10 @@ import TelematicsSdk, {
   addOnSpeedViolationListener,
 } from 'react-native-telematics';
 import { Button, Input } from './components';
-import { ClearButton } from './components/ClearButton';
 
 export default function App() {
   const [deviceToken, setDeviceToken] = useState('');
   const [isSdkEnabled, setSdkStatus] = useState(false);
-  const [sdkTag, setSdkTag] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isPermissionsGranted, setIsPermissionsGranted] = useState(false);
   const [heartbeatReason, setHeartbeatReason] = useState('RN_Heartbeat_Test');
@@ -46,16 +44,14 @@ export default function App() {
   const androidAutoStartPermanent = true;
   const [iosDisableTracking, setIosDisableTracking] = useState(false);
   const [iosAggressiveHeartbeats, setIosAggressiveHeartbeats] = useState(false);
+  const [properties, setProperties] = useState<Record<string, string>>({});
+  const [subUnits, setSubUnits] = useState<Record<string, string>>({});
 
   useEffect(() => {
     TelematicsSdk.initializeSdk();
-    const checkPermissions = async () => {
-      const isGranted = await TelematicsSdk.showPermissionWizard(false, false);
-      setIsPermissionsGranted(isGranted);
-    };
-    checkPermissions();
     updateSdkStatus();
     getToken();
+    refreshMetadata();
 
     const subs: Array<{ remove: () => void }> = [];
     if (Platform.OS === 'ios') {
@@ -120,8 +116,6 @@ export default function App() {
     });
   };
 
-  const clearSdkTag = () => setSdkTag('');
-
   // methods
   const getToken = async () => {
     const token = await TelematicsSdk.getDeviceId();
@@ -138,7 +132,82 @@ export default function App() {
   };
 
   const showPermissionWizard = async () => {
-    await TelematicsSdk.showPermissionWizard(false, false);
+    const isGranted = await TelematicsSdk.showPermissionWizard({
+      themeMode: 'system',
+      blockEarlyExit: false,
+      skipWizardPages: false,
+    });
+    setIsPermissionsGranted(isGranted);
+  };
+
+  const refreshMetadata = async () => {
+    try {
+      const [currentProperties, currentSubUnits] = await Promise.all([
+        TelematicsSdk.getProperties(),
+        TelematicsSdk.getSubUnits(),
+      ]);
+      setProperties(currentProperties);
+      setSubUnits(currentSubUnits);
+    } catch (error: any) {
+      console.log('Unable to load SDK metadata:', error);
+    }
+  };
+
+  const setDemoProperties = async () => {
+    try {
+      await TelematicsSdk.setProperties({
+        order_id: 'RN-Demo-12345',
+        shift: 'morning',
+      });
+      await refreshMetadata();
+      showInfoAlert('Properties updated');
+    } catch (error: any) {
+      showErrorAlert(error);
+    }
+  };
+
+  const clearDemoProperties = async () => {
+    try {
+      await TelematicsSdk.clearProperties();
+      await refreshMetadata();
+      showInfoAlert('Properties cleared');
+    } catch (error: any) {
+      showErrorAlert(error);
+    }
+  };
+
+  const setDemoSubUnits = async () => {
+    try {
+      await TelematicsSdk.setSubUnits({
+        DriverId: 'RN-D-001',
+        VehicleId: 'RN-V-002',
+      });
+      await refreshMetadata();
+      showInfoAlert('Sub-units updated');
+    } catch (error: any) {
+      showErrorAlert(error);
+    }
+  };
+
+  const clearDemoSubUnits = async () => {
+    try {
+      await TelematicsSdk.clearSubUnits();
+      await refreshMetadata();
+      showInfoAlert('Sub-units cleared');
+    } catch (error: any) {
+      showErrorAlert(error);
+    }
+  };
+
+  const addDemoActivityLog = async () => {
+    try {
+      await TelematicsSdk.addActivityLog('Activity log from RN demo', {
+        source: 'react-native-demo',
+      });
+      showInfoAlert('Demo activity log added');
+    } catch (error: any) {
+      showErrorAlert(error);
+    }
   };
 
   const checkInitialized = async () => {
@@ -540,48 +609,6 @@ export default function App() {
     updateSdkStatus();
   };
 
-  const setTag = async () => {
-    try {
-      const result = await TelematicsSdk.addFutureTrackTag(
-        'RN_Demo_Tag',
-        'RN_Demo_Source'
-      );
-      setSdkTag(JSON.stringify(result));
-    } catch (error: any) {
-      showErrorAlert(error);
-    }
-  };
-
-  const getTags = async () => {
-    try {
-      const result = await TelematicsSdk.getFutureTrackTags();
-      setSdkTag(JSON.stringify(result));
-    } catch (error: any) {
-      showErrorAlert(error);
-    }
-  };
-
-  const removeAllTags = async () => {
-    try {
-      const result = await TelematicsSdk.removeAllFutureTrackTags();
-      setSdkTag(JSON.stringify(result));
-    } catch (error: any) {
-      showErrorAlert(error);
-    }
-  };
-
-  const removeTag = async () => {
-    try {
-      const result = await TelematicsSdk.removeFutureTrackTag(
-        'RN_Demo_Tag',
-        'RN_Demo_Source'
-      );
-      setSdkTag(JSON.stringify(result));
-    } catch (error: any) {
-      showErrorAlert(error);
-    }
-  };
-
   const startPersistentTracking = async () => {
     try {
       await TelematicsSdk.startTrackAsPersistent();
@@ -617,7 +644,6 @@ export default function App() {
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
           >
-            {sdkTag === '' ? <View /> : <ClearButton onPress={clearSdkTag} />}
             <Input
               placeholder={'Your device token'}
               value={deviceToken}
@@ -671,30 +697,27 @@ export default function App() {
                 {String(iosAggressiveHeartbeats)}
               </Text>
             </Text>
-            <Text style={styles.tagText}>{sdkTag}</Text>
+            <Text style={styles.tagText}>
+              Properties: {JSON.stringify(properties)}
+              {'\n'}
+              Sub-units: {JSON.stringify(subUnits)}
+            </Text>
             <View>
+              <Button
+                text="Show permission wizard"
+                onPress={showPermissionWizard}
+                variant="primary"
+              />
               <Button
                 text="Enable SDK"
                 onPress={enableSDK}
                 variant="success"
                 disabled={isLoading}
               />
-              <Button
-                text="Add test tag"
-                onPress={setTag}
-                variant="secondary"
-              />
-              <Button text="Get all tags" onPress={getTags} variant="primary" />
-              <Button
-                text="Remove test tag"
-                onPress={removeTag}
-                variant="secondary"
-              />
-              <Button
-                text="Remove all tags"
-                onPress={removeAllTags}
-                variant="secondary"
-              />
+              <Text style={styles.tagText}>
+                Future Tags are deprecated and intentionally omitted from this
+                demo.
+              </Text>
               <Button text="Logout" onPress={logout} variant="danger" />
               <Button
                 text="Start tracking"
@@ -734,6 +757,31 @@ export default function App() {
               <Button
                 text="Send custom heartbeat"
                 onPress={sendHeartbeat}
+                variant="secondary"
+              />
+              <Button
+                text="Set demo properties"
+                onPress={setDemoProperties}
+                variant="secondary"
+              />
+              <Button
+                text="Clear properties"
+                onPress={clearDemoProperties}
+                variant="secondary"
+              />
+              <Button
+                text="Set demo sub-units"
+                onPress={setDemoSubUnits}
+                variant="secondary"
+              />
+              <Button
+                text="Clear sub-units"
+                onPress={clearDemoSubUnits}
+                variant="secondary"
+              />
+              <Button
+                text="Add demo activity log"
+                onPress={addDemoActivityLog}
                 variant="secondary"
               />
               <Button

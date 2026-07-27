@@ -63,8 +63,29 @@ RCT_EXTERN_METHOD(sendCustomHeartbeats:(NSString *)reason
                   reject:(RCTPromiseRejectBlock)reject)
 
 // MARK: - Wizard
-RCT_EXTERN_METHOD(showPermissionWizard:(BOOL)enableAggressivePermissionsWizard
-                  enableAggressivePermissionsWizardPage:(BOOL)enableAggressivePermissionsWizardPage
+RCT_EXTERN_METHOD(showPermissionWizardWithOptions:(NSString *)themeMode
+                  blockEarlyExit:(BOOL)blockEarlyExit
+                  skipWizardPages:(BOOL)skipWizardPages
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+
+// MARK: - Properties, sub-units, activity log
+RCT_EXTERN_METHOD(setProperties:(NSString *)propertiesJson
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(getProperties:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(clearProperties:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(setSubUnits:(NSString *)subUnitsJson
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(getSubUnits:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(clearSubUnits:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(addActivityLog:(NSString *)text
+                  dataJson:(NSString *)dataJson
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
@@ -120,6 +141,15 @@ RCT_EXTERN_METHOD(requestIOSMotionPermission:(RCTPromiseResolveBlock)resolve
 RCT_EXTERN_METHOD(getApiLanguage:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(setApiLanguage:(NSString *)language
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(configureIosPermissionWizard:(NSString *)configurationJson
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(configureIosMissingPermissionsAlert:(NSString *)configurationJson
+                  resolve:(RCTPromiseResolveBlock)resolve
+                  reject:(RCTPromiseRejectBlock)reject)
+RCT_EXTERN_METHOD(setIosMissingPermissionsAlertEnabled:(BOOL)enabled
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 

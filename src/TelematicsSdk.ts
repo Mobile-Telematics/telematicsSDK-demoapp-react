@@ -1,7 +1,11 @@
 import type {
   AccidentDetectionSensitivity,
   ApiLanguage,
+  AndroidPermissionWizardOptions,
   DeviceIdRegistrationState,
+  IosMissingPermissionsAlertConfiguration,
+  IosPermissionWizardConfiguration,
+  StringDictionary,
   Tag,
   TrackingState,
 } from './types';
@@ -44,7 +48,8 @@ export interface TelematicsSdk {
   /**
    * Sets the virtual device identifier (token) used by the native SDK.
    *
-   * Passing a non-empty value typically associates the SDK session with a backend user/device.
+   * Pass the Damoov-issued DeviceToken received from your backend before enabling
+   * the SDK or starting a manual trip. Do not create an unregistered local UUID.
    */
   setDeviceId(deviceId: string): Promise<void>;
 
@@ -60,7 +65,8 @@ export interface TelematicsSdk {
   /**
    * Checks whether all required permissions and sensors are granted/available.
    *
-   * This usually includes Location + Motion (and other platform-specific requirements).
+   * This includes the platform requirements needed for tracking, such as Location
+   * and Motion/Fitness. Call it before enabling the SDK or starting manual tracking.
    */
   isAllRequiredPermissionsAndSensorsGranted(): Promise<boolean>;
 
@@ -77,22 +83,34 @@ export interface TelematicsSdk {
    */
   setEnableSdk(enable: boolean): Promise<void>;
 
-  /** Starts tracking manually. */
+  /**
+   * Starts a manual tracking session using the current {@link TrackingMode}.
+   * Configure a DeviceToken and the required permissions first.
+   */
   startManualTracking(): Promise<void>;
 
-  /** Starts persistent tracking manually (continues across background/app restarts). */
+  /**
+   * Starts a one-time persistent manual tracking session.
+   * Set the maximum interval first with {@link setMaxPersistentTrackingInterval}.
+   */
   startTrackAsPersistent(): Promise<void>;
 
-  /** Stops tracking manually. */
+  /** Stops the active manual tracking session. It does not clear the DeviceToken. */
   stopManualTracking(): Promise<void>;
 
-  /** Sets the maximum duration, in minutes, for a single persistent tracking session. */
+  /**
+   * Sets the maximum duration for one persistent session.
+   * @param minutes An integer from 5 through 600. The native default is 240.
+   */
   setMaxPersistentTrackingInterval(minutes: number): Promise<void>;
 
   /** Returns the maximum duration, in minutes, for a single persistent tracking session. */
   getMaxPersistentTrackingInterval(): Promise<number>;
 
-  /** Sets whether SDK-started and manually-started tracking runs in standard or persistent mode. */
+  /**
+   * Selects the mode for subsequent SDK-started and manually-started sessions.
+   * Use {@link TrackingMode.Persistent} only when the product requires it.
+   */
   setTrackingMode(trackingMode: TrackingMode): Promise<void>;
 
   /** Returns the current tracking mode. */
@@ -121,16 +139,44 @@ export interface TelematicsSdk {
   // Wizard
 
   /**
-   * Shows the native permissions wizard UI.
+   * Shows the native permissions wizard and resolves `true` when permissions are granted.
    *
-   * @param enableAggressivePermissionsWizard If `true`, the wizard finishes only when all required permissions are granted.
-   * @param enableAggressivePermissionsWizardPage If `true`, the wizard auto-advances when permissions are granted on the current page.
-   * @returns `true` when all required permissions are granted after the wizard, otherwise `false`.
+   * Android 4.1+ uses {@link AndroidPermissionWizardOptions}; on iOS the options
+   * are ignored and the wizard uses the configuration supplied through
+   * {@link configureIosPermissionWizard}. This replaces the removed two-boolean
+   * overload from versions before 3.1.0.
    */
   showPermissionWizard(
-    enableAggressivePermissionsWizard: boolean,
-    enableAggressivePermissionsWizardPage: boolean
+    options?: AndroidPermissionWizardOptions
   ): Promise<boolean>;
+
+  /**
+   * Replaces the properties associated with the current SDK user.
+   * Properties are string key-value pairs; this replaces the complete previous
+   * dictionary and does not merge individual keys.
+   * @param properties Properties to associate with the current SDK user.
+   */
+  setProperties(properties: StringDictionary): Promise<void>;
+  /** Returns the string key-value properties associated with the current SDK user. */
+  getProperties(): Promise<StringDictionary>;
+  /** Removes every property associated with the current SDK user. */
+  clearProperties(): Promise<void>;
+  /**
+   * Replaces the sub-units associated with the current SDK user.
+   * Sub-units are string key-value pairs; this replaces the complete previous
+   * dictionary and does not merge individual keys.
+   */
+  setSubUnits(subUnits: StringDictionary): Promise<void>;
+  /** Returns the string key-value sub-units associated with the current SDK user. */
+  getSubUnits(): Promise<StringDictionary>;
+  /** Removes every sub-unit associated with the current SDK user. */
+  clearSubUnits(): Promise<void>;
+  /**
+   * Sends an SDK activity-log entry with structured string metadata.
+   * @param text Human-readable activity description.
+   * @param data String-only metadata attached to the entry.
+   */
+  addActivityLog(text: string, data: StringDictionary): Promise<void>;
 
   // Accidents / RTLD
 
@@ -150,14 +196,15 @@ export interface TelematicsSdk {
 
   // Tags
 
-  /** Requests the current list of Future Track tags from the native SDK. */
+  /**
+   * @deprecated Future Tags are deprecated on iOS and Android. Use the Properties
+   * APIs instead; this method remains only for backwards compatibility.
+   */
   getFutureTrackTags(): Promise<{ status: string; tags: Tag[] }>;
 
   /**
-   * Adds a Future Track tag.
-   *
-   * @param tag Tag identifier.
-   * @param source Optional source string (e.g. feature/module name).
+   * @deprecated Future Tags are deprecated on iOS and Android. Use the Properties
+   * APIs instead; this method remains only for backwards compatibility.
    */
   addFutureTrackTag(
     tag: string,
@@ -165,17 +212,18 @@ export interface TelematicsSdk {
   ): Promise<{ status: string; tag: Tag }>;
 
   /**
-   * Removes a Future Track tag.
-   *
-   * @param tag Tag identifier.
-   * @param source Optional source string. Android accepts it for API compatibility and removes by tag.
+   * @deprecated Future Tags are deprecated on iOS and Android. Use the Properties
+   * APIs instead; this method remains only for backwards compatibility.
    */
   removeFutureTrackTag(
     tag: string,
     source?: string
   ): Promise<{ status: string; tag: Tag }>;
 
-  /** Removes all Future Track tags. */
+  /**
+   * @deprecated Future Tags are deprecated on iOS and Android. Use the Properties
+   * APIs instead; this method remains only for backwards compatibility.
+   */
   removeAllFutureTrackTags(): Promise<string>;
 
   // Speed violations
@@ -210,6 +258,25 @@ export interface TelematicsSdk {
 
   /** iOS only: requests Motion/Fitness permission from the system. */
   requestIOSMotionPermission(): Promise<void>;
+
+  /**
+   * iOS only: applies a partial visual and copy configuration to the iOS SDK 7.2
+   * permissions wizard. Call before {@link showPermissionWizard}.
+   */
+  configureIosPermissionWizard(
+    configuration: IosPermissionWizardConfiguration
+  ): Promise<void>;
+
+  /**
+   * iOS only: applies a partial configuration to the missing-permissions alert.
+   * Call before enabling the alert or invoking tracking flows.
+   */
+  configureIosMissingPermissionsAlert(
+    configuration: IosMissingPermissionsAlertConfiguration
+  ): Promise<void>;
+
+  /** iOS only: enables or disables the configured missing-permissions alert. */
+  setIosMissingPermissionsAlertEnabled(enabled: boolean): Promise<void>;
 
   /** iOS only: returns the API language configured in the native SDK. */
   getApiLanguage(): Promise<ApiLanguage>;
@@ -312,14 +379,34 @@ class TelematicsSdkImpl implements TelematicsSdk {
     return this.native.sendCustomHeartbeats(reason);
   }
 
-  showPermissionWizard(
-    enableAggressivePermissionsWizard: boolean,
-    enableAggressivePermissionsWizardPage: boolean
-  ) {
-    return this.native.showPermissionWizard(
-      enableAggressivePermissionsWizard,
-      enableAggressivePermissionsWizardPage
+  showPermissionWizard(options: AndroidPermissionWizardOptions = {}) {
+    return this.native.showPermissionWizardWithOptions(
+      options.themeMode ?? 'system',
+      options.blockEarlyExit ?? false,
+      options.skipWizardPages ?? false
     );
+  }
+
+  setProperties(properties: StringDictionary) {
+    return this.native.setProperties(JSON.stringify(properties));
+  }
+  async getProperties(): Promise<StringDictionary> {
+    return JSON.parse(await this.native.getProperties()) as StringDictionary;
+  }
+  clearProperties() {
+    return this.native.clearProperties();
+  }
+  setSubUnits(subUnits: StringDictionary) {
+    return this.native.setSubUnits(JSON.stringify(subUnits));
+  }
+  async getSubUnits(): Promise<StringDictionary> {
+    return JSON.parse(await this.native.getSubUnits()) as StringDictionary;
+  }
+  clearSubUnits() {
+    return this.native.clearSubUnits();
+  }
+  addActivityLog(text: string, data: StringDictionary) {
+    return this.native.addActivityLog(text, JSON.stringify(data));
   }
 
   setAccidentDetectionSensitivity(
@@ -391,6 +478,23 @@ class TelematicsSdkImpl implements TelematicsSdk {
   }
   requestIOSMotionPermission() {
     return this.native.requestIOSMotionPermission();
+  }
+  configureIosPermissionWizard(
+    configuration: IosPermissionWizardConfiguration
+  ) {
+    return this.native.configureIosPermissionWizard(
+      JSON.stringify(configuration)
+    );
+  }
+  configureIosMissingPermissionsAlert(
+    configuration: IosMissingPermissionsAlertConfiguration
+  ) {
+    return this.native.configureIosMissingPermissionsAlert(
+      JSON.stringify(configuration)
+    );
+  }
+  setIosMissingPermissionsAlertEnabled(enabled: boolean) {
+    return this.native.setIosMissingPermissionsAlertEnabled(enabled);
   }
   getApiLanguage() {
     return this.native.getApiLanguage() as Promise<ApiLanguage>;

@@ -2,6 +2,20 @@
 
 A React Native wrapper for tracking the person's driving behavior such as speeding, turning, braking and several other things on iOS and Android.
 
+## Version 3.1.0 compatibility
+
+---
+
+- React Native: `0.86.0`
+- iOS native SDK: `7.2.0`; iOS deployment target: `15.1`
+- Android native SDK: `4.1.0`; `compileSdk 37`, `minSdk 24`, and `targetSdk 36`
+- The example app uses the standard React Native 0.86 Android toolchain (Gradle
+  `8.13` and Android Gradle Plugin `8.12.0`) without local Gradle patches.
+
+The Android permission-wizard activity is supplied by the plugin manifest and is
+merged automatically by React Native autolinking. Do not declare it in the host
+app manually.
+
 Here you can find short video guides, how to add React Native Telematics SDK to your iOS and Android apps:
 
 [Watch the video](https://youtu.be/qHAaAw_-IXI)
@@ -119,14 +133,15 @@ export function App() {
       }
 
       await TelematicsSdk.setDeviceId('YOUR_DEVICE_ID');
-      await TelematicsSdk.setEnableSdk(true);
 
-      const permissionsGranted = await TelematicsSdk.showPermissionWizard(
-        false,
-        false
-      );
+      const permissionsGranted = await TelematicsSdk.showPermissionWizard({
+        themeMode: 'system',
+        blockEarlyExit: false,
+        skipWizardPages: false,
+      });
 
       if (permissionsGranted) {
+        await TelematicsSdk.setEnableSdk(true);
         await TelematicsSdk.startManualTracking();
       }
     };
@@ -215,20 +230,16 @@ Remove from your app AndroidManifest.xml line:
     android:allowBackup="true"
 ```
 
-Add repository into (module)/gradle.build
-
-```groovy
-dependencies {
-    //...
-    implementation "com.telematicssdk:tracking: x.x.x"
-}
-```
+Version 3.1.0 brings the Android SDK transitively through the React Native
+plugin; do not add a separate `com.telematicssdk:tracking` dependency to the
+host app. If the host application overrides Android SDK versions, keep them at
+or above `compileSdk 37`, `minSdk 24`, and `targetSdk 36`.
 
 ### iOS
 
 ---
 
-Add permissions in your project's ios/Runner/Info.plist:
+Add permissions in your app's `ios/<App>/Info.plist`:
 
 ```xml
 <key>UIBackgroundModes</key>
@@ -286,7 +297,7 @@ we recommend the following integration.
 - Select the **app project** → **Package Dependencies** → **+**
 - Add package URL: `https://github.com/Mobile-Telematics/telematicsSDK-iOS-new-SPM.git`
 - Select product **TelematicsSDK**
-- Set dependency rule to **Exact Version** and use version **7.1.0**
+- Set dependency rule to **Exact Version** and use version **7.2.0**
 - Ensure it’s added to your **app target** (not only to Pods targets)
 
 3. Verify TelematicsSDK is embedded:
@@ -428,10 +439,87 @@ const allGranted =
 ```
 
 ```js
-// Shows the native permissions wizard UI
-// Returns `true` when all required permissions are granted after the wizard
-const isGranted = await TelematicsSdk.showPermissionWizard(false, false);
+// Shows the native permissions wizard UI. On Android 4.1+, options control
+// appearance and whether the user can exit early or skip informational pages.
+const isGranted = await TelematicsSdk.showPermissionWizard({
+  themeMode: 'system',
+  blockEarlyExit: false,
+  skipWizardPages: false,
+});
 ```
+
+`showPermissionWizard()` resolves `true` only when the required permissions are
+granted. The options apply on Android only: `blockEarlyExit` prevents dismissing
+the wizard before completion, and `skipWizardPages` omits informational pages.
+Both default to `false`; `themeMode` defaults to `system`. On iOS, call the
+method with no options or with the same cross-platform call site and configure
+its appearance beforehand with `configureIosPermissionWizard`.
+
+> Migration note: the two-boolean permission-wizard API from releases before
+> 3.1.0 was removed. Pass an options object instead.
+
+### Properties and sub-units
+
+Properties and sub-units are string key-value pairs associated with the current
+SDK user. Each `set` call replaces the entire existing dictionary; it does not
+merge keys.
+
+```js
+await TelematicsSdk.setProperties({ policy: 'standard' });
+const properties = await TelematicsSdk.getProperties();
+await TelematicsSdk.clearProperties();
+
+await TelematicsSdk.setSubUnits({ vehicle: 'fleet-42' });
+const subUnits = await TelematicsSdk.getSubUnits();
+await TelematicsSdk.clearSubUnits();
+```
+
+### Activity log
+
+```js
+await TelematicsSdk.addActivityLog('Trip started manually', {
+  tripId: '42',
+});
+```
+
+Activity-log metadata is also a string key-value dictionary.
+
+### iOS permissions UI configuration
+
+The following iOS-only APIs configure the permissions UI introduced in native
+SDK 7.2. Call them before showing the wizard or starting a tracking flow. Each
+configuration is partial: omitted fields retain native defaults.
+
+```ts
+import { Platform } from 'react-native';
+
+if (Platform.OS === 'ios') {
+  await TelematicsSdk.configureIosPermissionWizard({
+    locationAlways: {
+      title: 'Allow location access',
+      body: 'Location access lets us record your trips.',
+      primaryButtonTitle: 'Continue',
+    },
+    lightTheme: {
+      primaryElementColor: '#0066CC',
+      buttonTextColor: '#FFFFFF',
+    },
+  });
+
+  await TelematicsSdk.configureIosMissingPermissionsAlert({
+    title: 'Permissions needed',
+    body: 'Enable Location and Motion & Fitness in Settings.',
+    fixInSettingsButtonTitle: 'Open Settings',
+    isBlocking: false,
+  });
+  await TelematicsSdk.setIosMissingPermissionsAlertEnabled(true);
+}
+```
+
+`IosPermissionWizardPageConfiguration` customizes the `locationWhenInUse`,
+`locationAlways`, and `motion` pages. `IosPermissionWizardStatusConfiguration`
+customizes the status page. `IosPermissionWizardTheme` accepts colours in
+`#RRGGBB` or `#AARRGGBB` format for `lightTheme` and `darkTheme`.
 
 ### Enabling and disabling SDK
 
@@ -454,7 +542,9 @@ await TelematicsSdk.startManualTracking();
 ```
 
 ```js
-// Start persistent tracking (continues across background/app restarts)
+// Start one persistent manual tracking session
+// Configure the 5..600 minute interval before starting it.
+await TelematicsSdk.setMaxPersistentTrackingInterval(120);
 await TelematicsSdk.startTrackAsPersistent();
 ```
 
@@ -509,7 +599,10 @@ const unsentTripCount = await TelematicsSdk.getUnsentTripCount();
 await TelematicsSdk.sendCustomHeartbeats('RN_HEARTBEAT_TEST');
 ```
 
-### Future Tags API
+### Future Tags API (deprecated)
+
+> Future Tags are deprecated on iOS and Android. They remain available for
+> backwards compatibility; migrate new integrations to Properties APIs.
 
 ```js
 // Add future tag

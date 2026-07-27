@@ -2,6 +2,18 @@
 
 All notable changes to this repository are documented here.
 
+## [3.1.0]
+- Added Telematics iOS SDK v7.2.0 and Android SDK v4.1.0 support.
+- Updated the React Native plugin and example app to React Native v0.86.0.
+- Added Android 4.1 permissions wizard options and iOS 7.2 wizard and
+  missing-permissions-alert configuration APIs.
+- Added properties, sub-units, and activity-log APIs.
+- Deprecated Future Tags APIs; they remain available only for backwards
+  compatibility. New integrations should use Properties APIs, and Future Tags
+  are no longer shown in the example app.
+- Updated Android configuration to compileSdk 37, minSdk 24, targetSdk 36,
+  desugar_jdk_libs 2.1.5, Gradle 8.13, AGP 8.12.0, and Kotlin 2.3.21.
+
 ## [3.0.1]
 - Fixed Future Track tag callbacks on Android to resolve React Native promises on the UI queue.
 - Fixed Android Future Track tag calls to preserve nullable `source` values and safely handle empty tag lists.

@@ -7,8 +7,7 @@ buildscript {
 
         dependencies {
             classpath("com.android.tools.build:gradle:8.12.0")
-            classpath("com.facebook.react:react-native-gradle-plugin:0.81.4")
-            classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20")
+            classpath("com.facebook.react:react-native-gradle-plugin:0.86.0")
         }
     }
 }
@@ -22,11 +21,10 @@ def safeExtGet(prop, fallback) {
 
 android {
   namespace "com.reactnativetelematicssdk"
-    compileSdkVersion safeExtGet('TelematicsSdk_compileSdkVersion', 36)
-    buildToolsVersion safeExtGet('TelematicsSdk_buildToolsVersion', '36.0.0')
+    compileSdk safeExtGet('TelematicsSdk_compileSdkVersion', 37)
     defaultConfig {
-        minSdkVersion safeExtGet('TelematicsSdk_minSdkVersion', 24)
-        targetSdkVersion safeExtGet('TelematicsSdk_targetSdkVersion', 36)
+        minSdk safeExtGet('TelematicsSdk_minSdkVersion', 24)
+        targetSdk safeExtGet('TelematicsSdk_targetSdkVersion', 36)
         versionCode 3
         versionName "1.0"
 
@@ -49,8 +47,8 @@ android {
             minifyEnabled false
         }
     }
-    lintOptions {
-        disable 'GradleCompatible'
+    lint {
+        disable.add('GradleCompatible')
     }
     compileOptions {
         coreLibraryDesugaringEnabled true
@@ -62,6 +60,7 @@ android {
         buildConfig true
     }
 }
+
 
 rootProject.allprojects {
     repositories {
@@ -80,6 +79,6 @@ rootProject.allprojects {
 dependencies {
     //noinspection GradleDynamicVersion
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
-    implementation("com.facebook.react:react-android:0.81.4")
-    implementation("com.telematicssdk:tracking:4.0.0")
+    implementation("com.facebook.react:react-android:0.86.0")
+    implementation("com.telematicssdk:tracking:4.1.0")
 }

@@ -1,6 +1,6 @@
 apply plugin: "com.android.application"
-
 apply plugin: "org.jetbrains.kotlin.android"
+
 apply plugin: "com.facebook.react"
 
 /**
@@ -75,16 +75,14 @@ def jscFlavor = 'org.webkit:android-jsc:+'
 
 
 android {
-    buildToolsVersion rootProject.ext.buildToolsVersion
-
     ndkVersion rootProject.ext.ndkVersion
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.example.reactnativetelematicssdk"
     defaultConfig {
         applicationId "com.example.reactnativetelematicssdk"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
         versionCode 11
         versionName "1.0"
     }
@@ -119,7 +117,7 @@ android {
             signingConfig signingConfigs.release
             shrinkResources false
             minifyEnabled false
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
 
@@ -135,11 +133,8 @@ android {
 
 }
 
-configurations.all {
-    resolutionStrategy {
-        force 'org.jetbrains.kotlin:kotlin-stdlib:2.1.20'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.1.20'
-    }
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -148,8 +143,8 @@ dependencies {
     implementation("com.facebook.react:react-android")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.1.20"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.20")
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.3.21"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
 
 
     if (hermesEnabled.toBoolean()) {
