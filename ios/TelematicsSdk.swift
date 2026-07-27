@@ -120,7 +120,9 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted())
+    runOnMain {
+      resolve(RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted())
+    }
   }
 
   @objc(isSdkEnabled:reject:)
@@ -145,8 +147,10 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.setEnableSdk(enable)
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.setEnableSdk(enable)
+      resolve(nil)
+    }
   }
 
   @objc(startManualTracking:reject:)
@@ -154,8 +158,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.startTracking()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.startTracking()
+      resolve(nil)
+    }
   }
 
   @objc(startTrackAsPersistent:reject:)
@@ -163,8 +169,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.startTrackAsPersistent()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.startTrackAsPersistent()
+      resolve(nil)
+    }
   }
 
   @objc(stopManualTracking:reject:)
@@ -172,8 +180,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.stopTracking()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.stopTracking()
+      resolve(nil)
+    }
   }
 
   @objc(setMaxPersistentTrackingInterval:resolve:reject:)
@@ -241,8 +251,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.uploadUnsentTrips()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.uploadUnsentTrips()
+      resolve(nil)
+    }
   }
 
   @objc(getUnsentTripCount:reject:)
@@ -250,8 +262,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.getUnsentTripCount { unsentTripsCount in
-      resolve(unsentTripsCount)
+    runOnMain {
+      RPEntry.instance.getUnsentTripCount { unsentTripsCount in
+        resolve(unsentTripsCount)
+      }
     }
   }
 
@@ -263,8 +277,10 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.sendCustomHeartbeat(reason)
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.sendCustomHeartbeat(reason)
+      resolve(nil)
+    }
   }
 
   // MARK: - Wizard
@@ -277,14 +293,14 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    if RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted() {
-      resolve(true)
-      return
-    }
+    runOnMain {
+      if RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted() {
+        resolve(true)
+        return
+      }
 
-    DispatchQueue.main.async {
       RPPermissionsWizard.instance.launch { _ in
-        RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted() ? resolve(true) : resolve(false)
+        resolve(RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted())
       }
     }
   }
@@ -312,8 +328,10 @@ public class TelematicsSdk: RCTEventEmitter {
         lightTheme: wizardTheme(dictionary(from: values["lightTheme"]), fallback: defaults.lightTheme),
         darkTheme: wizardTheme(dictionary(from: values["darkTheme"]), fallback: defaults.darkTheme)
       )
-      RPPermissionsWizard.instance.configure(configuration)
-      resolve(nil)
+      runOnMain {
+        RPPermissionsWizard.instance.configure(configuration)
+        resolve(nil)
+      }
     } catch {
       reject("INVALID_ARGUMENT", error.localizedDescription, error)
     }
@@ -345,8 +363,10 @@ public class TelematicsSdk: RCTEventEmitter {
         lightTheme: wizardTheme(dictionary(from: values["lightTheme"]), fallback: defaults.lightTheme),
         darkTheme: wizardTheme(dictionary(from: values["darkTheme"]), fallback: defaults.darkTheme)
       )
-      RPPermissionsWizard.instance.configureMissingPermissionsAlert(configuration)
-      resolve(nil)
+      runOnMain {
+        RPPermissionsWizard.instance.configureMissingPermissionsAlert(configuration)
+        resolve(nil)
+      }
     } catch {
       reject("INVALID_ARGUMENT", error.localizedDescription, error)
     }
@@ -358,8 +378,10 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPPermissionsWizard.instance.setMissingPermissionsAlertEnabled(enabled)
-    resolve(nil)
+    runOnMain {
+      RPPermissionsWizard.instance.setMissingPermissionsAlertEnabled(enabled)
+      resolve(nil)
+    }
   }
 
   // MARK: - Properties, sub-units, activity log
@@ -370,11 +392,14 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    do {
-      try RPEntry.instance.setProperties(dict: try stringDictionary(from: propertiesJson))
-      resolve(nil)
-    } catch {
-      reject("INVALID_ARGUMENT", error.localizedDescription, error)
+    runOnMain { [weak self] in
+      do {
+        let dict = try self?.stringDictionary(from: propertiesJson)
+        try RPEntry.instance.setProperties(dict: dict ?? [:])
+        resolve(nil)
+      } catch {
+        reject("INVALID_ARGUMENT", error.localizedDescription, error)
+      }
     }
   }
 
@@ -383,7 +408,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(jsonString(from: RPEntry.instance.getProperties(), reject: reject))
+    runOnMain { [weak self] in
+      let jsonString = self?.jsonString(from: RPEntry.instance.getProperties(), reject: reject)
+      resolve(jsonString)
+    }
   }
 
   @objc(clearProperties:reject:)
@@ -391,8 +419,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.clearProperties()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.clearProperties()
+      resolve(nil)
+    }
   }
 
   @objc(setSubUnits:resolve:reject:)
@@ -401,11 +431,14 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    do {
-      try RPEntry.instance.setSubUnits(dict: try stringDictionary(from: subUnitsJson))
-      resolve(nil)
-    } catch {
-      reject("INVALID_ARGUMENT", error.localizedDescription, error)
+    runOnMain { [weak self] in
+      do {
+        let dict = try self?.stringDictionary(from: subUnitsJson)
+        try RPEntry.instance.setSubUnits(dict: dict ?? [:])
+        resolve(nil)
+      } catch {
+        reject("INVALID_ARGUMENT", error.localizedDescription, error)
+      }
     }
   }
 
@@ -414,7 +447,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(jsonString(from: RPEntry.instance.getSubUnits(), reject: reject))
+    runOnMain { [weak self] in
+      let jsonString = self?.jsonString(from: RPEntry.instance.getSubUnits(), reject: reject)
+      resolve(jsonString)
+    }
   }
 
   @objc(clearSubUnits:reject:)
@@ -422,8 +458,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.clearSubUnits()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.clearSubUnits()
+      resolve(nil)
+    }
   }
 
   @objc(addActivityLog:dataJson:resolve:reject:)
@@ -433,11 +471,14 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    do {
-      try RPEntry.instance.addActivityLog(text: text, data: try stringDictionary(from: dataJson))
-      resolve(nil)
-    } catch {
-      reject("INVALID_ARGUMENT", error.localizedDescription, error)
+    runOnMain { [weak self] in
+      do {
+        let dict = try self?.stringDictionary(from: dataJson)
+        try RPEntry.instance.addActivityLog(text: text, data: dict ?? [:])
+        resolve(nil)
+      } catch {
+        reject("INVALID_ARGUMENT", error.localizedDescription, error)
+      }
     }
   }
 
@@ -620,8 +661,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.requestLocationAlwaysPermission()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.requestLocationAlwaysPermission()
+      resolve(nil)
+    }
   }
 
   @objc(requestIOSMotionPermission:reject:)
@@ -629,8 +672,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.requestMotionPermission()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.requestMotionPermission()
+      resolve(nil)
+    }
   }
 
   @objc(getApiLanguage:reject:)
@@ -822,6 +867,14 @@ public class TelematicsSdk: RCTEventEmitter {
       blue: CGFloat(value & 0xFF) / 255,
       alpha: CGFloat((value >> 24) & 0xFF) / 255
     )
+  }
+
+  private func runOnMain(_ work: @escaping () -> Void) {
+    if Thread.isMainThread {
+      work()
+    } else {
+      DispatchQueue.main.async(execute: work)
+    }
   }
 
   private func deviceIdRegistrationStatusString(
