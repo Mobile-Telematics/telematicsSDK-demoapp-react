@@ -2,9 +2,8 @@
   "extends": "@react-native/typescript-config",
   "compilerOptions": {
     "types": ["jest"],
-    "baseUrl": "..",
     "paths": {
-      "react-native-telematics": ["src/index"]
+      "react-native-telematics": ["../src/index"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
