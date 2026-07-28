@@ -16,6 +16,10 @@ The Android permission-wizard activity is supplied by the plugin manifest and is
 merged automatically by React Native autolinking. Do not declare it in the host
 app manually.
 
+The Android wizard notification and UI strings, images, colours, and dimensions
+can be overridden with standard Android app resources. See [Android app
+resources](https://docs.damoov.com/docs/android-app-resources).
+
 Here you can find short video guides, how to add React Native Telematics SDK to your iOS and Android apps:
 
 [Watch the video](https://youtu.be/qHAaAw_-IXI)
@@ -439,8 +443,29 @@ const allGranted =
 ```
 
 ```js
-// Shows the native permissions wizard UI. On Android 4.1+, options control
-// appearance and whether the user can exit early or skip informational pages.
+// Shows the native permissions wizard with native default appearance and behaviour.
+const isGranted = await TelematicsSdk.showPermissionWizard();
+```
+
+The wizard explains why the SDK needs permissions. Do not enable tracking until
+`isAllRequiredPermissionsAndSensorsGranted()` returns `true`.
+
+`showPermissionWizard()` resolves `true` only when all required permissions and
+sensors are available. On Android, it requests precise location, background
+location on Android 10+, activity recognition, and battery-optimization
+exclusion. Check the final merged manifest if your application overrides
+permissions; the plugin contributes the wizard activity and required SDK
+declarations automatically.
+
+To customize Android, pass options to `showPermissionWizard`. `themeMode`
+controls the visual appearance; `blockEarlyExit` prevents dismissing the wizard
+before completion, and `skipWizardPages` omits informational pages. Both
+booleans default to `false`; `themeMode` defaults to `system`. Enable
+`blockEarlyExit` only when the product must keep the user in the wizard. See the
+[Android SDK integration guide](https://docs.damoov.com/docs/android-sdk-integration)
+for Android integration and customization details.
+
+```js
 const isGranted = await TelematicsSdk.showPermissionWizard({
   themeMode: 'system',
   blockEarlyExit: false,
@@ -448,33 +473,116 @@ const isGranted = await TelematicsSdk.showPermissionWizard({
 });
 ```
 
-`showPermissionWizard()` resolves `true` only when the required permissions are
-granted. The options apply on Android only: `blockEarlyExit` prevents dismissing
-the wizard before completion, and `skipWizardPages` omits informational pages.
-Both default to `false`; `themeMode` defaults to `system`. On iOS, call the
-method with no options or with the same cross-platform call site and configure
-its appearance beforehand with `configureIosPermissionWizard`.
+On iOS, keep `showPermissionWizard()` parameterless (or use the same
+cross-platform call) and customize the wizard with
+`configureIosPermissionWizard`. Configure the missing-permissions alert with
+`configureIosMissingPermissionsAlert` and
+`setIosMissingPermissionsAlertEnabled`.
 
 > Migration note: the two-boolean permission-wizard API from releases before
 > 3.1.0 was removed. Pass an options object instead.
 
-### Properties and sub-units
+### Trip metadata
 
-Properties and sub-units are string key-value pairs associated with the current
-SDK user. Each `set` call replaces the entire existing dictionary; it does not
-merge keys.
+Use trip metadata to associate trips with business entities, such as an order,
+driver, vehicle, or shift.
+
+#### Properties
+
+Properties are a persistent flat key-value dictionary attached to trips.
+
+Setting Properties replaces the whole dictionary. When tracking is active,
+changing the dictionary ends the current trip and starts a new trip with the
+updated Properties. Passing the same dictionary does not restart tracking.
+
+Properties remain active for subsequent trips until they are replaced or
+cleared. They are cleared automatically on logout or when the device ID changes.
+
+**Set Properties**
+
+Sets the whole Properties dictionary. If tracking is active and the dictionary
+differs from the current one, the SDK completes the current trip and starts a
+new trip with the updated Properties.
 
 ```js
 await TelematicsSdk.setProperties({ policy: 'standard' });
-const properties = await TelematicsSdk.getProperties();
-await TelematicsSdk.clearProperties();
+```
 
+**Get Properties**
+
+Returns the current Properties dictionary. Use it to inspect the active metadata
+or to update one entry before setting the complete replacement dictionary.
+
+```js
+const properties = await TelematicsSdk.getProperties();
+await TelematicsSdk.setProperties({ ...properties, policy: 'premium' });
+```
+
+**Clear Properties**
+
+Removes all Properties. If tracking is active and Properties are not already
+empty, the SDK completes the current trip and starts a new trip without
+Properties.
+
+```js
+await TelematicsSdk.clearProperties();
+```
+
+Properties must contain from 1 to 20 entries. Keys and values must not be empty
+and must not exceed 255 characters. Use `clearProperties()` to remove all
+Properties.
+
+#### Sub-units
+
+Sub-units are a persistent flat key-value dictionary for analytical trip
+classification, for example a driver, vehicle, or session.
+
+Setting or clearing Sub-units does not restart active tracking. Changes made
+while a trip is active are applied to the next trip. Sub-units remain active
+until they are replaced or cleared, and are cleared automatically on logout or
+when the device ID changes.
+
+**Set Sub-units**
+
+Sets the whole Sub-units dictionary. This method does not restart tracking.
+
+```js
 await TelematicsSdk.setSubUnits({ vehicle: 'fleet-42' });
+```
+
+**Get Sub-units**
+
+Returns the current Sub-units dictionary. Use it to inspect the active metadata
+or to update one entry before setting the complete replacement dictionary.
+
+```js
 const subUnits = await TelematicsSdk.getSubUnits();
+await TelematicsSdk.setSubUnits({ ...subUnits, session: 'morning-shift' });
+```
+
+**Clear Sub-units**
+
+Removes all Sub-units. This method does not restart tracking.
+
+```js
 await TelematicsSdk.clearSubUnits();
 ```
 
+Sub-units must contain from 1 to 5 entries. Keys and values must not be empty
+and must not exceed 255 characters. Use `clearSubUnits()` to remove all
+Sub-units.
+
 ### Activity log
+
+Use Activity Log to attach business events to the current active trip without
+stopping or splitting it, for example a delivery, checkpoint, or depot arrival.
+
+Activity Log entries can be added only while tracking is active. Each trip
+supports up to 100 entries. The `text` parameter is required and limited to
+1,000 characters. The `data` dictionary is optional; pass an empty dictionary
+when no additional metadata is needed.
+
+**Add Activity Log**
 
 ```js
 await TelematicsSdk.addActivityLog('Trip started manually', {
@@ -482,13 +590,19 @@ await TelematicsSdk.addActivityLog('Trip started manually', {
 });
 ```
 
-Activity-log metadata is also a string key-value dictionary.
+When Properties change during tracking, the current trip is completed. Its
+existing Activity Log entries remain attached to that completed trip; the new
+trip starts with an empty Activity Log.
 
 ### iOS permissions UI configuration
 
 The following iOS-only APIs configure the permissions UI introduced in native
-SDK 7.2. Call them before showing the wizard or starting a tracking flow. Each
-configuration is partial: omitted fields retain native defaults.
+SDK 7.2. The wizard guides the user through *Location While Using*, *Location
+Always*, and *Motion & Fitness*. Always location, precise location, and Motion
+& Fitness are required for reliable automatic trip detection.
+
+Call the configuration methods before showing the wizard or starting a tracking
+flow. Each configuration is partial: omitted fields retain native defaults.
 
 ```ts
 import { Platform } from 'react-native';
@@ -518,8 +632,16 @@ if (Platform.OS === 'ios') {
 
 `IosPermissionWizardPageConfiguration` customizes the `locationWhenInUse`,
 `locationAlways`, and `motion` pages. `IosPermissionWizardStatusConfiguration`
-customizes the status page. `IosPermissionWizardTheme` accepts colours in
-`#RRGGBB` or `#AARRGGBB` format for `lightTheme` and `darkTheme`.
+customizes the status page, including the permission-state labels and Settings
+action. `IosPermissionWizardTheme` accepts all colour fields in `#RRGGBB` or
+`#AARRGGBB` format for `lightTheme` and `darkTheme`. For the full native visual
+customization reference, see [iOS permission
+wizard](https://docs.damoov.com/docs/new-permission-wizard-in-ios).
+
+Use the missing-permissions alert when permissions are incomplete or later
+revoked. Set `isBlocking` only when the user must resolve permissions before
+continuing; otherwise they can dismiss it with the configured skip action.
+Disable this alert when the app provides its own permission-remediation flow.
 
 ### Enabling and disabling SDK
 

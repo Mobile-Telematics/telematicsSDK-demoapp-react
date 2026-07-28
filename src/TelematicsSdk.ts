@@ -139,11 +139,20 @@ export interface TelematicsSdk {
   // Wizard
 
   /**
-   * Shows the native permissions wizard and resolves `true` when permissions are granted.
+   * Shows the native permissions wizard and resolves `true` only when all required
+   * permissions and sensors are available.
    *
-   * Android 4.1+ uses {@link AndroidPermissionWizardOptions}; on iOS the options
-   * are ignored and the wizard uses the configuration supplied through
-   * {@link configureIosPermissionWizard}. This replaces the removed two-boolean
+   * Call without arguments to use the native default appearance and behaviour.
+   * To customize Android, pass {@link AndroidPermissionWizardOptions}. To
+   * customize iOS, call {@link configureIosPermissionWizard} beforehand and,
+   * when needed, configure the missing-permissions alert with
+   * {@link configureIosMissingPermissionsAlert} and
+   * {@link setIosMissingPermissionsAlertEnabled}.
+   *
+   * On Android 4.1+, it guides the user through precise and background location,
+   * activity recognition, and battery-optimization exclusion. Use
+   * {@link AndroidPermissionWizardOptions} to control its appearance and exit
+   * behaviour. On iOS, options are ignored. This replaces the removed two-boolean
    * overload from versions before 3.1.0.
    */
   showPermissionWizard(
@@ -151,30 +160,60 @@ export interface TelematicsSdk {
   ): Promise<boolean>;
 
   /**
-   * Replaces the properties associated with the current SDK user.
-   * Properties are string key-value pairs; this replaces the complete previous
-   * dictionary and does not merge individual keys.
-   * @param properties Properties to associate with the current SDK user.
+   * Replaces the persistent properties attached to trips for the current SDK user.
+   *
+   * The dictionary is flat string metadata and replaces the complete previous
+   * dictionary; it does not merge keys. A different dictionary during active
+   * tracking completes the current trip and starts a new one with updated
+   * properties; the same dictionary does not restart tracking. Properties are
+   * cleared on logout or DeviceToken change. Supply 1--20 entries with non-empty
+   * keys and values of at most 255 characters. Use {@link clearProperties}, not
+   * `{}`.
+   * @param properties Complete properties dictionary to associate with trips.
    */
   setProperties(properties: StringDictionary): Promise<void>;
-  /** Returns the string key-value properties associated with the current SDK user. */
+  /**
+   * Returns the complete persistent properties dictionary for the current SDK user.
+   * Read it before changing one key, then pass the full updated dictionary to
+   * {@link setProperties}.
+   */
   getProperties(): Promise<StringDictionary>;
-  /** Removes every property associated with the current SDK user. */
+  /**
+   * Removes all persistent properties. If they are not already empty during
+   * active tracking, completes the current trip and starts a new trip without
+   * properties.
+   */
   clearProperties(): Promise<void>;
   /**
-   * Replaces the sub-units associated with the current SDK user.
-   * Sub-units are string key-value pairs; this replaces the complete previous
-   * dictionary and does not merge individual keys.
+   * Replaces the persistent sub-units used to classify subsequent trips, for
+   * example by driver, vehicle, depot, or session.
+   *
+   * The dictionary is flat string metadata and replaces the complete previous
+   * dictionary; it does not merge keys. It is cleared on logout or DeviceToken
+   * change. Setting or clearing sub-units never restarts active tracking; a
+   * change during a trip applies to the next trip. Supply 1--5 entries with
+   * non-empty keys and values of at most 255 characters. Use
+   * {@link clearSubUnits}, not `{}`.
    */
   setSubUnits(subUnits: StringDictionary): Promise<void>;
-  /** Returns the string key-value sub-units associated with the current SDK user. */
+  /**
+   * Returns the complete persistent sub-units dictionary for the current SDK user.
+   * Read it before changing one key, then pass the full updated dictionary to
+   * {@link setSubUnits}.
+   */
   getSubUnits(): Promise<StringDictionary>;
-  /** Removes every sub-unit associated with the current SDK user. */
+  /**
+   * Removes all persistent sub-units. This does not restart active tracking;
+   * the change applies to the next trip.
+   */
   clearSubUnits(): Promise<void>;
   /**
-   * Sends an SDK activity-log entry with structured string metadata.
-   * @param text Human-readable activity description.
-   * @param data String-only metadata attached to the entry.
+   * Adds a business event to the currently active trip without stopping or
+   * splitting it. Entries can be sent only while tracking is active, with at most
+   * 100 entries per trip. A later properties change completes the trip and keeps
+   * its existing activity-log entries attached to that completed trip.
+   * @param text Human-readable description, from 1 through 1000 characters.
+   * @param data String-only metadata attached to the entry; pass `{}` when none is needed.
    */
   addActivityLog(text: string, data: StringDictionary): Promise<void>;
 
@@ -253,23 +292,33 @@ export interface TelematicsSdk {
   /** iOS only: returns whether the native SDK considers current location accuracy insufficient. */
   isWrongAccuracyState(): Promise<boolean>;
 
-  /** iOS only: requests "Always" location permission from the system. */
+  /**
+   * iOS only: requests "Always" location permission from the system.
+   * Use only in a custom permission flow; do not request the same permission
+   * separately while the native permissions wizard is running.
+   */
   requestIOSLocationAlwaysPermission(): Promise<void>;
 
-  /** iOS only: requests Motion/Fitness permission from the system. */
+  /**
+   * iOS only: requests Motion/Fitness permission from the system.
+   * Use only in a custom permission flow; do not request the same permission
+   * separately while the native permissions wizard is running.
+   */
   requestIOSMotionPermission(): Promise<void>;
 
   /**
-   * iOS only: applies a partial visual and copy configuration to the iOS SDK 7.2
-   * permissions wizard. Call before {@link showPermissionWizard}.
+   * iOS only: applies partial copy and visual configuration to the iOS SDK 7.2
+   * wizard. It guides Location While Using, Location Always, and Motion & Fitness;
+   * omitted fields retain native defaults. Call before {@link showPermissionWizard}.
    */
   configureIosPermissionWizard(
     configuration: IosPermissionWizardConfiguration
   ): Promise<void>;
 
   /**
-   * iOS only: applies a partial configuration to the missing-permissions alert.
-   * Call before enabling the alert or invoking tracking flows.
+   * iOS only: applies partial copy and visual configuration to the alert shown
+   * when required permissions are missing or revoked. Omitted fields retain
+   * native defaults. Call before enabling the alert or invoking tracking flows.
    */
   configureIosMissingPermissionsAlert(
     configuration: IosMissingPermissionsAlertConfiguration
