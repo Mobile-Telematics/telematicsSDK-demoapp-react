@@ -138,11 +138,7 @@ export function App() {
 
       await TelematicsSdk.setDeviceId('YOUR_DEVICE_ID');
 
-      const permissionsGranted = await TelematicsSdk.showPermissionWizard({
-        themeMode: 'system',
-        blockEarlyExit: false,
-        skipWizardPages: false,
-      });
+      const permissionsGranted = await TelematicsSdk.showPermissionWizard();
 
       if (permissionsGranted) {
         await TelematicsSdk.setEnableSdk(true);
@@ -515,7 +511,6 @@ or to update one entry before setting the complete replacement dictionary.
 
 ```js
 const properties = await TelematicsSdk.getProperties();
-await TelematicsSdk.setProperties({ ...properties, policy: 'premium' });
 ```
 
 **Clear Properties**
@@ -557,7 +552,6 @@ or to update one entry before setting the complete replacement dictionary.
 
 ```js
 const subUnits = await TelematicsSdk.getSubUnits();
-await TelematicsSdk.setSubUnits({ ...subUnits, session: 'morning-shift' });
 ```
 
 **Clear Sub-units**
