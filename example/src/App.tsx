@@ -374,11 +374,13 @@ export default function App() {
     }
   };
 
-  const enableAccidents = async (enable: boolean) => {
+  const setAccidentDetectionEnabled = async (enable: boolean) => {
     try {
-      await TelematicsSdk.enableAccidents(enable);
-      const v = await TelematicsSdk.isEnabledAccidents();
-      showInfoAlert(`enableAccidents(${enable}) => isEnabledAccidents: ${v}`);
+      await TelematicsSdk.setAccidentDetectionEnabled(enable);
+      const v = await TelematicsSdk.isAccidentDetectionEnabled();
+      showInfoAlert(
+        `setAccidentDetectionEnabled(${enable}) => isAccidentDetectionEnabled: ${v}`
+      );
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -1092,11 +1094,11 @@ export default function App() {
               <Button text="Is RTLD enabled" onPress={checkRtld} />
               <Button
                 text="Enable accidents"
-                onPress={() => enableAccidents(true)}
+                onPress={() => setAccidentDetectionEnabled(true)}
               />
               <Button
                 text="Disable accidents"
-                onPress={() => enableAccidents(false)}
+                onPress={() => setAccidentDetectionEnabled(false)}
               />
             </View>
             <Input

@@ -750,13 +750,13 @@ const clearResult = await TelematicsSdk.removeAllFutureTrackTags();
 
 ```js
 // Enable or disable accident detection
-await TelematicsSdk.enableAccidents(true);
-await TelematicsSdk.enableAccidents(false);
+await TelematicsSdk.setAccidentDetectionEnabled(true);
+await TelematicsSdk.setAccidentDetectionEnabled(false);
 ```
 
 ```js
 // Check accident detection status
-const accidentsEnabled = await TelematicsSdk.isEnabledAccidents();
+const accidentsEnabled = await TelematicsSdk.isAccidentDetectionEnabled();
 ```
 
 ```js

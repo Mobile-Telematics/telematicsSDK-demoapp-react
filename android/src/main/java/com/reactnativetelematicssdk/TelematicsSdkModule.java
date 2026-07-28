@@ -474,13 +474,13 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   }
 
   @Override
-  public void enableAccidents(boolean enable, Promise promise) {
+  public void setAccidentDetectionEnabled(boolean enable, Promise promise) {
     api.setAccidentDetectionEnabled(enable);
     promise.resolve(null);
   }
 
   @Override
-  public void isEnabledAccidents(Promise promise) {
+  public void isAccidentDetectionEnabled(Promise promise) {
     promise.resolve(api.isAccidentDetectionEnabled());
   }
 

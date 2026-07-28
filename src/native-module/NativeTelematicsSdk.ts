@@ -90,9 +90,9 @@ export interface Spec extends TurboModule {
   /** Returns whether RTLD (real-time data logging) is enabled. */
   isRTLDEnabled(): Promise<boolean>;
   /** Enables or disables accident detection. */
-  enableAccidents(enable: boolean): Promise<void>;
+  setAccidentDetectionEnabled(enable: boolean): Promise<void>;
   /** Returns whether accident detection is enabled. */
-  isEnabledAccidents(): Promise<boolean>;
+  isAccidentDetectionEnabled(): Promise<boolean>;
 
   // Tags API — return types are untyped Object to avoid C++ codegen structs
   /** Requests the current list of Future Track tags. */

@@ -95,10 +95,10 @@ RCT_EXTERN_METHOD(setAccidentDetectionSensitivity:(double)value
                   reject:(RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(isRTLDEnabled:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(enableAccidents:(BOOL)enable
+RCT_EXTERN_METHOD(setAccidentDetectionEnabled:(BOOL)enable
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(isEnabledAccidents:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(isAccidentDetectionEnabled:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
 // MARK: - Tags API

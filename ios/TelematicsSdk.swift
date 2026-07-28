@@ -506,8 +506,8 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve(RPEntry.instance.isRTLDEnabled())
   }
 
-  @objc(enableAccidents:resolve:reject:)
-  public func enableAccidents(
+  @objc(setAccidentDetectionEnabled:resolve:reject:)
+  public func setAccidentDetectionEnabled(
     _ enable: Bool,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
@@ -516,8 +516,8 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve(nil)
   }
 
-  @objc(isEnabledAccidents:reject:)
-  public func isEnabledAccidents(
+  @objc(isAccidentDetectionEnabled:reject:)
+  public func isAccidentDetectionEnabled(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {

@@ -228,10 +228,10 @@ export interface TelematicsSdk {
   isRTLDEnabled(): Promise<boolean>;
 
   /** Enables or disables accident detection in the native SDK. */
-  enableAccidents(enable: boolean): Promise<void>;
+  setAccidentDetectionEnabled(enable: boolean): Promise<void>;
 
   /** Returns whether accident detection is enabled in the native SDK. */
-  isEnabledAccidents(): Promise<boolean>;
+  isAccidentDetectionEnabled(): Promise<boolean>;
 
   // Tags
 
@@ -468,11 +468,11 @@ class TelematicsSdkImpl implements TelematicsSdk {
   isRTLDEnabled() {
     return this.native.isRTLDEnabled();
   }
-  enableAccidents(enable: boolean) {
-    return this.native.enableAccidents(enable);
+  setAccidentDetectionEnabled(enable: boolean) {
+    return this.native.setAccidentDetectionEnabled(enable);
   }
-  isEnabledAccidents() {
-    return this.native.isEnabledAccidents();
+  isAccidentDetectionEnabled() {
+    return this.native.isAccidentDetectionEnabled();
   }
 
   getFutureTrackTags() {
