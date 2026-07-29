@@ -370,8 +370,12 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   public void setProperties(String propertiesJson, Promise promise) {
     var properties = parseStringDictionary(propertiesJson, "properties", promise);
     if (properties == null) return;
-    api.setProperties(properties);
-    promise.resolve(null);
+    try {
+      api.setProperties(properties);
+      promise.resolve(null);
+    } catch (IllegalStateException e) {
+      rejectSdkStateError(promise, e);
+    }
   }
 
   @Override
@@ -389,8 +393,12 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   public void setSubUnits(String subUnitsJson, Promise promise) {
     var subUnits = parseStringDictionary(subUnitsJson, "subUnits", promise);
     if (subUnits == null) return;
-    api.setSubUnits(subUnits);
-    promise.resolve(null);
+    try {
+      api.setSubUnits(subUnits);
+      promise.resolve(null);
+    } catch (IllegalStateException e) {
+      rejectSdkStateError(promise, e);
+    }
   }
 
   @Override
@@ -413,7 +421,13 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
       promise.resolve(null);
     } catch (IllegalArgumentException e) {
       promise.reject("INVALID_ARGUMENT", e.getMessage(), e);
+    } catch (IllegalStateException e) {
+      rejectSdkStateError(promise, e);
     }
+  }
+
+  private void rejectSdkStateError(Promise promise, IllegalStateException error) {
+    promise.reject("SDK_STATE_ERROR", error.getMessage(), error);
   }
 
   @Nullable
