@@ -9,8 +9,11 @@ A React Native wrapper for tracking the person's driving behavior such as speedi
 - React Native: `0.86.0`
 - iOS native SDK: `7.2.0`; iOS deployment target: `15.1`
 - Android native SDK: `4.1.0`; `compileSdk 37`, `minSdk 24`, and `targetSdk 36`
-- The example app uses the standard React Native 0.86 Android toolchain (Gradle
-  `8.13` and Android Gradle Plugin `8.12.0`) without local Gradle patches.
+- The example app uses the React Native 0.86 Android toolchain (Gradle `9.3.1`
+  and Android Gradle Plugin `8.12.0`). Android Gradle Plugin 8.12 warns for
+  `compileSdk 37`; the example validates this required combination.
+- The Android native SDK requires Kotlin `2.3.21`; the example app uses the
+  matching Kotlin Gradle Plugin and Kotlin BOM.
 
 The Android permission-wizard activity is supplied by the plugin manifest and is
 merged automatically by React Native autolinking. Do not declare it in the host
@@ -232,8 +235,23 @@ Remove from your app AndroidManifest.xml line:
 
 Version 3.1.0 brings the Android SDK transitively through the React Native
 plugin; do not add a separate `com.telematicssdk:tracking` dependency to the
-host app. If the host application overrides Android SDK versions, keep them at
-or above `compileSdk 37`, `minSdk 24`, and `targetSdk 36`.
+host app. The host application must use `compileSdk 37` or higher; the plugin
+stops the build with a clear error if `TelematicsSdk_compileSdkVersion` is set
+lower. Keep `minSdk` at 24 or higher. `targetSdk 36` is the version used by the
+example and can be raised independently.
+
+Add the Telematics Maven repository to the host app module in
+`android/app/build.gradle`:
+
+```groovy
+repositories {
+  maven { url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/" }
+}
+```
+
+If the host uses `RepositoriesMode.PREFER_SETTINGS` in
+`android/settings.gradle`, add the same Maven repository to
+`dependencyResolutionManagement.repositories` instead.
 
 ### iOS
 
