@@ -1,12 +1,14 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 interface ButtonProps {
   onPress: () => void;
   text: string;
   variant?: 'primary' | 'secondary' | 'danger' | 'success';
   disabled?: boolean;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }
 
 export const Button = ({
@@ -14,11 +16,14 @@ export const Button = ({
   text,
   variant = 'primary',
   disabled = false,
+  style,
+  textStyle,
 }: ButtonProps) => {
   const buttonStyle: StyleProp<ViewStyle> = [
     styles.button,
     styles[variant],
     disabled ? styles.disabled : undefined,
+    style,
   ];
 
   return (
@@ -28,7 +33,9 @@ export const Button = ({
       activeOpacity={0.8}
       disabled={disabled}
     >
-      <Text style={[styles.buttonText, disabled && styles.disabledText]}>
+      <Text
+        style={[styles.buttonText, disabled && styles.disabledText, textStyle]}
+      >
         {text}
       </Text>
     </TouchableOpacity>
@@ -37,43 +44,44 @@ export const Button = ({
 
 const styles = StyleSheet.create({
   button: {
-    height: 56,
+    minHeight: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal: 20,
-    marginVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 4,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.2,
+    shadowRadius: 1.5,
+    elevation: 2,
   },
   buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '500',
     color: '#FFFFFF',
-    letterSpacing: 0.5,
+    letterSpacing: 0.1,
   },
   primary: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#6750A4',
   },
   secondary: {
-    backgroundColor: '#5AC8FA',
+    backgroundColor: '#6750A4',
   },
   danger: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#B3261E',
   },
   success: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#6750A4',
   },
   disabled: {
-    opacity: 0.5,
+    backgroundColor: '#E7E0EC',
+    elevation: 0,
   },
   disabledText: {
-    opacity: 0.7,
+    color: '#938F99',
   },
 });

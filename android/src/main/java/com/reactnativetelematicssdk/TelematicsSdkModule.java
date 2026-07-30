@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -21,7 +24,8 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.telematicssdk.tracking.TrackingApi;
 import com.telematicssdk.tracking.Settings;
 import com.telematicssdk.tracking.model.track.TrackingMode;
-import com.telematicssdk.tracking.utils.permissions.PermissionsWizardActivity;
+import com.telematicssdk.tracking.utils.permissions.TrackingPermissionsWizardActivity;
+import com.telematicssdk.tracking.utils.permissions.TrackingPermissionsWizardThemeMode;
 import com.telematicssdk.tracking.model.realtime.configuration.AccidentDetectionSensitivity;
 import com.telematicssdk.tracking.SpeedViolation;
 
@@ -318,34 +322,134 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   // MARK: - Wizard
 
   @Override
-  public void showPermissionWizard(boolean enableAggressivePermissionsWizard,
-      boolean enableAggressivePermissionsWizardPage, Promise promise) {
+  public void showPermissionWizardWithOptions(String themeMode, boolean blockEarlyExit,
+      boolean skipWizardPages, Promise promise) {
     if (!api.areAllRequiredPermissionsGranted()) {
       permissionsPromise = promise;
       this.getReactApplicationContext().
-        startActivityForResult(PermissionsWizardActivity.Companion.getStartWizardIntent(
+        startActivityForResult(TrackingPermissionsWizardActivity.Companion.getStartWizardIntent(
           this.getReactApplicationContext(),
-          enableAggressivePermissionsWizard,
-          enableAggressivePermissionsWizardPage
-        ), PermissionsWizardActivity.WIZARD_PERMISSIONS_CODE, null);
+          permissionWizardThemeMode(themeMode),
+          blockEarlyExit,
+          skipWizardPages
+        ), TrackingPermissionsWizardActivity.WIZARD_PERMISSIONS_CODE, null);
     } else {
       promise.resolve(true);
     }
   }
 
+  private TrackingPermissionsWizardThemeMode permissionWizardThemeMode(String themeMode) {
+    return switch (themeMode) {
+      case "light" -> TrackingPermissionsWizardThemeMode.Light;
+      case "dark" -> TrackingPermissionsWizardThemeMode.Dark;
+      default -> TrackingPermissionsWizardThemeMode.System;
+    };
+  }
+
   private void handleWizardActivityResult(int requestCode, int resultCode, Intent data) {
-    if (requestCode == PermissionsWizardActivity.WIZARD_PERMISSIONS_CODE) {
+    if (requestCode == TrackingPermissionsWizardActivity.WIZARD_PERMISSIONS_CODE) {
+      if (permissionsPromise == null) return;
       switch (resultCode) {
-        case -1:
-          if (permissionsPromise == null) break;
+        case TrackingPermissionsWizardActivity.WIZARD_RESULT_ALL_GRANTED:
           permissionsPromise.resolve(true);
           break;
-        case 0:
-        case 1:
-          if (permissionsPromise == null) break;
+        case TrackingPermissionsWizardActivity.WIZARD_RESULT_NOT_ALL_GRANTED:
+        case TrackingPermissionsWizardActivity.WIZARD_RESULT_CANCELED:
           permissionsPromise.resolve(false);
           break;
+        default:
+          return;
       }
+      permissionsPromise = null;
+    }
+  }
+
+  // MARK: - Properties, sub-units, activity log
+
+  @Override
+  public void setProperties(String propertiesJson, Promise promise) {
+    var properties = parseStringDictionary(propertiesJson, "properties", promise);
+    if (properties == null) return;
+    try {
+      api.setProperties(properties);
+      promise.resolve(null);
+    } catch (IllegalStateException e) {
+      rejectSdkStateError(promise, e);
+    }
+  }
+
+  @Override
+  public void getProperties(Promise promise) {
+    promise.resolve(new JSONObject(api.getProperties()).toString());
+  }
+
+  @Override
+  public void clearProperties(Promise promise) {
+    api.clearProperties();
+    promise.resolve(null);
+  }
+
+  @Override
+  public void setSubUnits(String subUnitsJson, Promise promise) {
+    var subUnits = parseStringDictionary(subUnitsJson, "subUnits", promise);
+    if (subUnits == null) return;
+    try {
+      api.setSubUnits(subUnits);
+      promise.resolve(null);
+    } catch (IllegalStateException e) {
+      rejectSdkStateError(promise, e);
+    }
+  }
+
+  @Override
+  public void getSubUnits(Promise promise) {
+    promise.resolve(new JSONObject(api.getSubUnits()).toString());
+  }
+
+  @Override
+  public void clearSubUnits(Promise promise) {
+    api.clearSubUnits();
+    promise.resolve(null);
+  }
+
+  @Override
+  public void addActivityLog(String text, String dataJson, Promise promise) {
+    var data = parseStringDictionary(dataJson, "data", promise);
+    if (data == null) return;
+    try {
+      api.addActivityLog(text, data);
+      promise.resolve(null);
+    } catch (IllegalArgumentException e) {
+      promise.reject("INVALID_ARGUMENT", e.getMessage(), e);
+    } catch (IllegalStateException e) {
+      rejectSdkStateError(promise, e);
+    }
+  }
+
+  private void rejectSdkStateError(Promise promise, IllegalStateException error) {
+    promise.reject("SDK_STATE_ERROR", error.getMessage(), error);
+  }
+
+  @Nullable
+  private java.util.Map<String, String> parseStringDictionary(
+      String json, String argumentName, Promise promise) {
+    try {
+      var jsonObject = new JSONObject(json);
+      var result = new java.util.LinkedHashMap<String, String>(jsonObject.length());
+      var keys = jsonObject.keys();
+      while (keys.hasNext()) {
+        var key = keys.next();
+        var value = jsonObject.opt(key);
+        if (!(value instanceof String)) {
+          promise.reject("INVALID_ARGUMENT", argumentName + " must contain only string values");
+          return null;
+        }
+        result.put(key, (String) value);
+      }
+      return result;
+    } catch (JSONException e) {
+      promise.reject("INVALID_ARGUMENT", argumentName + " must be a JSON object", e);
+      return null;
     }
   }
 
@@ -384,13 +488,13 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   }
 
   @Override
-  public void enableAccidents(boolean enable, Promise promise) {
+  public void setAccidentDetectionEnabled(boolean enable, Promise promise) {
     api.setAccidentDetectionEnabled(enable);
     promise.resolve(null);
   }
 
   @Override
-  public void isEnabledAccidents(Promise promise) {
+  public void isAccidentDetectionEnabled(Promise promise) {
     promise.resolve(api.isAccidentDetectionEnabled());
   }
 
@@ -539,5 +643,20 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   @Override
   public void setApiLanguage(String language, Promise promise) {
     promise.reject("PLATFORM_ERROR", "setApiLanguage is not available on Android");
+  }
+
+  @Override
+  public void configureIosPermissionWizard(String configurationJson, Promise promise) {
+    promise.reject("PLATFORM_ERROR", "configureIosPermissionWizard is not available on Android");
+  }
+
+  @Override
+  public void configureIosMissingPermissionsAlert(String configurationJson, Promise promise) {
+    promise.reject("PLATFORM_ERROR", "configureIosMissingPermissionsAlert is not available on Android");
+  }
+
+  @Override
+  public void setIosMissingPermissionsAlertEnabled(boolean enabled, Promise promise) {
+    promise.reject("PLATFORM_ERROR", "setIosMissingPermissionsAlertEnabled is not available on Android");
   }
 }

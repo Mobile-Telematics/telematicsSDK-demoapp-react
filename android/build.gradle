@@ -7,8 +7,7 @@ buildscript {
 
         dependencies {
             classpath("com.android.tools.build:gradle:8.12.0")
-            classpath("com.facebook.react:react-native-gradle-plugin:0.81.4")
-            classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20")
+            classpath("com.facebook.react:react-native-gradle-plugin:0.86.0")
         }
     }
 }
@@ -17,16 +16,21 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.facebook.react'
 
 def safeExtGet(prop, fallback) {
-    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+    if (rootProject.ext.has(prop)) {
+        return rootProject.ext.get(prop)
+    }
+
+    rootProject.hasProperty(prop) ? rootProject.property(prop) : fallback
 }
 
+def telematicsCompileSdk = safeExtGet('TelematicsSdk_compileSdkVersion', 37).toString().toInteger()
+
 android {
-  namespace "com.reactnativetelematicssdk"
-    compileSdkVersion safeExtGet('TelematicsSdk_compileSdkVersion', 36)
-    buildToolsVersion safeExtGet('TelematicsSdk_buildToolsVersion', '36.0.0')
+    namespace "com.reactnativetelematicssdk"
+    compileSdk telematicsCompileSdk
     defaultConfig {
-        minSdkVersion safeExtGet('TelematicsSdk_minSdkVersion', 24)
-        targetSdkVersion safeExtGet('TelematicsSdk_targetSdkVersion', 36)
+        minSdk safeExtGet('TelematicsSdk_minSdkVersion', 24)
+        targetSdk safeExtGet('TelematicsSdk_targetSdkVersion', 36)
         versionCode 3
         versionName "1.0"
 
@@ -49,8 +53,8 @@ android {
             minifyEnabled false
         }
     }
-    lintOptions {
-        disable 'GradleCompatible'
+    lint {
+        disable.add('GradleCompatible')
     }
     compileOptions {
         coreLibraryDesugaringEnabled true
@@ -63,23 +67,24 @@ android {
     }
 }
 
-rootProject.allprojects {
-    repositories {
-      google()
-      mavenCentral()
-      maven {
-        url "https://repo1.maven.org/maven2/"
-      }
-      maven {
-            url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/"
-        }
+if (telematicsCompileSdk < 37) {
+    throw new GradleException(
+        "react-native-telematics requires compileSdk 37 or higher because " +
+        "com.telematicssdk:tracking:4.1.0 requires Android API 37. " +
+        "Set TelematicsSdk_compileSdkVersion (or the app compileSdk) to 37 or higher."
+    )
+}
 
+
+repositories {
+    maven {
+        url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/"
     }
 }
 
 dependencies {
     //noinspection GradleDynamicVersion
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
-    implementation("com.facebook.react:react-android:0.81.4")
-    implementation("com.telematicssdk:tracking:4.0.0")
+    implementation("com.facebook.react:react-android")
+    implementation("com.telematicssdk:tracking:4.1.0")
 }

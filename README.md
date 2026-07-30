@@ -2,6 +2,27 @@
 
 A React Native wrapper for tracking the person's driving behavior such as speeding, turning, braking and several other things on iOS and Android.
 
+## Version 3.1.0 compatibility
+
+---
+
+- React Native: `0.86.0`
+- iOS native SDK: `7.2.0`; iOS deployment target: `15.1`
+- Android native SDK: `4.1.0`; `compileSdk 37`, `minSdk 24`, and `targetSdk 36`
+- The example app uses the React Native 0.86 Android toolchain (Gradle `9.3.1`
+  and Android Gradle Plugin `8.12.0`). Android Gradle Plugin 8.12 warns for
+  `compileSdk 37`; the example validates this required combination.
+- The Android native SDK requires Kotlin `2.3.21`; the example app uses the
+  matching Kotlin Gradle Plugin and Kotlin BOM.
+
+The Android permission-wizard activity is supplied by the plugin manifest and is
+merged automatically by React Native autolinking. Do not declare it in the host
+app manually.
+
+The Android wizard notification and UI strings, images, colours, and dimensions
+can be overridden with standard Android app resources. See [Android app
+resources](https://docs.damoov.com/docs/android-app-resources).
+
 Here you can find short video guides, how to add React Native Telematics SDK to your iOS and Android apps:
 
 [Watch the video](https://youtu.be/qHAaAw_-IXI)
@@ -119,14 +140,11 @@ export function App() {
       }
 
       await TelematicsSdk.setDeviceId('YOUR_DEVICE_ID');
-      await TelematicsSdk.setEnableSdk(true);
 
-      const permissionsGranted = await TelematicsSdk.showPermissionWizard(
-        false,
-        false
-      );
+      const permissionsGranted = await TelematicsSdk.showPermissionWizard();
 
       if (permissionsGranted) {
+        await TelematicsSdk.setEnableSdk(true);
         await TelematicsSdk.startManualTracking();
       }
     };
@@ -215,20 +233,31 @@ Remove from your app AndroidManifest.xml line:
     android:allowBackup="true"
 ```
 
-Add repository into (module)/gradle.build
+Version 3.1.0 brings the Android SDK transitively through the React Native
+plugin; do not add a separate `com.telematicssdk:tracking` dependency to the
+host app. The host application must use `compileSdk 37` or higher; the plugin
+stops the build with a clear error if `TelematicsSdk_compileSdkVersion` is set
+lower. Keep `minSdk` at 24 or higher. `targetSdk 36` is the version used by the
+example and can be raised independently.
+
+Add the Telematics Maven repository to the host app module in
+`android/app/build.gradle`:
 
 ```groovy
-dependencies {
-    //...
-    implementation "com.telematicssdk:tracking: x.x.x"
+repositories {
+  maven { url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/" }
 }
 ```
+
+If the host uses `RepositoriesMode.PREFER_SETTINGS` in
+`android/settings.gradle`, add the same Maven repository to
+`dependencyResolutionManagement.repositories` instead.
 
 ### iOS
 
 ---
 
-Add permissions in your project's ios/Runner/Info.plist:
+Add permissions in your app's `ios/<App>/Info.plist`:
 
 ```xml
 <key>UIBackgroundModes</key>
@@ -286,7 +315,7 @@ we recommend the following integration.
 - Select the **app project** → **Package Dependencies** → **+**
 - Add package URL: `https://github.com/Mobile-Telematics/telematicsSDK-iOS-new-SPM.git`
 - Select product **TelematicsSDK**
-- Set dependency rule to **Exact Version** and use version **7.1.0**
+- Set dependency rule to **Exact Version** and use version **7.2.0**
 - Ensure it’s added to your **app target** (not only to Pods targets)
 
 3. Verify TelematicsSDK is embedded:
@@ -428,10 +457,203 @@ const allGranted =
 ```
 
 ```js
-// Shows the native permissions wizard UI
-// Returns `true` when all required permissions are granted after the wizard
-const isGranted = await TelematicsSdk.showPermissionWizard(false, false);
+// Shows the native permissions wizard with native default appearance and behaviour.
+const isGranted = await TelematicsSdk.showPermissionWizard();
 ```
+
+The wizard explains why the SDK needs permissions. Do not enable tracking until
+`isAllRequiredPermissionsAndSensorsGranted()` returns `true`.
+
+`showPermissionWizard()` resolves `true` only when all required permissions and
+sensors are available. On Android, it requests precise location, background
+location on Android 10+, activity recognition, and battery-optimization
+exclusion. Check the final merged manifest if your application overrides
+permissions; the plugin contributes the wizard activity and required SDK
+declarations automatically.
+
+To customize Android, pass options to `showPermissionWizard`. `themeMode`
+controls the visual appearance; `blockEarlyExit` prevents dismissing the wizard
+before completion, and `skipWizardPages` omits informational pages. Both
+booleans default to `false`; `themeMode` defaults to `system`. Enable
+`blockEarlyExit` only when the product must keep the user in the wizard. See the
+[Android SDK integration guide](https://docs.damoov.com/docs/android-sdk-integration)
+for Android integration and customization details.
+
+```js
+const isGranted = await TelematicsSdk.showPermissionWizard({
+  themeMode: 'system',
+  blockEarlyExit: false,
+  skipWizardPages: false,
+});
+```
+
+On iOS, keep `showPermissionWizard()` parameterless (or use the same
+cross-platform call) and customize the wizard with
+`configureIosPermissionWizard`. Configure the missing-permissions alert with
+`configureIosMissingPermissionsAlert` and
+`setIosMissingPermissionsAlertEnabled`.
+
+> Migration note: the two-boolean permission-wizard API from releases before
+> 3.1.0 was removed. Pass an options object instead.
+
+### Trip metadata
+
+Use trip metadata to associate trips with business entities, such as an order,
+driver, vehicle, or shift.
+
+#### Properties
+
+Properties are a persistent flat key-value dictionary attached to trips.
+
+Setting Properties replaces the whole dictionary. When tracking is active,
+changing the dictionary ends the current trip and starts a new trip with the
+updated Properties. Passing the same dictionary does not restart tracking.
+
+Properties remain active for subsequent trips until they are replaced or
+cleared. They are cleared automatically on logout or when the device ID changes.
+
+**Set Properties**
+
+Sets the whole Properties dictionary. If tracking is active and the dictionary
+differs from the current one, the SDK completes the current trip and starts a
+new trip with the updated Properties.
+
+```js
+await TelematicsSdk.setProperties({ policy: 'standard' });
+```
+
+**Get Properties**
+
+Returns the current Properties dictionary. Use it to inspect the active metadata
+or to update one entry before setting the complete replacement dictionary.
+
+```js
+const properties = await TelematicsSdk.getProperties();
+```
+
+**Clear Properties**
+
+Removes all Properties. If tracking is active and Properties are not already
+empty, the SDK completes the current trip and starts a new trip without
+Properties.
+
+```js
+await TelematicsSdk.clearProperties();
+```
+
+Properties must contain from 1 to 20 entries. Keys and values must not be empty
+and must not exceed 255 characters. Use `clearProperties()` to remove all
+Properties.
+
+#### Sub-units
+
+Sub-units are a persistent flat key-value dictionary for analytical trip
+classification, for example a driver, vehicle, or session.
+
+Setting or clearing Sub-units does not restart active tracking. Changes made
+while a trip is active are applied to the next trip. Sub-units remain active
+until they are replaced or cleared, and are cleared automatically on logout or
+when the device ID changes.
+
+**Set Sub-units**
+
+Sets the whole Sub-units dictionary. This method does not restart tracking.
+
+```js
+await TelematicsSdk.setSubUnits({ vehicle: 'fleet-42' });
+```
+
+**Get Sub-units**
+
+Returns the current Sub-units dictionary. Use it to inspect the active metadata
+or to update one entry before setting the complete replacement dictionary.
+
+```js
+const subUnits = await TelematicsSdk.getSubUnits();
+```
+
+**Clear Sub-units**
+
+Removes all Sub-units. This method does not restart tracking.
+
+```js
+await TelematicsSdk.clearSubUnits();
+```
+
+Sub-units must contain from 1 to 5 entries. Keys and values must not be empty
+and must not exceed 255 characters. Use `clearSubUnits()` to remove all
+Sub-units.
+
+### Activity log
+
+Use Activity Log to attach business events to the current active trip without
+stopping or splitting it, for example a delivery, checkpoint, or depot arrival.
+
+Activity Log entries can be added only while tracking is active. Each trip
+supports up to 100 entries. The `text` parameter is required and limited to
+1,000 characters. The `data` dictionary is optional; pass an empty dictionary
+when no additional metadata is needed.
+
+**Add Activity Log**
+
+```js
+await TelematicsSdk.addActivityLog('Trip started manually', {
+  tripId: '42',
+});
+```
+
+When Properties change during tracking, the current trip is completed. Its
+existing Activity Log entries remain attached to that completed trip; the new
+trip starts with an empty Activity Log.
+
+### iOS permissions UI configuration
+
+The following iOS-only APIs configure the permissions UI introduced in native
+SDK 7.2. The wizard guides the user through *Location While Using*, *Location
+Always*, and *Motion & Fitness*. Always location, precise location, and Motion
+& Fitness are required for reliable automatic trip detection.
+
+Call the configuration methods before showing the wizard or starting a tracking
+flow. Each configuration is partial: omitted fields retain native defaults.
+
+```ts
+import { Platform } from 'react-native';
+
+if (Platform.OS === 'ios') {
+  await TelematicsSdk.configureIosPermissionWizard({
+    locationAlways: {
+      title: 'Allow location access',
+      body: 'Location access lets us record your trips.',
+      primaryButtonTitle: 'Continue',
+    },
+    lightTheme: {
+      primaryElementColor: '#0066CC',
+      buttonTextColor: '#FFFFFF',
+    },
+  });
+
+  await TelematicsSdk.configureIosMissingPermissionsAlert({
+    title: 'Permissions needed',
+    body: 'Enable Location and Motion & Fitness in Settings.',
+    fixInSettingsButtonTitle: 'Open Settings',
+    isBlocking: false,
+  });
+  await TelematicsSdk.setIosMissingPermissionsAlertEnabled(true);
+}
+```
+
+`IosPermissionWizardPageConfiguration` customizes the `locationWhenInUse`,
+`locationAlways`, and `motion` pages. `IosPermissionWizardStatusConfiguration`
+customizes the status page, including the permission-state labels and Settings
+action. `IosPermissionWizardTheme` accepts all colour fields in `#RRGGBB` or
+`#AARRGGBB` format for `lightTheme` and `darkTheme`. For the full native visual
+customization reference, see [iOS permission
+wizard](https://docs.damoov.com/docs/new-permission-wizard-in-ios).
+
+Use the missing-permissions alert when permissions are incomplete or later
+revoked. Set `isBlocking` only when the user must resolve permissions before
+continuing; otherwise they can dismiss it with the configured skip action.
+Disable this alert when the app provides its own permission-remediation flow.
 
 ### Enabling and disabling SDK
 
@@ -454,7 +676,9 @@ await TelematicsSdk.startManualTracking();
 ```
 
 ```js
-// Start persistent tracking (continues across background/app restarts)
+// Start one persistent manual tracking session
+// Configure the 5..600 minute interval before starting it.
+await TelematicsSdk.setMaxPersistentTrackingInterval(120);
 await TelematicsSdk.startTrackAsPersistent();
 ```
 
@@ -509,7 +733,10 @@ const unsentTripCount = await TelematicsSdk.getUnsentTripCount();
 await TelematicsSdk.sendCustomHeartbeats('RN_HEARTBEAT_TEST');
 ```
 
-### Future Tags API
+### Future Tags API (deprecated)
+
+> Future Tags are deprecated on iOS and Android. They remain available for
+> backwards compatibility; migrate new integrations to Properties APIs.
 
 ```js
 // Add future tag
@@ -541,13 +768,13 @@ const clearResult = await TelematicsSdk.removeAllFutureTrackTags();
 
 ```js
 // Enable or disable accident detection
-await TelematicsSdk.enableAccidents(true);
-await TelematicsSdk.enableAccidents(false);
+await TelematicsSdk.setAccidentDetectionEnabled(true);
+await TelematicsSdk.setAccidentDetectionEnabled(false);
 ```
 
 ```js
 // Check accident detection status
-const accidentsEnabled = await TelematicsSdk.isEnabledAccidents();
+const accidentsEnabled = await TelematicsSdk.isAccidentDetectionEnabled();
 ```
 
 ```js

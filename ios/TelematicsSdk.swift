@@ -120,7 +120,9 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    resolve(RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted())
+    runOnMain {
+      resolve(RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted())
+    }
   }
 
   @objc(isSdkEnabled:reject:)
@@ -145,8 +147,10 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.setEnableSdk(enable)
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.setEnableSdk(enable)
+      resolve(nil)
+    }
   }
 
   @objc(startManualTracking:reject:)
@@ -154,8 +158,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.startTracking()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.startTracking()
+      resolve(nil)
+    }
   }
 
   @objc(startTrackAsPersistent:reject:)
@@ -163,8 +169,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.startTrackAsPersistent()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.startTrackAsPersistent()
+      resolve(nil)
+    }
   }
 
   @objc(stopManualTracking:reject:)
@@ -172,8 +180,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.stopTracking()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.stopTracking()
+      resolve(nil)
+    }
   }
 
   @objc(setMaxPersistentTrackingInterval:resolve:reject:)
@@ -241,8 +251,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.uploadUnsentTrips()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.uploadUnsentTrips()
+      resolve(nil)
+    }
   }
 
   @objc(getUnsentTripCount:reject:)
@@ -250,8 +262,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.getUnsentTripCount { unsentTripsCount in
-      resolve(unsentTripsCount)
+    runOnMain {
+      RPEntry.instance.getUnsentTripCount { unsentTripsCount in
+        resolve(unsentTripsCount)
+      }
     }
   }
 
@@ -263,27 +277,207 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.sendCustomHeartbeat(reason)
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.sendCustomHeartbeat(reason)
+      resolve(nil)
+    }
   }
 
   // MARK: - Wizard
 
-  @objc(showPermissionWizard:enableAggressivePermissionsWizardPage:resolve:reject:)
-  public func showPermissionWizard(
-    _ enableAggressivePermissionsWizard: Bool,
-    enableAggressivePermissionsWizardPage: Bool,
+  @objc(showPermissionWizardWithOptions:blockEarlyExit:skipWizardPages:resolve:reject:)
+  public func showPermissionWizardWithOptions(
+    _ themeMode: String,
+    blockEarlyExit: Bool,
+    skipWizardPages: Bool,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    if RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted() {
-      resolve(true)
-      return
-    }
+    runOnMain {
+      if RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted() {
+        resolve(true)
+        return
+      }
 
-    DispatchQueue.main.async {
-      RPPermissionsWizard.returnInstance().launch { _ in
-        RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted() ? resolve(true) : resolve(false)
+      RPPermissionsWizard.instance.launch { _ in
+        resolve(RPEntry.instance.isAllRequiredPermissionsAndSensorsGranted())
+      }
+    }
+  }
+
+  @objc(configureIosPermissionWizard:resolve:reject:)
+  public func configureIosPermissionWizard(
+    _ configurationJson: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    do {
+      let values = try jsonDictionary(from: configurationJson)
+      let defaults = RPPermissionsWizardConfiguration.defaultConfiguration()
+      let configuration = RPPermissionsWizardConfiguration(
+        locationWhenInUse: wizardPage(
+          dictionary(from: values["locationWhenInUse"]),
+          fallback: defaults.locationWhenInUse
+        ),
+        locationAlways: wizardPage(
+          dictionary(from: values["locationAlways"]),
+          fallback: defaults.locationAlways
+        ),
+        motion: wizardPage(dictionary(from: values["motion"]), fallback: defaults.motion),
+        status: wizardStatus(dictionary(from: values["status"]), fallback: defaults.status),
+        lightTheme: wizardTheme(dictionary(from: values["lightTheme"]), fallback: defaults.lightTheme),
+        darkTheme: wizardTheme(dictionary(from: values["darkTheme"]), fallback: defaults.darkTheme)
+      )
+      runOnMain {
+        RPPermissionsWizard.instance.configure(configuration)
+        resolve(nil)
+      }
+    } catch {
+      reject("INVALID_ARGUMENT", error.localizedDescription, error)
+    }
+  }
+
+  @objc(configureIosMissingPermissionsAlert:resolve:reject:)
+  public func configureIosMissingPermissionsAlert(
+    _ configurationJson: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    do {
+      let values = try jsonDictionary(from: configurationJson)
+      let defaults = RPPermissionsWizardMissingPermissionsAlertConfiguration.defaultConfiguration()
+      let configuration = RPPermissionsWizardMissingPermissionsAlertConfiguration(
+        title: string(values, "title", fallback: defaults.title),
+        body: string(values, "body", fallback: defaults.body),
+        locationTitle: string(values, "locationTitle", fallback: defaults.locationTitle),
+        motionTitle: string(values, "motionTitle", fallback: defaults.motionTitle),
+        locationEnabledText: string(values, "locationEnabledText", fallback: defaults.locationEnabledText),
+        locationAlwaysRequiredText: string(values, "locationAlwaysRequiredText", fallback: defaults.locationAlwaysRequiredText),
+        locationPreciseRequiredText: string(values, "locationPreciseRequiredText", fallback: defaults.locationPreciseRequiredText),
+        locationActionNeededText: string(values, "locationActionNeededText", fallback: defaults.locationActionNeededText),
+        motionEnabledText: string(values, "motionEnabledText", fallback: defaults.motionEnabledText),
+        motionActionNeededText: string(values, "motionActionNeededText", fallback: defaults.motionActionNeededText),
+        fixInSettingsButtonTitle: string(values, "fixInSettingsButtonTitle", fallback: defaults.fixInSettingsButtonTitle),
+        isBlocking: bool(values, "isBlocking", fallback: defaults.isBlocking),
+        skipButtonTitle: string(values, "skipButtonTitle", fallback: defaults.skipButtonTitle),
+        lightTheme: wizardTheme(dictionary(from: values["lightTheme"]), fallback: defaults.lightTheme),
+        darkTheme: wizardTheme(dictionary(from: values["darkTheme"]), fallback: defaults.darkTheme)
+      )
+      runOnMain {
+        RPPermissionsWizard.instance.configureMissingPermissionsAlert(configuration)
+        resolve(nil)
+      }
+    } catch {
+      reject("INVALID_ARGUMENT", error.localizedDescription, error)
+    }
+  }
+
+  @objc(setIosMissingPermissionsAlertEnabled:resolve:reject:)
+  public func setIosMissingPermissionsAlertEnabled(
+    _ enabled: Bool,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    runOnMain {
+      RPPermissionsWizard.instance.setMissingPermissionsAlertEnabled(enabled)
+      resolve(nil)
+    }
+  }
+
+  // MARK: - Properties, sub-units, activity log
+
+  @objc(setProperties:resolve:reject:)
+  public func setProperties(
+    _ propertiesJson: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    runOnMain { [weak self] in
+      do {
+        let dict = try self?.stringDictionary(from: propertiesJson)
+        try RPEntry.instance.setProperties(dict: dict ?? [:])
+        resolve(nil)
+      } catch {
+        reject("INVALID_ARGUMENT", error.localizedDescription, error)
+      }
+    }
+  }
+
+  @objc(getProperties:reject:)
+  public func getProperties(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    runOnMain { [weak self] in
+      let jsonString = self?.jsonString(from: RPEntry.instance.getProperties(), reject: reject)
+      resolve(jsonString)
+    }
+  }
+
+  @objc(clearProperties:reject:)
+  public func clearProperties(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    runOnMain {
+      RPEntry.instance.clearProperties()
+      resolve(nil)
+    }
+  }
+
+  @objc(setSubUnits:resolve:reject:)
+  public func setSubUnits(
+    _ subUnitsJson: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    runOnMain { [weak self] in
+      do {
+        let dict = try self?.stringDictionary(from: subUnitsJson)
+        try RPEntry.instance.setSubUnits(dict: dict ?? [:])
+        resolve(nil)
+      } catch {
+        reject("INVALID_ARGUMENT", error.localizedDescription, error)
+      }
+    }
+  }
+
+  @objc(getSubUnits:reject:)
+  public func getSubUnits(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    runOnMain { [weak self] in
+      let jsonString = self?.jsonString(from: RPEntry.instance.getSubUnits(), reject: reject)
+      resolve(jsonString)
+    }
+  }
+
+  @objc(clearSubUnits:reject:)
+  public func clearSubUnits(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    runOnMain {
+      RPEntry.instance.clearSubUnits()
+      resolve(nil)
+    }
+  }
+
+  @objc(addActivityLog:dataJson:resolve:reject:)
+  public func addActivityLog(
+    _ text: String,
+    dataJson: String,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    runOnMain { [weak self] in
+      do {
+        let dict = try self?.stringDictionary(from: dataJson)
+        try RPEntry.instance.addActivityLog(text: text, data: dict ?? [:])
+        resolve(nil)
+      } catch {
+        reject("INVALID_ARGUMENT", error.localizedDescription, error)
       }
     }
   }
@@ -312,8 +506,8 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve(RPEntry.instance.isRTLDEnabled())
   }
 
-  @objc(enableAccidents:resolve:reject:)
-  public func enableAccidents(
+  @objc(setAccidentDetectionEnabled:resolve:reject:)
+  public func setAccidentDetectionEnabled(
     _ enable: Bool,
     resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
@@ -322,8 +516,8 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve(nil)
   }
 
-  @objc(isEnabledAccidents:reject:)
-  public func isEnabledAccidents(
+  @objc(isAccidentDetectionEnabled:reject:)
+  public func isAccidentDetectionEnabled(
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
@@ -467,8 +661,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.requestLocationAlwaysPermission()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.requestLocationAlwaysPermission()
+      resolve(nil)
+    }
   }
 
   @objc(requestIOSMotionPermission:reject:)
@@ -476,8 +672,10 @@ public class TelematicsSdk: RCTEventEmitter {
     _ resolve: @escaping RCTPromiseResolveBlock,
     reject: @escaping RCTPromiseRejectBlock
   ) {
-    RPEntry.instance.requestMotionPermission()
-    resolve(nil)
+    runOnMain {
+      RPEntry.instance.requestMotionPermission()
+      resolve(nil)
+    }
   }
 
   @objc(getApiLanguage:reject:)
@@ -546,6 +744,138 @@ public class TelematicsSdk: RCTEventEmitter {
   }
 
   // MARK: - Helpers
+
+  private func jsonDictionary(from json: String) throws -> [String: Any] {
+    let data = Data(json.utf8)
+    guard let values = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+      throw NSError(
+        domain: "TelematicsSdk",
+        code: 1,
+        userInfo: [NSLocalizedDescriptionKey: "Expected a JSON object"]
+      )
+    }
+    return values
+  }
+
+  private func stringDictionary(from json: String) throws -> [String: String] {
+    let values = try jsonDictionary(from: json)
+    var result = [String: String](minimumCapacity: values.count)
+    for (key, value) in values {
+      guard let stringValue = value as? String else {
+        throw NSError(
+          domain: "TelematicsSdk",
+          code: 2,
+          userInfo: [NSLocalizedDescriptionKey: "Dictionary values must be strings"]
+        )
+      }
+      result[key] = stringValue
+    }
+    return result
+  }
+
+  private func jsonString(
+    from values: [String: String],
+    reject: @escaping RCTPromiseRejectBlock
+  ) -> String? {
+    do {
+      let data = try JSONSerialization.data(withJSONObject: values)
+      return String(decoding: data, as: UTF8.self)
+    } catch {
+      reject("SERIALIZATION_ERROR", error.localizedDescription, error)
+      return nil
+    }
+  }
+
+  private func dictionary(from value: Any?) -> [String: Any] {
+    value as? [String: Any] ?? [:]
+  }
+
+  private func string(_ values: [String: Any], _ key: String, fallback: String) -> String {
+    values[key] as? String ?? fallback
+  }
+
+  private func bool(_ values: [String: Any], _ key: String, fallback: Bool) -> Bool {
+    values[key] as? Bool ?? fallback
+  }
+
+  private func wizardPage(
+    _ values: [String: Any],
+    fallback: RPPermissionsWizardPageConfiguration
+  ) -> RPPermissionsWizardPageConfiguration {
+    RPPermissionsWizardPageConfiguration(
+      title: string(values, "title", fallback: fallback.title),
+      body: string(values, "body", fallback: fallback.body),
+      primaryButtonTitle: string(values, "primaryButtonTitle", fallback: fallback.primaryButtonTitle),
+      hintLead: string(values, "hintLead", fallback: fallback.hintLead),
+      permissionHint: string(values, "permissionHint", fallback: fallback.permissionHint)
+    )
+  }
+
+  private func wizardStatus(
+    _ values: [String: Any],
+    fallback: RPPermissionsWizardStatusConfiguration
+  ) -> RPPermissionsWizardStatusConfiguration {
+    RPPermissionsWizardStatusConfiguration(
+      title: string(values, "title", fallback: fallback.title),
+      body: string(values, "body", fallback: fallback.body),
+      locationTitle: string(values, "locationTitle", fallback: fallback.locationTitle),
+      motionTitle: string(values, "motionTitle", fallback: fallback.motionTitle),
+      locationEnabledText: string(values, "locationEnabledText", fallback: fallback.locationEnabledText),
+      locationAlwaysRequiredText: string(values, "locationAlwaysRequiredText", fallback: fallback.locationAlwaysRequiredText),
+      locationPreciseRequiredText: string(values, "locationPreciseRequiredText", fallback: fallback.locationPreciseRequiredText),
+      locationActionNeededText: string(values, "locationActionNeededText", fallback: fallback.locationActionNeededText),
+      motionEnabledText: string(values, "motionEnabledText", fallback: fallback.motionEnabledText),
+      motionActionNeededText: string(values, "motionActionNeededText", fallback: fallback.motionActionNeededText),
+      fixInSettingsButtonTitle: string(values, "fixInSettingsButtonTitle", fallback: fallback.fixInSettingsButtonTitle),
+      skipButtonTitle: string(values, "skipButtonTitle", fallback: fallback.skipButtonTitle)
+    )
+  }
+
+  private func wizardTheme(
+    _ values: [String: Any],
+    fallback: RPPermissionsWizardTheme
+  ) -> RPPermissionsWizardTheme {
+    RPPermissionsWizardTheme(
+      backgroundColor: color(values["backgroundColor"], fallback: fallback.backgroundColor),
+      gradientStartColor: color(values["gradientStartColor"], fallback: fallback.gradientStartColor),
+      gradientEndColor: color(values["gradientEndColor"], fallback: fallback.gradientEndColor),
+      titleTextColor: color(values["titleTextColor"], fallback: fallback.titleTextColor),
+      bodyTextColor: color(values["bodyTextColor"], fallback: fallback.bodyTextColor),
+      primaryElementColor: color(values["primaryElementColor"], fallback: fallback.primaryElementColor),
+      secondaryElementColor: color(values["secondaryElementColor"], fallback: fallback.secondaryElementColor),
+      buttonTextColor: color(values["buttonTextColor"], fallback: fallback.buttonTextColor),
+      cardBackgroundColor: color(values["cardBackgroundColor"], fallback: fallback.cardBackgroundColor),
+      successElementColor: color(values["successElementColor"], fallback: fallback.successElementColor),
+      warningElementColor: color(values["warningElementColor"], fallback: fallback.warningElementColor),
+      secondaryButtonTextColor: color(values["secondaryButtonTextColor"], fallback: fallback.secondaryButtonTextColor),
+      secondaryButtonBackgroundColor: color(values["secondaryButtonBackgroundColor"], fallback: fallback.secondaryButtonBackgroundColor),
+      statusIndicatorTextColor: color(values["statusIndicatorTextColor"], fallback: fallback.statusIndicatorTextColor),
+      modalScrimColor: color(values["modalScrimColor"], fallback: fallback.modalScrimColor)
+    )
+  }
+
+  private func color(_ value: Any?, fallback: UIColor) -> UIColor {
+    guard let stringValue = value as? String, stringValue.first == "#" else { return fallback }
+    let hex = String(stringValue.dropFirst())
+    guard (hex.count == 6 || hex.count == 8), let parsed = UInt64(hex, radix: 16) else {
+      return fallback
+    }
+    let value = hex.count == 6 ? parsed | 0xFF000000 : parsed
+    return UIColor(
+      red: CGFloat((value >> 16) & 0xFF) / 255,
+      green: CGFloat((value >> 8) & 0xFF) / 255,
+      blue: CGFloat(value & 0xFF) / 255,
+      alpha: CGFloat((value >> 24) & 0xFF) / 255
+    )
+  }
+
+  private func runOnMain(_ work: @escaping () -> Void) {
+    if Thread.isMainThread {
+      work()
+    } else {
+      DispatchQueue.main.async(execute: work)
+    }
+  }
 
   private func deviceIdRegistrationStatusString(
     from status: RPDeviceIdRegistrationStatus

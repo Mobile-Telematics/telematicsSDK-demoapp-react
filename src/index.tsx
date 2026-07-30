@@ -32,17 +32,31 @@ export {
   TrackingMode,
   TrackingStatus,
 };
-export type { DeviceIdRegistrationState, TrackingState } from './types';
+export type {
+  AndroidPermissionWizardOptions,
+  AndroidPermissionWizardThemeMode,
+  DeviceIdRegistrationState,
+  IosMissingPermissionsAlertConfiguration,
+  IosPermissionWizardConfiguration,
+  IosPermissionWizardPageConfiguration,
+  IosPermissionWizardStatusConfiguration,
+  IosPermissionWizardTheme,
+  StringDictionary,
+  TrackingState,
+} from './types';
 
+/** Payload emitted when iOS Low Power Mode changes. */
 export type LowPowerModeEvent = {
   enabled: boolean;
 };
 
+/** Geographic position emitted by the native SDK. */
 export type LocationChangedEvent = {
   latitude: number;
   longitude: number;
 };
 
+/** Details of a detected speed-limit violation. */
 export type SpeedViolationEvent = {
   date: number;
   latitude: number;
@@ -51,6 +65,7 @@ export type SpeedViolationEvent = {
   speedLimit: number;
 };
 
+/** `true` while the native SDK reports an active tracking session. */
 export type TrackingStateChangedEvent = boolean;
 
 export type { TelematicsSdk };
@@ -61,6 +76,11 @@ export default telematicsSdk;
 
 const telematicsEmitter = new NativeEventEmitter(NativeTelematicsSdk);
 
+/**
+ * Subscribes to iOS Low Power Mode changes.
+ * @throws {Error} When called on a non-iOS platform.
+ * @returns A subscription; call `remove()` during component cleanup.
+ */
 export function addOnLowPowerModeListener(
   handler: (event: LowPowerModeEvent) => void
 ) {
@@ -70,18 +90,31 @@ export function addOnLowPowerModeListener(
   return telematicsEmitter.addListener('onLowPowerMode', handler);
 }
 
+/**
+ * Subscribes to locations emitted by the native SDK on iOS and Android.
+ * @returns A subscription; call `remove()` during component cleanup.
+ */
 export function addOnLocationChangedListener(
   handler: (event: LocationChangedEvent) => void
 ) {
   return telematicsEmitter.addListener('onLocationChanged', handler);
 }
 
+/**
+ * Subscribes to changes in whether native tracking is active.
+ * @returns A subscription; call `remove()` during component cleanup.
+ */
 export function addOnTrackingStateChangedListener(
   handler: (state: boolean) => void
 ) {
   return telematicsEmitter.addListener('onTrackingStateChanged', handler);
 }
 
+/**
+ * Subscribes to iOS notifications that location accuracy authorization is insufficient.
+ * @throws {Error} When called on a non-iOS platform.
+ * @returns A subscription; call `remove()` during component cleanup.
+ */
 export function addOnWrongAccuracyAuthorizationListener(handler: () => void) {
   if (Platform.OS !== 'ios') {
     throw new Error(
@@ -91,6 +124,11 @@ export function addOnWrongAccuracyAuthorizationListener(handler: () => void) {
   return telematicsEmitter.addListener('onWrongAccuracyAuthorization', handler);
 }
 
+/**
+ * Subscribes to iOS real-time-location-data collection events.
+ * @throws {Error} When called on a non-iOS platform.
+ * @returns A subscription; call `remove()` during component cleanup.
+ */
 export function addOnRtldColectedData(handler: () => void) {
   if (Platform.OS !== 'ios') {
     throw new Error('addOnRtldColectedData is only available on iOS.');
@@ -98,6 +136,10 @@ export function addOnRtldColectedData(handler: () => void) {
   return telematicsEmitter.addListener('onRtldColectedData', handler);
 }
 
+/**
+ * Subscribes to speed-limit violations emitted by the native SDK.
+ * @returns A subscription; call `remove()` during component cleanup.
+ */
 export function addOnSpeedViolationListener(
   handler: (event: SpeedViolationEvent) => void
 ) {
