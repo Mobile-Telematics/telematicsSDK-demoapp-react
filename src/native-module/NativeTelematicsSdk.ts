@@ -68,11 +68,21 @@ export interface Spec extends TurboModule {
   sendCustomHeartbeats(reason: string): Promise<void>;
 
   // Wizard
-  /** Shows the native permissions wizard UI. */
-  showPermissionWizard(
-    enableAggressivePermissionsWizard: boolean,
-    enableAggressivePermissionsWizardPage: boolean
+  /** Shows the Android 4.1+ wizard with explicit launch options. */
+  showPermissionWizardWithOptions(
+    themeMode: string,
+    blockEarlyExit: boolean,
+    skipWizardPages: boolean
   ): Promise<boolean>;
+
+  // Dictionaries are JSON-encoded to keep the TurboModule contract platform-neutral.
+  setProperties(propertiesJson: string): Promise<void>;
+  getProperties(): Promise<string>;
+  clearProperties(): Promise<void>;
+  setSubUnits(subUnitsJson: string): Promise<void>;
+  getSubUnits(): Promise<string>;
+  clearSubUnits(): Promise<void>;
+  addActivityLog(text: string, dataJson: string): Promise<void>;
 
   // Accidents / RTLD
   /** Sets accident detection sensitivity (enum value). */
@@ -80,9 +90,9 @@ export interface Spec extends TurboModule {
   /** Returns whether RTLD (real-time data logging) is enabled. */
   isRTLDEnabled(): Promise<boolean>;
   /** Enables or disables accident detection. */
-  enableAccidents(enable: boolean): Promise<void>;
+  setAccidentDetectionEnabled(enable: boolean): Promise<void>;
   /** Returns whether accident detection is enabled. */
-  isEnabledAccidents(): Promise<boolean>;
+  isAccidentDetectionEnabled(): Promise<boolean>;
 
   // Tags API — return types are untyped Object to avoid C++ codegen structs
   /** Requests the current list of Future Track tags. */
@@ -120,6 +130,9 @@ export interface Spec extends TurboModule {
   getApiLanguage(): Promise<string>;
   /** iOS only: sets the API language used by the native SDK. */
   setApiLanguage(language: string): Promise<void>;
+  configureIosPermissionWizard(configurationJson: string): Promise<void>;
+  configureIosMissingPermissionsAlert(configurationJson: string): Promise<void>;
+  setIosMissingPermissionsAlertEnabled(enabled: boolean): Promise<void>;
 
   // Android-only — flattened params to avoid C++ struct on iOS
   /** Android only: enables or disables SDK autostart behavior. */

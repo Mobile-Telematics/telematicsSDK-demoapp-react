@@ -1,24 +1,42 @@
 import React from 'react';
-import { StyleSheet, TextInput, type TextInputProps, View } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  type TextInputProps,
+  View,
+} from 'react-native';
 
 interface InputProps {
   placeholder?: string;
+  label?: string;
   value: string;
   onChangeText: TextInputProps['onChangeText'];
+  keyboardType?: TextInputProps['keyboardType'];
+  onSubmitEditing?: TextInputProps['onSubmitEditing'];
 }
 
-export const Input = ({ placeholder, value, onChangeText }: InputProps) => {
+export const Input = ({
+  placeholder,
+  label,
+  value,
+  onChangeText,
+  keyboardType,
+  onSubmitEditing,
+}: InputProps) => {
   return (
     <View style={styles.container}>
+      {label ? <Text style={styles.label}>{label}</Text> : null}
       <TextInput
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
-        multiline
+        keyboardType={keyboardType}
+        onSubmitEditing={onSubmitEditing}
+        multiline={false}
         blurOnSubmit
         style={styles.input}
         placeholderTextColor="#999"
-        textAlign="center"
       />
     </View>
   );
@@ -26,27 +44,26 @@ export const Input = ({ placeholder, value, onChangeText }: InputProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 20,
-    marginVertical: 12,
-    borderRadius: 16,
-    backgroundColor: '#F0F8FF',
-    borderWidth: 2,
-    borderColor: '#5AC8FA',
-    shadowColor: '#007AFF',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    marginVertical: 4,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#79747E',
+    paddingHorizontal: 12,
+  },
+  label: {
+    alignSelf: 'flex-start',
+    marginTop: -9,
+    paddingHorizontal: 4,
+    color: '#6750A4',
+    fontSize: 12,
+    backgroundColor: '#FFFFFF',
   },
   input: {
-    fontSize: 15,
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    fontSize: 16,
+    paddingVertical: 10,
     color: '#000',
     textAlign: 'left',
-    minHeight: 50,
+    minHeight: 44,
   },
 });

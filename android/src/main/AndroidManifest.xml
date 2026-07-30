@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.reactnativetelematicssdk">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -7,5 +6,11 @@
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
   <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+
+  <application>
+    <activity
+      android:name="com.telematicssdk.tracking.utils.permissions.TrackingPermissionsWizardActivity"
+      android:exported="false" />
+  </application>
 
 </manifest>
