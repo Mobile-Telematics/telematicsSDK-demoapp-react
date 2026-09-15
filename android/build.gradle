@@ -71,10 +71,61 @@ if (telematicsCompileSdk < 37) {
     throw new GradleException(
         "react-native-telematics requires compileSdk 37 or higher because " +
         "com.telematicssdk:tracking:4.1.0 requires Android API 37. " +
-        "Set TelematicsSdk_compileSdkVersion (or the app compileSdk) to 37 or higher."
+        "Set TelematicsSdk_compileSdkVersion (or the app compileSdk) to 37 or higher, " +
+        "and add android.suppressUnsupportedCompileSdk=37.0 to gradle.properties, " +
+        "since AGP 8.12 warns for compileSdk 37."
     )
 }
 
+// com.telematicssdk:tracking:4.1.0 ships Kotlin metadata 2.3.0. React Native pins the
+// Kotlin Gradle Plugin well below that (2.1.20 on 0.83/0.85/0.86), so bare (non-Expo)
+// integrators must override KGP on the root buildscript classpath. This is only a WARNING,
+// not a hard failure: Expo apps correctly stay on an older KGP that Expo itself pins (it
+// compiles its own modules with that exact compiler), and instead work around the metadata
+// mismatch with `-Xskip-metadata-version-check` on the Kotlin compile tasks -- which is
+// exactly what com.telematicssdk's Expo config plugin adds automatically. A hard failure
+// here would be a false positive for every Expo app. Do the check lazily (after the root
+// project's buildscript is fully configured) and never let the check itself break the
+// build if the version can't be determined.
+gradle.projectsEvaluated {
+    def parseVersion = { String raw ->
+        def m = (raw =~ /^(\d+)\.(\d+)(?:\.(\d+))?/)
+        m ? [m[0][1] as int, m[0][2] as int, (m[0][3] ?: "0") as int] : null
+    }
+
+    try {
+        def kgpVersion = rootProject.buildscript.configurations.findByName("classpath")
+            ?.allDependencies
+            ?.find { it.group == "org.jetbrains.kotlin" && it.name == "kotlin-gradle-plugin" }
+            ?.version
+
+        // Null means this build does not declare KGP on the root buildscript classpath
+        // (for example the included React Native Gradle build). Nothing to verify there.
+        if (kgpVersion != null) {
+            def actual = parseVersion(kgpVersion)
+            def required = [2, 3, 0]
+
+            if (actual != null && (
+                actual[0] < required[0] ||
+                (actual[0] == required[0] && actual[1] < required[1])
+            )) {
+                logger.warn(
+                    "[react-native-telematics] com.telematicssdk:tracking:4.1.0 ships Kotlin metadata 2.3.0. " +
+                    "Kotlin Gradle Plugin ${kgpVersion} on the root buildscript classpath cannot read it as-is. " +
+                    "This is expected and harmless on Expo apps using '-Xskip-metadata-version-check' " +
+                    "(added automatically by this package's Expo config plugin). If this is a bare " +
+                    "(non-Expo) React Native app, set kotlin-gradle-plugin to 2.3.21 on the ROOT " +
+                    "buildscript classpath instead. If you are on Expo and still see a build failure, " +
+                    "add '-Xskip-metadata-version-check' to your Kotlin compile tasks manually. See README."
+                )
+            }
+        }
+    } catch (Throwable ignored) {
+        // The Kotlin Gradle Plugin version could not be determined in this configuration.
+        // Skip the check rather than failing the build: a check that itself crashes is
+        // worse than no check.
+    }
+}
 
 repositories {
     maven {

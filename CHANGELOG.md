@@ -2,6 +2,50 @@
 
 All notable changes to this repository are documented here.
 
+## [3.1.1]
+- Added support for React Native 0.83 and newer, covering Expo SDK 55, 56 and
+  57. Verified building and running on React Native 0.83.10, 0.85.3 and 0.86.3
+  across an Android emulator and an iOS simulator. The `react-native` peer
+  dependency range is now `>=0.83.0`.
+- Added an Expo config plugin, so projects using Continuous Native Generation
+  get a complete integration from `expo prebuild` without hand-editing the
+  generated `ios` and `android` projects. It wires the iOS AppDelegate and, on
+  scene-based projects, the SceneDelegate, the Info.plist background modes and
+  usage descriptions, dynamic framework linkage, and the Android Gradle
+  settings the native SDK requires. Every edit is idempotent and survives
+  `expo prebuild --clean`.
+- Added JavaScript-side SDK initialization on iOS, so `initializeSdk()` now
+  behaves the same way on both platforms. Native initialization in the
+  AppDelegate remains required for background tracking.
+- Added a dedicated `SDK_NOT_INITIALIZED` rejection to the iOS bridge, so calls
+  made before initialization report the cause instead of failing opaquely.
+- Added build-time diagnostics for the Android toolchain: the compileSdk error
+  now names every setting needed to resolve it, and a Kotlin Gradle Plugin
+  check reports version mismatches with the remedy for both bare React Native
+  and Expo projects.
+- Documented the Android host-app requirements in full: the Telematics Maven
+  repository, compileSdk 37, the Kotlin toolchain settings for each project
+  type, core library desugaring, and the packaging excludes.
+- Reworked the README into two explicit integration paths, Expo and bare React
+  Native, each with an end-to-end sequence from install through to recording
+  trips.
+- Added the TelematicsSDK Swift Package to the application target during
+  `expo prebuild`, through a `post_install` hook injected into the generated
+  Podfile, so Expo projects get a runnable iOS build without hand-editing
+  Xcode. React Native's `spm_dependency(...)` helper attaches the package to
+  the CocoaPods pod target only, which is why the app target needs it added
+  separately; bare React Native projects do this once by hand in Xcode.
+- Added per-Expo-SDK support for the iOS scene lifecycle that iOS 26 and
+  newer require. The plugin adds the SceneDelegate forwards automatically on
+  Expo SDK 58 and newer, where `expo prebuild` generates `SceneDelegate.swift`
+  itself; on Expo SDK 57, where scene adoption is opt-in through
+  `expo-build-properties` and Expo supplies its own scene delegate, it
+  reports a clear `expo prebuild` error with the SceneDelegate to add.
+  Expo SDK 55 and 56 have no scene support and are unaffected. Bare React
+  Native continues to be handled by the existing AppDelegate/SceneDelegate
+  detection.
+- Kept Telematics iOS SDK v7.2.0 and Android SDK v4.1.0.
+
 ## [3.1.0]
 - Added Telematics iOS SDK v7.2.0 and Android SDK v4.1.0 support.
 - Updated the React Native plugin and example app to React Native v0.86.0.

@@ -2,18 +2,31 @@
 
 A React Native wrapper for tracking the person's driving behavior such as speeding, turning, braking and several other things on iOS and Android.
 
-## Version 3.1.0 compatibility
+## Version 3.1.1 compatibility
 
 ---
 
-- React Native: `0.86.0`
+| React Native | Expo SDK |
+| --- | --- |
+| `0.83.10` | 55 |
+| `0.85.3` | 56 |
+| `0.86.3` | 57 |
+
+The example app is built and validated on React Native `0.86.3`. All three
+rows above were verified building and running on both an Android emulator and
+an iOS simulator for this release.
+
 - iOS native SDK: `7.2.0`; iOS deployment target: `15.1`
 - Android native SDK: `4.1.0`; `compileSdk 37`, `minSdk 24`, and `targetSdk 36`
 - The example app uses the React Native 0.86 Android toolchain (Gradle `9.3.1`
   and Android Gradle Plugin `8.12.0`). Android Gradle Plugin 8.12 warns for
   `compileSdk 37`; the example validates this required combination.
-- The Android native SDK requires Kotlin `2.3.21`; the example app uses the
-  matching Kotlin Gradle Plugin and Kotlin BOM.
+- `com.telematicssdk:tracking:4.1.0` brings in `kotlin-stdlib` 2.3.x, which
+  requires a Kotlin toolchain change in the host app. The required settings
+  differ depending on whether the host app is bare React Native or Expo, and
+  the two paths are **not interchangeable**: see the Kotlin toolchain step of
+  the checklist under [Getting started > Android](#android) for the exact
+  settings and the error messages you get if you use the wrong ones.
 
 The Android permission-wizard activity is supplied by the plugin manifest and is
 merged automatically by React Native autolinking. Do not declare it in the host
@@ -28,6 +41,202 @@ Here you can find short video guides, how to add React Native Telematics SDK to 
 [Watch the video](https://youtu.be/qHAaAw_-IXI)
 
 [Watch the video](https://youtu.be/kZecA6hQi0Q)
+
+## Choose your integration path
+
+---
+
+react-native-telematics supports two integration paths, depending on how your
+app manages its native `ios`/`android` projects. Pick the one that matches
+your project before following any instructions below: the two paths are **not
+interchangeable**, and following the bare React Native Android Kotlin
+instructions on an Expo project breaks the build (see the Kotlin toolchain
+step under [Getting started > Android](#android)).
+
+- **Expo (CNG / `expo prebuild`)**: your `ios`/`android` folders are generated
+  by `expo prebuild` and are not meant to be edited by hand; they are wiped
+  and regenerated every time you run it. Use the [Expo config
+  plugin](#expo-config-plugin) to apply the native changes automatically. Do
+  not hand-edit `ios/` or `android/` on this path. Start with the [Expo
+  quickstart](#expo-quickstart) below.
+- **Bare React Native**: your `ios/` and `android/` folders live in your repo
+  and you edit them directly; there is no prebuild step. Start with the [Bare
+  React Native quickstart](#bare-react-native-quickstart) below.
+
+If you are not sure which path applies: a project with an `"expo"` key in
+`app.json`/`app.config.js` that you build with `expo prebuild` or EAS Build is
+on the Expo path. A project created with `npx react-native init` (or
+permanently ejected from Expo), where `ios`/`android` are committed to git and
+edited directly, is on the bare React Native path.
+
+### Expo quickstart
+
+1. Install the package:
+
+   ```sh
+   yarn add react-native-telematics
+   ```
+
+2. Add the config plugin to `app.json` / `app.config.js`. See the [Expo config
+   plugin](#expo-config-plugin) section below for the full options table:
+
+   ```json
+   {
+     "expo": {
+       "plugins": ["react-native-telematics"]
+     }
+   }
+   ```
+
+3. Generate the native projects:
+
+   ```sh
+   npx expo prebuild
+   ```
+
+   Use `npx expo prebuild --clean` to regenerate `ios`/`android` from scratch,
+   for example after upgrading the package or changing plugin options.
+
+   iOS 26 and newer require apps to adopt the UIScene lifecycle, and whether
+   `expo prebuild` sets this up for you depends on your Expo SDK version. See
+   [iOS scene lifecycle](#ios-scene-lifecycle) before you build for iOS.
+
+4. Run the app on each platform:
+
+   ```sh
+   npx expo run:android
+   npx expo run:ios
+   ```
+
+5. Confirm the native module is wired up:
+
+   ```js
+   const initialized = await TelematicsSdk.isInitializedSdk();
+   // initialized === true
+   ```
+
+   If this resolves to `false`, see [SDK initializing](#sdk-initializing) and
+   [Lifecycle handlers](#lifecycle-handlers).
+
+6. Complete the runtime sequence so the SDK actually records trips: see
+   [Making the SDK record trips](#making-the-sdk-record-trips) below. Steps 1
+   to 5 only wire the native module in; on their own they record nothing.
+
+### Bare React Native quickstart
+
+1. Install the package:
+
+   ```sh
+   yarn add react-native-telematics
+   ```
+
+2. Install iOS pods:
+
+   ```sh
+   cd ios && pod install
+   ```
+
+3. Apply the Android host settings: the Maven repository, `compileSdk`,
+   Kotlin toolchain, desugaring, and packaging excludes. Follow the
+   consolidated checklist in [Getting started > Android](#android).
+
+4. Apply the iOS `Info.plist` keys and add the lifecycle handlers to your
+   AppDelegate (and SceneDelegate, if your app uses one). Follow [Getting
+   started > iOS](#ios) and [Lifecycle handlers](#lifecycle-handlers).
+   `RPEntry.initializeSDK()` must be the first SDK call your app makes;
+   skipping it crashes the app at launch, see the warning in [Lifecycle
+   handlers](#lifecycle-handlers).
+
+5. Run the app on each platform:
+
+   ```sh
+   npx react-native run-android
+   npx react-native run-ios
+   ```
+
+6. Confirm the native module is wired up:
+
+   ```js
+   const initialized = await TelematicsSdk.isInitializedSdk();
+   // initialized === true
+   ```
+
+   If this resolves to `false`, see [SDK initializing](#sdk-initializing) and
+   [Lifecycle handlers](#lifecycle-handlers).
+
+7. Complete the runtime sequence so the SDK actually records trips: see
+   [Making the SDK record trips](#making-the-sdk-record-trips) below. Steps 1
+   to 6 only wire the native module in; on their own they record nothing.
+
+### Making the SDK record trips
+
+Both paths above end at the same place: the native module is linked and
+initialized, and nothing is being recorded yet. A working integration needs
+four more things, in this order. This sequence is the same for Expo and bare
+React Native.
+
+1. **Get a device token.** The SDK identifies a driver by a device token
+   (also called a virtual device ID), which you create through the Damoov API
+   using the InstanceId and InstanceKey from your DataHub workspace. See
+   [Initial app setup & credentials](#initial-app-setup--credentials). The
+   token is a GUID; an arbitrary string is rejected by the native SDK.
+
+2. **Register the token with the SDK**, once per user, and confirm it was
+   accepted:
+
+   ```js
+   await TelematicsSdk.setDeviceId('00000000-0000-0000-0000-000000000000');
+
+   const deviceId = await TelematicsSdk.getDeviceId();
+   const state = await TelematicsSdk.getDeviceIdRegistrationState();
+   console.log(deviceId, state.status, state.checkedAtMillis);
+   ```
+
+3. **Get the permissions granted.** Nothing is recorded until every required
+   permission and sensor is available. Show the wizard, then check the result
+   rather than assuming it succeeded:
+
+   ```js
+   let granted = await TelematicsSdk.isAllRequiredPermissionsAndSensorsGranted();
+
+   if (!granted) {
+     await TelematicsSdk.showPermissionWizard();
+     granted = await TelematicsSdk.isAllRequiredPermissionsAndSensorsGranted();
+   }
+   ```
+
+   On Android this covers precise location, background location on Android
+   10+, activity recognition, and battery-optimization exclusion. See
+   [Permissions & Sensors](#permissions--sensors) for wizard customization,
+   and [iOS permissions UI configuration](#ios-permissions-ui-configuration)
+   for the iOS wizard.
+
+4. **Enable the SDK**, only once permissions are granted:
+
+   ```js
+   if (granted) {
+     await TelematicsSdk.setEnableSdk(true);
+   }
+   ```
+
+   See [Enabling and disabling SDK](#enabling-and-disabling-sdk) and
+   [Tracking](#tracking) for manual and persistent tracking modes.
+
+Once that is done, the integration is live. Confirm it:
+
+```js
+console.log(await TelematicsSdk.isInitializedSdk());                     // true
+console.log(await TelematicsSdk.isAllRequiredPermissionsAndSensorsGranted()); // true
+console.log(await TelematicsSdk.isSdkEnabled());                         // true
+console.log(await TelematicsSdk.isTracking());                           // true
+```
+
+With automatic tracking the SDK starts and stops trips on its own once the
+device starts moving; recorded trips appear in your DataHub workspace after
+they are uploaded. If trips are recorded but never arrive, the usual cause on
+iOS is missing lifecycle forwarding, since the background upload completes in
+`handleEventsForBackgroundURLSession`: see [Lifecycle
+handlers](#lifecycle-handlers).
 
 ## AI agent integration skill
 
@@ -233,25 +442,114 @@ Remove from your app AndroidManifest.xml line:
     android:allowBackup="true"
 ```
 
-Version 3.1.0 brings the Android SDK transitively through the React Native
+Version 3.1.1 brings the Android SDK transitively through the React Native
 plugin; do not add a separate `com.telematicssdk:tracking` dependency to the
-host app. The host application must use `compileSdk 37` or higher; the plugin
-stops the build with a clear error if `TelematicsSdk_compileSdkVersion` is set
-lower. Keep `minSdk` at 24 or higher. `targetSdk 36` is the version used by the
-example and can be raised independently.
+host app. Complete the following checklist in the host app's Gradle files.
+None of these settings are inherited from the SDK's own module, so every
+consuming app has to add them itself -- except where noted, the [Expo config
+plugin](#expo-config-plugin) adds each of them automatically during
+`expo prebuild`, so Expo apps that use the plugin can skip doing this by hand.
 
-Add the Telematics Maven repository to the host app module in
-`android/app/build.gradle`:
+1. **`compileSdk 37` or higher.** The plugin stops the build with a clear
+   error if `TelematicsSdk_compileSdkVersion` is set lower. Keep `minSdk` at
+   24 or higher; `targetSdk 36` is the version used by the example and can be
+   raised independently. The Expo config plugin sets `compileSdk` for you.
 
-```groovy
-repositories {
-  maven { url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/" }
-}
-```
+2. **Telematics Maven repository**, in `android/app/build.gradle`:
 
-If the host uses `RepositoriesMode.PREFER_SETTINGS` in
-`android/settings.gradle`, add the same Maven repository to
-`dependencyResolutionManagement.repositories` instead.
+   ```groovy
+   repositories {
+     maven { url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/" }
+   }
+   ```
+
+   If the host uses `RepositoriesMode.PREFER_SETTINGS` in
+   `android/settings.gradle`, add the same Maven repository to
+   `dependencyResolutionManagement.repositories` instead. The Expo config
+   plugin adds this repository for you.
+
+3. **Kotlin toolchain.** `com.telematicssdk:tracking:4.1.0` brings in
+   `kotlin-stdlib` 2.3.x. What to do about it depends on whether the host app
+   is bare React Native or Expo -- these two paths are **not
+   interchangeable**:
+
+   - **Bare (non-Expo) React Native apps**: set `kotlin-gradle-plugin` to
+     `2.3.21` on the root buildscript classpath, and add
+     `kotlin-bom:2.3.21` to the app module -- the BOM is required, not
+     optional: without it, the Kotlin stdlib and reflect artifacts can resolve
+     to a version older than the compiler and cause `Class 'X' was compiled
+     with an incompatible version of Kotlin` errors. The example app uses the
+     matching Kotlin Gradle Plugin and Kotlin BOM.
+   - **Expo apps**: do **not** raise the Kotlin Gradle Plugin or
+     `android.kotlinVersion`. Expo pins its own Kotlin compiler (well below
+     2.3.x) to build Expo's own modules, independent of whatever version the
+     host project declares. Raising the compiler version instead breaks
+     Expo's own modules -- verified with real builds:
+     - Expo SDK 55 fails at configuration time with: `Failed to apply plugin
+       'expo-root-project'. Can't find KSP version for Kotlin version
+       '2.3.21'. Supported versions are: 2.2.21, 2.3.1, 2.3.0, 2.2.20, ...`
+     - Expo SDK 56 gets further, then fails compiling Expo's own module with:
+       `Execution failed for task ':expo-modules-core:compileDebugKotlin' ...
+       Internal compiler error`, `Unresolved reference 'map'`, and `Module was
+       compiled with an incompatible version of Kotlin. The binary version of
+       its metadata is 2.3.0, expected version is 2.1.0.`
+
+     The fix instead is to let Expo's pinned compiler read the newer
+     metadata, by adding `-Xskip-metadata-version-check` to the Kotlin compile
+     tasks in the root `android/build.gradle`:
+
+     ```groovy
+     allprojects {
+         tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+             compilerOptions {
+                 freeCompilerArgs.add("-Xskip-metadata-version-check")
+             }
+         }
+     }
+     ```
+
+     The [Expo config plugin](#expo-config-plugin) adds this automatically
+     during `expo prebuild`; nothing to do by hand for Expo apps that use it.
+
+4. **Core library desugaring**, or the build fails with:
+
+   ```
+   Dependency 'com.telematicssdk:tracking:4.1.0' requires core library desugaring to be enabled for :app.
+   ```
+
+   ```groovy
+   android {
+       compileOptions {
+           coreLibraryDesugaringEnabled true
+       }
+   }
+   dependencies {
+       coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+   }
+   ```
+
+   The Expo config plugin enables this for you.
+
+5. **Packaging excludes for netty `META-INF` entries**, or the build fails
+   with duplicate `META-INF` entries from the netty jars the SDK depends on
+   (`io.netty:netty-codec`, `netty-transport`, `netty-buffer`,
+   `netty-resolver`, etc.):
+
+   ```groovy
+   android {
+       packaging {
+           resources {
+               excludes += [
+                   'META-INF/INDEX.LIST',
+                   'META-INF/io.netty.versions.properties',
+                   'META-INF/versions/9/OSGI-INF/MANIFEST.MF'
+               ]
+           }
+       }
+   }
+   ```
+
+   The Expo config plugin adds these excludes for you.
 
 ### iOS
 
@@ -323,9 +621,53 @@ we recommend the following integration.
 - Target → **General** → **Frameworks, Libraries, and Embedded Content**
 - `TelematicsSDK.framework` should be present and set to **Embed & Sign**
 
+##### On Expo: no manual Xcode step needed
+
+The steps above are for **bare React Native** projects, where `ios/` is
+committed to your repo and edited by hand. On **Expo**, `expo prebuild`
+regenerates `ios/<App>.xcodeproj/project.pbxproj` from scratch every time, so
+a manual Xcode edit does not survive it.
+
+The [Expo config plugin](#expo-config-plugin) does this step for you instead.
+React Native's own `spm_dependency(...)` helper (see
+`node_modules/react-native/scripts/cocoapods/spm.rb`) registers the Swift
+package on the Pods project and attaches the product only to the CocoaPods
+*pod* target, never to the *app* target, and CocoaPods'
+`Pods-<App>-frameworks.sh` embed script only embeds pods, not Swift Package
+products. Without the fix, `TelematicsSDK.framework` links but is never
+copied into `<App>.app/Frameworks/`, and the app crashes at launch with:
+
+```
+Library not loaded: @rpath/TelematicsSDK.framework/TelematicsSDK
+```
+
+Verified: without the fix the app crashes at launch with that error; with it,
+`TelematicsSDK.framework` is present in `<App>.app/Frameworks/` and loads. See
+[Expo config plugin > What it does](#what-it-does) for the mechanism.
+
 ### Lifecycle handlers
 
 Proper application lifecycle handling is extremely important for the TelematicsSdk. In order to use SDK you need to add lifecycle handlers to your application AppDelegate and Scene Delegate:
+
+> **`RPEntry.initializeSDK()` must be the first SDK call, before any
+> forward.** Omitting it does not degrade quietly: it crashes the app at
+> launch. Verified twice on a simulator, `EXC_BREAKPOINT (SIGTRAP)` on the
+> main thread, with this stack:
+>
+> ```
+> libswiftCore.dylib  _assertionFailure(_:_:file:line:flags:)
+> TelematicsSDK       static RPEntry.instance.getter + 100 (RPEntry.swift:48)
+> ```
+>
+> Once from `AppDelegate.application(_:didFinishLaunchingWithOptions:)` and
+> once from `SceneDelegate.sceneWillEnterForeground(_:)` -- any access to
+> `RPEntry.instance` before `RPEntry.initializeSDK()` has run hits the same
+> trap. Call `RPEntry.initializeSDK()` in
+> `application(_:didFinishLaunchingWithOptions:)` before forwarding, exactly
+> as shown below, and guard every other forward with
+> `RPEntry.isInitialized()` as shown, so a forward that can run before launch
+> finishes (or on a path that skipped initialization) returns instead of
+> crashing.
 
 ##### App and Scene delegate methods
 
@@ -341,18 +683,22 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
 }
 
 func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
+    guard RPEntry.isInitialized() else { return }
     RPEntry.instance.application(application, handleEventsForBackgroundURLSession: identifier, completionHandler: completionHandler)
 }
 
 func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
+    guard RPEntry.isInitialized() else { return }
     RPEntry.instance.applicationDidReceiveMemoryWarning(application)
 }
 
 func applicationWillTerminate(_ application: UIApplication) {
+    guard RPEntry.isInitialized() else { return }
     RPEntry.instance.applicationWillTerminate(application)
 }
 
 func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    guard RPEntry.isInitialized() else { return }
     RPEntry.instance.application(application) {
         completionHandler(.newData)
     }
@@ -363,14 +709,17 @@ If you use AppDelegate, then you have to implement next methods:
 
 ```swift
 func applicationDidEnterBackground(_ application: UIApplication) {
+    guard RPEntry.isInitialized() else { return }
     RPEntry.instance.applicationDidEnterBackground(application)
 }
 
 func applicationWillEnterForeground(_ application: UIApplication) {
+    guard RPEntry.isInitialized() else { return }
     RPEntry.instance.applicationWillEnterForeground(application)
 }
 
 func applicationDidBecomeActive(_ application: UIApplication) {
+    guard RPEntry.isInitialized() else { return }
     RPEntry.instance.applicationDidBecomeActive(application)
 }
 ```
@@ -379,14 +728,17 @@ If you use SceneDelegate, then you have to implement next methods:
 
 ```swift
 func sceneDidBecomeActive(_ scene: UIScene) {
+    guard RPEntry.isInitialized() else { return }
     RPEntry.instance.sceneDidBecomeActive(scene)
 }
 
 func sceneWillEnterForeground(_ scene: UIScene) {
+    guard RPEntry.isInitialized() else { return }
     RPEntry.instance.sceneWillEnterForeground(scene)
 }
 
 func sceneDidEnterBackground(_ scene: UIScene) {
+    guard RPEntry.isInitialized() else { return }
     RPEntry.instance.sceneDidEnterBackground(scene)
 }
 ```
@@ -409,10 +761,28 @@ import TelematicsSdk, {
 
 ### SDK initializing
 
+On Android, `initializeSdk()` performs the actual SDK initialization; call it
+before any other API.
+
+On iOS, the authoritative initialization is native:
+`RPEntry.initializeSDK()` in your AppDelegate's
+`application(_:didFinishLaunchingWithOptions:)`, see [Lifecycle
+handlers](#lifecycle-handlers). Calling `initializeSdk()` from JS also
+initializes the SDK, as a safety net if that native call has not already
+happened, but it does not remove the need for the AppDelegate call: the
+lifecycle forwards run at launch, before any JS executes, so an app that
+relies on the JS call alone still crashes at launch (see the warning in
+[Lifecycle handlers](#lifecycle-handlers)).
+
 ```js
-// Must be called before any other API
+// Safety-net initialization on iOS; the authoritative call is
+// RPEntry.initializeSDK() in AppDelegate. Performs real initialization on
+// Android. Call it before any other API.
 await TelematicsSdk.initializeSdk();
 ```
+
+Every other bridge method rejects with error code `SDK_NOT_INITIALIZED` when
+the SDK has not been initialized. Use `isInitializedSdk()` to check first:
 
 ```js
 // Returns whether the native SDK is initialized
@@ -921,3 +1291,162 @@ await TelematicsSdk.setAndroidAutoStartEnabled({
 });
 const autoStartEnabled = await TelematicsSdk.isAndroidAutoStartEnabled();
 ```
+
+## Expo config plugin
+
+Version 3.1.1 ships a config plugin so Expo projects using [Continuous Native
+Generation](https://docs.expo.dev/workflow/continuous-native-generation/)
+(`expo prebuild`) get a working integration without hand-editing the
+generated `ios`/`android` directories. It automates everything described
+above under "Getting started" and "Lifecycle handlers": every edit below
+survives `expo prebuild` and `expo prebuild --clean`.
+
+Add it to `app.json` / `app.config.js`:
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "react-native-telematics",
+        {
+          "motionUsageDescription": "This app uses motion data to automatically detect trips.",
+          "locationWhenInUseUsageDescription": "This app uses your location to detect and record trips.",
+          "locationAlwaysAndWhenInUseUsageDescription": "This app uses your location in the background to detect and record trips, even when the app is closed.",
+          "skipInfoPlistPermissions": false
+        }
+      ]
+    ]
+  }
+}
+```
+
+All options are optional; the values above are the plugin's own defaults.
+
+| Option | Type | Default | Purpose |
+|---|---|---|---|
+| `motionUsageDescription` | `string` | see above | `NSMotionUsageDescription` |
+| `locationWhenInUseUsageDescription` | `string` | see above | `NSLocationWhenInUseUsageDescription` |
+| `locationAlwaysAndWhenInUseUsageDescription` | `string` | see above | `NSLocationAlwaysAndWhenInUseUsageDescription` |
+| `skipInfoPlistPermissions` | `boolean` | `false` | Skips adding the three usage description keys above, for apps that already manage Info.plist permission strings elsewhere (for example via another config plugin). `UIBackgroundModes` and `BGTaskSchedulerPermittedIdentifiers` are still added either way, since those aren't user-facing permission strings. |
+
+The plugin requires `@expo/config-plugins`, which every Expo project already
+has as a transitive dependency of `expo` itself; nothing extra to install in
+the common case.
+
+### What it does
+
+**iOS**
+
+- **AppDelegate**: adds `import TelematicsSDK`, calls `RPEntry.initializeSDK()`
+  and forwards to `RPEntry.instance` inside
+  `application(_:didFinishLaunchingWithOptions:)`, and adds the
+  `handleEventsForBackgroundURLSession` / `applicationDidReceiveMemoryWarning`
+  / `applicationWillTerminate` / `performFetchWithCompletionHandler` forwards.
+- **Scene vs. app-level lifecycle**: `applicationDidBecomeActive` /
+  `applicationWillEnterForeground` / `applicationDidEnterBackground` are not
+  called by iOS on scene-based apps. The plugin detects whether the project
+  has a `SceneDelegate.swift` (or declares `UIApplicationSceneManifest` in
+  Info.plist) and adds exactly one of the two forward sets: the three scene
+  methods on `SceneDelegate` for scene-based projects, or the three app-level
+  methods on `AppDelegate` otherwise. It never adds both. Whether a project
+  has a `SceneDelegate.swift` at all differs per Expo SDK version; see [iOS
+  scene lifecycle](#ios-scene-lifecycle) below.
+- **Info.plist**: merges `UIBackgroundModes` (`fetch`, `location`,
+  `remote-notification`) and `BGTaskSchedulerPermittedIdentifiers`
+  (`sdk.damoov.apprefreshtaskid`, `sdk.damoov.appprocessingtaskid`) into
+  whatever arrays are already there, and adds the three usage description
+  keys unless one is already set or `skipInfoPlistPermissions` is true.
+  Existing values are never overwritten.
+- **Podfile**: ensures dynamic linkage (`use_frameworks! :linkage =>
+  :dynamic`), required because TelematicsSDK is a dynamic framework pulled in
+  via SPM (see "iOS dependency manager notes" above). On the modern Expo
+  Podfile template this is done through `ios.useFrameworks` in
+  `Podfile.properties.json` rather than editing the Podfile itself, so it
+  can't conflict with another plugin's edits to that file.
+- **Swift Package Manager app-target fix**: adds the TelematicsSDK Swift
+  Package product (exact version `7.2.0`) to the application target itself,
+  not just the CocoaPods pod target, via a `post_install` hook injected into
+  the generated Podfile (marked `@react-native-telematics-sdk
+  spm-app-target-fix`, and idempotent). This is the Expo equivalent of the
+  manual Xcode step described in [iOS dependency manager
+  notes](#ios-dependency-manager-notes-cocoapods--swift-package-manager); see
+  that section for why it is needed and the crash it avoids.
+
+**Android**
+
+- `android/gradle.properties`: sets `android.suppressUnsupportedCompileSdk=37.0`,
+  and `android.compileSdkVersion` (raised to `37` if lower, left alone if
+  already higher). On current Expo prebuild templates this flows straight
+  into the Gradle version catalog the root project reads its `compileSdk`
+  from.
+
+  Deliberately does **not** set `android.kotlinVersion` or otherwise raise the
+  Kotlin Gradle Plugin version -- see "Android" under "Getting started" above
+  for why that breaks Expo apps.
+- `android/build.gradle`: on older/bare templates that declare
+  `compileSdkVersion` as a literal `ext {}` value instead (rather than
+  through the version catalog above), raises it the same way. Also adds an
+  `allprojects { tasks.withType(KotlinCompile) { ... } }` block (guarded by
+  the marker comment `// react-native-telematics: skip metadata version
+  check`) that adds `-Xskip-metadata-version-check` to every Kotlin compile
+  task -- this is what actually fixes the Expo build; see "Android" under
+  "Getting started" above for the failure messages it avoids.
+- `android/app/build.gradle`: adds the Telematics Maven repository, core
+  library desugaring (`compileOptions { coreLibraryDesugaringEnabled true }`
+  plus the `coreLibraryDesugaring` dependency), and the netty `META-INF`
+  packaging excludes -- see "Android" under "Getting started" above for why
+  each of these is required.
+
+### iOS scene lifecycle
+
+Starting with iOS 26, an app built against the iOS 26 or newer SDK must adopt
+the UIScene lifecycle, or UIKit terminates it at launch inside
+`__UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption`. Expo's own
+guide is the reference for the general mechanics:
+[expo/fyi: ios-scene-lifecycle](https://github.com/expo/fyi/blob/main/ios-scene-lifecycle.md).
+
+Whether your project has scene support at all, and whether `SceneDelegate.swift`
+exists for the plugin to add forwards to, depends on your Expo SDK version.
+Verified against the published templates for each SDK:
+
+| Expo SDK | Scene support | What the plugin does |
+| --- | --- | --- |
+| 55, 56 | None. The generated `Info.plist` has no `UIApplicationSceneManifest`, and no `SceneDelegate.swift` is produced. | Nothing -- it adds the three app-level lifecycle forwards to AppDelegate instead. Build these with the Xcode version the SDK supports. Starting React Native from a scene is Expo's own responsibility here; reimplementing it in the plugin would be fragile. |
+| 57 | Opt-in through `expo-build-properties`. Once enabled, Expo wires up its own `EXExpoAppSceneDelegate` and generates **no** `SceneDelegate.swift`. | `expo prebuild` fails with an explanatory error (below). The SDK needs `sceneDidBecomeActive`, `sceneWillEnterForeground`, and `sceneDidEnterBackground`, and iOS stops delivering the app-level equivalents once an app is scene-based, so there is no file to add the forwards to, and falling back to the app-level methods would fail silently. |
+| 58 and newer (currently in preview) | `expo prebuild` generates both `SceneDelegate.swift` and the scene manifest itself. | Picked up automatically, no extra work. |
+| Bare React Native | You own both delegates. | Not applicable -- see [Lifecycle handlers](#lifecycle-handlers). The example app in this repo adopts scenes, which is why it runs on current Xcode. |
+
+If you opted into the scene lifecycle on Expo SDK 57, `expo prebuild` stops
+with:
+
+```
+[react-native-telematics] This project declares UIApplicationSceneManifest in Info.plist, but no SceneDelegate.swift was found to add the scene lifecycle forwards to.
+```
+
+Add a SceneDelegate yourself, next to `AppDelegate.swift`:
+
+```swift
+internal import Expo
+
+@objc(SceneDelegate)
+class SceneDelegate: ExpoAppSceneDelegate {}
+```
+
+and point `UISceneDelegateClassName` at `$(PRODUCT_MODULE_NAME).SceneDelegate`.
+With that file present, the plugin adds the scene forwards to it
+automatically on the next `expo prebuild`.
+
+### Notes and limitations
+
+- Every edit is idempotent and non-destructive: re-running `expo prebuild` (with
+  or without `--clean`) does not duplicate imports, methods, or array
+  entries, and existing user values are merged into, never replaced.
+- The plugin only understands the standard Swift AppDelegate/SceneDelegate
+  template and Groovy `build.gradle` files that current Expo/React Native
+  projects generate. If your project's AppDelegate, SceneDelegate, or
+  `build.gradle`/`build.gradle.kts` has an unrecognized shape (for example a
+  Kotlin DSL Gradle file, or an Objective-C AppDelegate), the plugin throws a
+  descriptive error naming the file and what it expected, instead of silently
+  producing a broken project -- follow the manual steps in "Getting started"
+  and "Lifecycle handlers" above for that file.
