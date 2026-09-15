@@ -97,6 +97,10 @@ edited directly, is on the bare React Native path.
    Use `npx expo prebuild --clean` to regenerate `ios`/`android` from scratch,
    for example after upgrading the package or changing plugin options.
 
+   iOS 26 and newer require apps to adopt the UIScene lifecycle, and whether
+   `expo prebuild` sets this up for you depends on your Expo SDK version. See
+   [iOS scene lifecycle](#ios-scene-lifecycle) before you build for iOS.
+
 4. Run the app on each platform:
 
    ```sh
@@ -616,6 +620,30 @@ we recommend the following integration.
 
 - Target → **General** → **Frameworks, Libraries, and Embedded Content**
 - `TelematicsSDK.framework` should be present and set to **Embed & Sign**
+
+##### On Expo: no manual Xcode step needed
+
+The steps above are for **bare React Native** projects, where `ios/` is
+committed to your repo and edited by hand. On **Expo**, `expo prebuild`
+regenerates `ios/<App>.xcodeproj/project.pbxproj` from scratch every time, so
+a manual Xcode edit does not survive it.
+
+The [Expo config plugin](#expo-config-plugin) does this step for you instead.
+React Native's own `spm_dependency(...)` helper (see
+`node_modules/react-native/scripts/cocoapods/spm.rb`) registers the Swift
+package on the Pods project and attaches the product only to the CocoaPods
+*pod* target, never to the *app* target, and CocoaPods'
+`Pods-<App>-frameworks.sh` embed script only embeds pods, not Swift Package
+products. Without the fix, `TelematicsSDK.framework` links but is never
+copied into `<App>.app/Frameworks/`, and the app crashes at launch with:
+
+```
+Library not loaded: @rpath/TelematicsSDK.framework/TelematicsSDK
+```
+
+Verified: without the fix the app crashes at launch with that error; with it,
+`TelematicsSDK.framework` is present in `<App>.app/Frameworks/` and loads. See
+[Expo config plugin > What it does](#what-it-does) for the mechanism.
 
 ### Lifecycle handlers
 
@@ -1321,7 +1349,9 @@ the common case.
   has a `SceneDelegate.swift` (or declares `UIApplicationSceneManifest` in
   Info.plist) and adds exactly one of the two forward sets: the three scene
   methods on `SceneDelegate` for scene-based projects, or the three app-level
-  methods on `AppDelegate` otherwise. It never adds both.
+  methods on `AppDelegate` otherwise. It never adds both. Whether a project
+  has a `SceneDelegate.swift` at all differs per Expo SDK version; see [iOS
+  scene lifecycle](#ios-scene-lifecycle) below.
 - **Info.plist**: merges `UIBackgroundModes` (`fetch`, `location`,
   `remote-notification`) and `BGTaskSchedulerPermittedIdentifiers`
   (`sdk.damoov.apprefreshtaskid`, `sdk.damoov.appprocessingtaskid`) into
@@ -1334,6 +1364,14 @@ the common case.
   Podfile template this is done through `ios.useFrameworks` in
   `Podfile.properties.json` rather than editing the Podfile itself, so it
   can't conflict with another plugin's edits to that file.
+- **Swift Package Manager app-target fix**: adds the TelematicsSDK Swift
+  Package product (exact version `7.2.0`) to the application target itself,
+  not just the CocoaPods pod target, via a `post_install` hook injected into
+  the generated Podfile (marked `@react-native-telematics-sdk
+  spm-app-target-fix`, and idempotent). This is the Expo equivalent of the
+  manual Xcode step described in [iOS dependency manager
+  notes](#ios-dependency-manager-notes-cocoapods--swift-package-manager); see
+  that section for why it is needed and the crash it avoids.
 
 **Android**
 
@@ -1359,6 +1397,45 @@ the common case.
   plus the `coreLibraryDesugaring` dependency), and the netty `META-INF`
   packaging excludes -- see "Android" under "Getting started" above for why
   each of these is required.
+
+### iOS scene lifecycle
+
+Starting with iOS 26, an app built against the iOS 26 or newer SDK must adopt
+the UIScene lifecycle, or UIKit terminates it at launch inside
+`__UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption`. Expo's own
+guide is the reference for the general mechanics:
+[expo/fyi: ios-scene-lifecycle](https://github.com/expo/fyi/blob/main/ios-scene-lifecycle.md).
+
+Whether your project has scene support at all, and whether `SceneDelegate.swift`
+exists for the plugin to add forwards to, depends on your Expo SDK version.
+Verified against the published templates for each SDK:
+
+| Expo SDK | Scene support | What the plugin does |
+| --- | --- | --- |
+| 55, 56 | None. The generated `Info.plist` has no `UIApplicationSceneManifest`, and no `SceneDelegate.swift` is produced. | Nothing -- it adds the three app-level lifecycle forwards to AppDelegate instead. Build these with the Xcode version the SDK supports. Starting React Native from a scene is Expo's own responsibility here; reimplementing it in the plugin would be fragile. |
+| 57 | Opt-in through `expo-build-properties`. Once enabled, Expo wires up its own `EXExpoAppSceneDelegate` and generates **no** `SceneDelegate.swift`. | `expo prebuild` fails with an explanatory error (below). The SDK needs `sceneDidBecomeActive`, `sceneWillEnterForeground`, and `sceneDidEnterBackground`, and iOS stops delivering the app-level equivalents once an app is scene-based, so there is no file to add the forwards to, and falling back to the app-level methods would fail silently. |
+| 58 and newer (currently in preview) | `expo prebuild` generates both `SceneDelegate.swift` and the scene manifest itself. | Picked up automatically, no extra work. |
+| Bare React Native | You own both delegates. | Not applicable -- see [Lifecycle handlers](#lifecycle-handlers). The example app in this repo adopts scenes, which is why it runs on current Xcode. |
+
+If you opted into the scene lifecycle on Expo SDK 57, `expo prebuild` stops
+with:
+
+```
+[react-native-telematics] This project declares UIApplicationSceneManifest in Info.plist, but no SceneDelegate.swift was found to add the scene lifecycle forwards to.
+```
+
+Add a SceneDelegate yourself, next to `AppDelegate.swift`:
+
+```swift
+internal import Expo
+
+@objc(SceneDelegate)
+class SceneDelegate: ExpoAppSceneDelegate {}
+```
+
+and point `UISceneDelegateClassName` at `$(PRODUCT_MODULE_NAME).SceneDelegate`.
+With that file present, the plugin adds the scene forwards to it
+automatically on the next `expo prebuild`.
 
 ### Notes and limitations
 

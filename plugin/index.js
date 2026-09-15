@@ -4,6 +4,7 @@ const withTelematicsAppDelegate = require('./ios/withAppDelegate');
 const withTelematicsSceneDelegate = require('./ios/withSceneDelegate');
 const withTelematicsInfoPlist = require('./ios/withInfoPlist');
 const withTelematicsPodfile = require('./ios/withPodfile');
+const withTelematicsPodfileSpmAppTarget = require('./ios/withPodfileSpmAppTarget');
 const withTelematicsGradleProperties = require('./android/withGradleProperties');
 const withTelematicsProjectBuildGradle = require('./android/withProjectBuildGradle');
 const withTelematicsAppBuildGradle = require('./android/withAppBuildGradle');
@@ -25,7 +26,11 @@ const pkg = require('../package.json');
  *    forwards, in place of the AppDelegate-level ones.
  *  - Info.plist: UIBackgroundModes, BGTaskSchedulerPermittedIdentifiers, and
  *    (unless skipped) the three usage description strings.
- *  - Podfile: `use_frameworks! :linkage => :dynamic`.
+ *  - Podfile: `use_frameworks! :linkage => :dynamic`, plus a `post_install`
+ *    hook that attaches the TelematicsSDK Swift package product to the app
+ *    target directly, so it is embedded into the app bundle (without this,
+ *    the app links but crashes at launch with a dyld "Library not loaded"
+ *    error; see plugin/ios/withPodfileSpmAppTarget.js).
  *
  * Android:
  *  - gradle.properties: `android.suppressUnsupportedCompileSdk=37.0`.
@@ -56,6 +61,7 @@ function withTelematicsSDK(config, options = {}) {
   config = withTelematicsSceneDelegate(config);
   config = withTelematicsInfoPlist(config, options);
   config = withTelematicsPodfile(config);
+  config = withTelematicsPodfileSpmAppTarget(config);
 
   config = withTelematicsGradleProperties(config);
   config = withTelematicsProjectBuildGradle(config);

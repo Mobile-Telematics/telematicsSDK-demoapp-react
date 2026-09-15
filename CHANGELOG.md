@@ -29,6 +29,21 @@ All notable changes to this repository are documented here.
 - Reworked the README into two explicit integration paths, Expo and bare React
   Native, each with an end-to-end sequence from install through to recording
   trips.
+- Added the TelematicsSDK Swift Package to the application target during
+  `expo prebuild`, through a `post_install` hook injected into the generated
+  Podfile, so Expo projects get a runnable iOS build without hand-editing
+  Xcode. React Native's `spm_dependency(...)` helper attaches the package to
+  the CocoaPods pod target only, which is why the app target needs it added
+  separately; bare React Native projects do this once by hand in Xcode.
+- Added per-Expo-SDK support for the iOS scene lifecycle that iOS 26 and
+  newer require. The plugin adds the SceneDelegate forwards automatically on
+  Expo SDK 58 and newer, where `expo prebuild` generates `SceneDelegate.swift`
+  itself; on Expo SDK 57, where scene adoption is opt-in through
+  `expo-build-properties` and Expo supplies its own scene delegate, it
+  reports a clear `expo prebuild` error with the SceneDelegate to add.
+  Expo SDK 55 and 56 have no scene support and are unaffected. Bare React
+  Native continues to be handled by the existing AppDelegate/SceneDelegate
+  detection.
 - Kept Telematics iOS SDK v7.2.0 and Android SDK v4.1.0.
 
 ## [3.1.0]

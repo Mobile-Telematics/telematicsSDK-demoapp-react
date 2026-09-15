@@ -4,6 +4,8 @@ const {
   ensureImport,
   insertAfterMethodOpeningBrace,
   insertBeforeClassClosingBrace,
+  detectInheritedBaseClass,
+  buildForwardMethod,
 } = require('./swiftMerge');
 
 // Idempotency markers. Each is the exact string this plugin injects for that
@@ -68,74 +70,130 @@ function withTelematicsAppDelegate(config) {
       );
     }
 
+    // Whether `class AppDelegate: <Base>, ...` inherits real
+    // UIApplicationDelegate implementations (Expo's `ExpoAppDelegate`, RN's
+    // `RCTAppDelegate`/`EXAppDelegateWrapper`, ...) as opposed to the bare
+    // `UIResponder` RN template, where these are just protocol requirements.
+    // `insertBeforeClassClosingBrace` below throws the "could not find
+    // class" error if the class itself can't be located, so a `null` here
+    // (falls back to `false`) is safe -- these generated strings never get used.
+    const baseClassInfo = detectInheritedBaseClass(contents, 'AppDelegate');
+    const inherits = Boolean(baseClassInfo && baseClassInfo.inheritsImplementations);
+
     const methodsToInject = [];
 
     if (!contents.includes(HANDLE_BG_SESSION_MARKER)) {
-      methodsToInject.push(`
+      methodsToInject.push(
+        inherits
+          ? `
+  override func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
+    var pending = 2
+    let done = {
+      pending -= 1
+      if pending == 0 { completionHandler() }
+    }
+    super.application(application, handleEventsForBackgroundURLSession: identifier, completionHandler: done)
+    guard RPEntry.isInitialized() else { done(); return }
+    RPEntry.instance.application(application, handleEventsForBackgroundURLSession: identifier, completionHandler: done)
+  }
+`
+          : `
   func application(_ application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: @escaping () -> Void) {
     guard RPEntry.isInitialized() else { return }
     RPEntry.instance.application(application, handleEventsForBackgroundURLSession: identifier, completionHandler: completionHandler)
   }
-`);
+`
+      );
     }
 
     if (!contents.includes(MEMORY_WARNING_MARKER)) {
-      methodsToInject.push(`
-  func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
-    guard RPEntry.isInitialized() else { return }
-    RPEntry.instance.applicationDidReceiveMemoryWarning(application)
-  }
-`);
+      methodsToInject.push(
+        buildForwardMethod(
+          inherits,
+          'applicationDidReceiveMemoryWarning(_ application: UIApplication)',
+          'applicationDidReceiveMemoryWarning(application)',
+          'applicationDidReceiveMemoryWarning(application)'
+        )
+      );
     }
 
     if (!contents.includes(WILL_TERMINATE_MARKER)) {
-      methodsToInject.push(`
-  func applicationWillTerminate(_ application: UIApplication) {
-    guard RPEntry.isInitialized() else { return }
-    RPEntry.instance.applicationWillTerminate(application)
-  }
-`);
+      methodsToInject.push(
+        buildForwardMethod(
+          inherits,
+          'applicationWillTerminate(_ application: UIApplication)',
+          'applicationWillTerminate(application)',
+          'applicationWillTerminate(application)'
+        )
+      );
     }
 
     if (!contents.includes(PERFORM_FETCH_MARKER)) {
-      methodsToInject.push(`
+      methodsToInject.push(
+        inherits
+          ? `
+  override func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    var pending = 2
+    var combinedResult: UIBackgroundFetchResult = .noData
+    let done = { (result: UIBackgroundFetchResult) in
+      if result == .newData || (result == .failed && combinedResult == .noData) {
+        combinedResult = result
+      }
+      pending -= 1
+      if pending == 0 { completionHandler(combinedResult) }
+    }
+    super.application(application, performFetchWithCompletionHandler: done)
+    guard RPEntry.isInitialized() else { done(.noData); return }
+    RPEntry.instance.application(application) {
+      done(.newData)
+    }
+  }
+`
+          : `
   func application(_ application: UIApplication, performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
     guard RPEntry.isInitialized() else { return }
     RPEntry.instance.application(application) {
       completionHandler(.newData)
     }
   }
-`);
+`
+      );
     }
 
     // Scene-based apps get these three on SceneDelegate instead (see withSceneDelegate.js);
     // iOS never calls the app-level equivalents when a scene delegate is present.
     if (!sceneBased) {
       if (!contents.includes(APP_LEVEL_BACKGROUND_MARKER)) {
-        methodsToInject.push(`
-  func applicationDidEnterBackground(_ application: UIApplication) {
-    guard RPEntry.isInitialized() else { return }
-    RPEntry.instance.applicationDidEnterBackground(application)
-  }
-`);
+        methodsToInject.push(
+          buildForwardMethod(
+            inherits,
+            'applicationDidEnterBackground(_ application: UIApplication)',
+            'applicationDidEnterBackground(application)',
+            'applicationDidEnterBackground(application)'
+          )
+        );
       }
 
       if (!contents.includes(APP_LEVEL_FOREGROUND_MARKER)) {
-        methodsToInject.push(`
-  func applicationWillEnterForeground(_ application: UIApplication) {
-    guard RPEntry.isInitialized() else { return }
-    RPEntry.instance.applicationWillEnterForeground(application)
-  }
-`);
+        methodsToInject.push(
+          buildForwardMethod(
+            inherits,
+            'applicationWillEnterForeground(_ application: UIApplication)',
+            'applicationWillEnterForeground(application)',
+            'applicationWillEnterForeground(application)'
+          )
+        );
       }
 
       if (!contents.includes(APP_LEVEL_ACTIVE_MARKER)) {
-        methodsToInject.push(`
-  func applicationDidBecomeActive(_ application: UIApplication) {
-    guard RPEntry.isInitialized() else { return }
-    RPEntry.instance.applicationDidBecomeActive(application)
-  }
-`);
+        methodsToInject.push(
+          buildForwardMethod(
+            inherits,
+            'applicationDidBecomeActive(_ application: UIApplication)',
+            'applicationDidBecomeActive(application)',
+            'applicationDidBecomeActive(application)'
+          )
+        );
       }
     }
 
