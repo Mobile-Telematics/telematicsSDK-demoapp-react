@@ -1,7 +1,7 @@
 {
   "name": "react-native-telematics-sdk-example",
   "description": "Example app for react-native-telematics-sdk",
-  "version": "3.1.1",
+  "version": "3.1.2",
   "private": true,
   "scripts": {
     "android": "react-native run-android",

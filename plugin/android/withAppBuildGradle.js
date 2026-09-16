@@ -263,7 +263,7 @@ function ensurePackagingExcludes(contents) {
  * longer forces a Kotlin version (see ./withProjectBuildGradle.js), so there
  * is no compiler/stdlib mismatch for a BOM to paper over.
  *
- * See ISSUES-3.1.0.md issue 8 and README "Getting started > Android".
+ * See README "Getting started > Android".
  * Only supports the Groovy build.gradle Expo/RN templates generate; throws a
  * clear error for Kotlin DSL (build.gradle.kts) app files.
  */

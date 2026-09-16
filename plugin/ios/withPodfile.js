@@ -18,7 +18,7 @@ const PLATFORM_LINE_REGEX = /^platform\s+:ios.*$/m;
  * framework pulled in via SPM (`spm_dependency` in the podspec); without
  * dynamic linkage the app can end up linking against it without embedding
  * it, which crashes at launch (dyld) rather than failing the build -- see
- * ISSUES-3.1.0.md issue 3.
+ * README "iOS dependency manager notes (CocoaPods + Swift Package Manager)".
  *
  * Modern Expo prebuild templates don't hard-code `use_frameworks!` in the
  * Podfile; they call it conditionally based on `Podfile.properties.json`

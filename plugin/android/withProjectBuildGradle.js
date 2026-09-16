@@ -14,8 +14,7 @@ function ensureCompileSdk(contents) {
     throw new Error(
       '[react-native-telematics] Could not find "compileSdkVersion" (or "compileSdk") in the root ' +
         'android/build.gradle ext block. react-native-telematics requires compileSdk ' +
-        `${MIN_COMPILE_SDK} or higher (com.telematicssdk:tracking:4.1.0 requires Android API ` +
-        `${MIN_COMPILE_SDK}). Set it manually (see README).`
+        `${MIN_COMPILE_SDK} or higher. Set it manually (see README).`
     );
   }
 
@@ -72,11 +71,15 @@ function ensureSkipMetadataVersionCheck(contents) {
 
 /**
  * Ensures the root android/build.gradle:
- *  - declares compileSdkVersion/compileSdk >= 37
+ *  - declares compileSdkVersion/compileSdk >= 36
  *  - has an `allprojects` block making every Kotlin compile task skip its
  *    metadata-version check (see ensureSkipMetadataVersionCheck above)
  *
- * See ISSUES-3.1.0.md issues 6/7/8 for why compileSdk 37 is required.
+ * compileSdk 36 is the minimum: com.telematicssdk:tracking:4.1.0 declares
+ * minCompileSdk=37 in its AAR metadata, but that check is skipped via
+ * android.experimental.disableCompileSdkChecks (see ./withGradleProperties.js),
+ * because Android SDK Platform 37 is preview-channel only and cannot be
+ * installed on EAS workers.
  * Only supports the Groovy build.gradle Expo/RN templates generate; throws a
  * clear error naming the file for Kotlin DSL (build.gradle.kts) projects
  * rather than silently doing nothing.

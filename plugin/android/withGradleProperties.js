@@ -1,5 +1,9 @@
 const { withGradleProperties } = require('@expo/config-plugins');
-const { COMPILE_SDK_SUPPRESS_VALUE, MIN_COMPILE_SDK } = require('../constants');
+const {
+  COMPILE_SDK_SUPPRESS_VALUE,
+  DISABLE_COMPILE_SDK_CHECKS,
+  MIN_COMPILE_SDK,
+} = require('../constants');
 
 const SUPPRESS_KEY = 'android.suppressUnsupportedCompileSdk';
 
@@ -56,21 +60,32 @@ function isAtLeast(value, minParts) {
 
 /**
  * Ensures android/gradle.properties has:
- *  - `android.suppressUnsupportedCompileSdk=37.0`, since AGP 8.12 does not
- *    officially support compileSdk 37 (which com.telematicssdk:tracking:4.1.0
- *    requires) and warns without it -- see ISSUES-3.1.0.md issue 7.
- *  - `android.compileSdkVersion` at least 37, the gradle.properties override
+ *  - `android.experimental.disableCompileSdkChecks=true`, so AGP accepts
+ *    com.telematicssdk:tracking:4.1.0 (which declares minCompileSdk=37 in its
+ *    AAR metadata) on stable compileSdk 36. Android SDK Platform 37 is
+ *    preview-channel only and cannot be installed on EAS workers, so without
+ *    this every remote Android build fails even though the SDK itself uses no
+ *    API 37 class or resource. See ../constants.js for the full rationale.
+ *  - `android.compileSdkVersion` at least 36, the gradle.properties override
  *    modern Expo prebuild templates read into their version catalog (see
  *    comment above). An existing value that already satisfies the minimum is
- *    left alone.
+ *    left alone, so an app already on 37 stays on 37.
+ *  - `android.suppressUnsupportedCompileSdk=37.0` ONLY when the app is on
+ *    compileSdk 37 or higher, since AGP 8.12 warns about 37 but supports 36
+ *    natively.
  */
 function withTelematicsGradleProperties(config) {
   return withGradleProperties(config, (config) => {
-    setProperty(config.modResults, SUPPRESS_KEY, COMPILE_SDK_SUPPRESS_VALUE);
+    setProperty(config.modResults, DISABLE_COMPILE_SDK_CHECKS, 'true');
 
     const compileSdkProp = getProperty(config.modResults, COMPILE_SDK_KEY);
     if (!compileSdkProp || !isAtLeast(compileSdkProp.value, [MIN_COMPILE_SDK])) {
       setProperty(config.modResults, COMPILE_SDK_KEY, String(MIN_COMPILE_SDK));
+    }
+
+    const resolvedCompileSdk = getProperty(config.modResults, COMPILE_SDK_KEY);
+    if (resolvedCompileSdk && isAtLeast(resolvedCompileSdk.value, [37])) {
+      setProperty(config.modResults, SUPPRESS_KEY, COMPILE_SDK_SUPPRESS_VALUE);
     }
 
     return config;
