@@ -16,11 +16,17 @@ The example app is built and validated on React Native `0.86.3`. All three
 rows above were verified building and running on both an Android emulator and
 an iOS simulator for this release.
 
+Android builds need **no preview-channel SDK component**: every row above was
+additionally verified by `expo prebuild` plus a release build against an Android
+SDK installation with Platform 37 removed, which is what hosted CI workers
+(EAS and similar) look like. See the `compileSdk` step of the checklist under
+[Getting started > Android](#android).
+
 - iOS native SDK: `7.2.0`; iOS deployment target: `15.1`
-- Android native SDK: `4.1.0`; `compileSdk 37`, `minSdk 24`, and `targetSdk 36`
+- Android native SDK: `4.1.0`; `compileSdk 36`, `minSdk 24`, and `targetSdk 36`
 - The example app uses the React Native 0.86 Android toolchain (Gradle `9.3.1`
-  and Android Gradle Plugin `8.12.0`). Android Gradle Plugin 8.12 warns for
-  `compileSdk 37`; the example validates this required combination.
+  and Android Gradle Plugin `8.12.0`), and validates this combination on stable
+  `compileSdk 36`.
 - `com.telematicssdk:tracking:4.1.0` brings in `kotlin-stdlib` 2.3.x, which
   requires a Kotlin toolchain change in the host app. The required settings
   differ depending on whether the host app is bare React Native or Expo, and
@@ -136,9 +142,17 @@ edited directly, is on the bare React Native path.
    cd ios && pod install
    ```
 
-3. Apply the Android host settings: the Maven repository, `compileSdk`,
-   Kotlin toolchain, desugaring, and packaging excludes. Follow the
-   consolidated checklist in [Getting started > Android](#android).
+3. Apply the Android host settings: the Maven repository, `compileSdk` and
+   `android.experimental.disableCompileSdkChecks=true`, Kotlin toolchain,
+   desugaring, and packaging excludes. Follow the consolidated checklist in
+   [Getting started > Android](#android).
+
+   Bare apps must add every one of these by hand -- the [Expo config
+   plugin](#expo-config-plugin) does not run outside Expo. The one most easily
+   missed is the `gradle.properties` line above; without it the build stops
+   with *"Dependency 'com.telematicssdk:tracking:4.1.0' requires libraries and
+   applications that depend on it to compile against version 37 or later of the
+   Android APIs"*.
 
 4. Apply the iOS `Info.plist` keys and add the lifecycle handlers to your
    AppDelegate (and SceneDelegate, if your app uses one). Follow [Getting
@@ -450,10 +464,48 @@ consuming app has to add them itself -- except where noted, the [Expo config
 plugin](#expo-config-plugin) adds each of them automatically during
 `expo prebuild`, so Expo apps that use the plugin can skip doing this by hand.
 
-1. **`compileSdk 37` or higher.** The plugin stops the build with a clear
-   error if `TelematicsSdk_compileSdkVersion` is set lower. Keep `minSdk` at
-   24 or higher; `targetSdk 36` is the version used by the example and can be
-   raised independently. The Expo config plugin sets `compileSdk` for you.
+1. **`compileSdk 36` or higher, plus one Gradle property.** Add this to
+   `android/gradle.properties`:
+
+   ```properties
+   android.experimental.disableCompileSdkChecks=true
+   ```
+
+   `com.telematicssdk:tracking:4.1.0` declares `minCompileSdk=37` in its AAR
+   metadata, so without this Android Gradle Plugin refuses it on `compileSdk 36`
+   with *"Dependency ... requires libraries and applications that depend on it
+   to compile against version 37 or later of the Android APIs"*.
+
+   That `37` is only the `compileSdk` the AAR happened to be built with, not
+   something it uses. Its highest transitive requirement is 36
+   (`androidx.activity 1.13.0`), its bytecode references no class added in API
+   37, and its resources stop at `values-v31`.
+
+   This matters because **Android SDK Platform 37 is preview-channel only**. It
+   can be installed locally with `sdkmanager --channel=3 "platforms;android-37"`,
+   but not on EAS or other hosted CI workers, where nothing can be installed —
+   so requiring `compileSdk 37` makes remote Android builds fail while local
+   ones succeed. Building against stable `compileSdk 36` with the property above
+   works in both places, and is verified by the example app in debug and
+   release.
+
+   Note the property relaxes the check for **every** dependency in the app, not
+   just the Telematics SDK. If another library genuinely needs a higher
+   `compileSdk`, that will surface later as a compile error instead of here.
+
+   The module follows the app's `compileSdk` by default;
+   `TelematicsSdk_compileSdkVersion` overrides it for this module alone. The
+   build stops with a clear error if the resolved value is below 36, or if it
+   is below 37 without the property set. Keep `minSdk` at 24
+   or higher; `targetSdk 36` is the version used by the example and can be
+   raised independently. The Expo config plugin sets both the `compileSdk` and
+   the property for you.
+
+   If you would rather stay on `compileSdk 37`, that still works: install the
+   platform from the preview channel, set the app's `compileSdk` to 37 (or
+   `TelematicsSdk_compileSdkVersion=37` for this module alone), and set
+   `android.suppressUnsupportedCompileSdk=37.0`, since AGP 8.12 warns for 37.
+   Remote builds will then need the platform available on the worker.
 
 2. **Telematics Maven repository**, in `android/app/build.gradle`:
 
@@ -1375,11 +1427,16 @@ the common case.
 
 **Android**
 
-- `android/gradle.properties`: sets `android.suppressUnsupportedCompileSdk=37.0`,
-  and `android.compileSdkVersion` (raised to `37` if lower, left alone if
-  already higher). On current Expo prebuild templates this flows straight
-  into the Gradle version catalog the root project reads its `compileSdk`
-  from.
+- `android/gradle.properties`: sets
+  `android.experimental.disableCompileSdkChecks=true`, so the build accepts
+  `com.telematicssdk:tracking:4.1.0` (which declares `minCompileSdk=37`) on
+  stable `compileSdk 36` — see item 1 under "Android" in "Getting started" for
+  why requiring 37 breaks EAS builds. It also sets `android.compileSdkVersion`
+  (raised to `36` if lower, left alone if already higher). On current Expo
+  prebuild templates this flows straight into the Gradle version catalog the
+  root project reads its `compileSdk` from. `android.suppressUnsupportedCompileSdk=37.0`
+  is added only when the app is already on `compileSdk 37` or higher, since AGP
+  8.12 supports 36 natively and only warns about 37.
 
   Deliberately does **not** set `android.kotlinVersion` or otherwise raise the
   Kotlin Gradle Plugin version -- see "Android" under "Getting started" above
@@ -1436,6 +1493,29 @@ class SceneDelegate: ExpoAppSceneDelegate {}
 and point `UISceneDelegateClassName` at `$(PRODUCT_MODULE_NAME).SceneDelegate`.
 With that file present, the plugin adds the scene forwards to it
 automatically on the next `expo prebuild`.
+
+### Remote builds (EAS and other hosted CI)
+
+Nothing extra is needed: an Expo app using this plugin builds on a hosted worker
+with the same Android SDK components a stock Expo app needs. The plugin's whole
+Gradle footprint is the Telematics Maven repository, core library desugaring,
+the netty packaging excludes, `-Xskip-metadata-version-check`, and the two
+`gradle.properties` lines listed above -- no SDK platform, build-tools or NDK
+version beyond what the Expo template already pins.
+
+This matters because `com.telematicssdk:tracking:4.1.0` declares
+`minCompileSdk=37`, and Android SDK Platform 37 ships on the preview channel
+only. A developer can install it locally with
+`sdkmanager --channel=3 "platforms;android-37"`; a hosted worker cannot install
+anything, so a build that insists on 37 fails remotely while succeeding locally.
+Skipping the AAR metadata check (see the `compileSdk` step of the checklist
+under [Getting started > Android](#android)) keeps the build on stable
+`compileSdk 36`, which is what the Expo/React Native template already uses. This
+was verified by building Expo SDK 55, 56 and 57 apps against an Android SDK
+installation with Platform 37 removed.
+
+The worker does need network access to the Telematics Maven repository at
+`s3.us-east-2.amazonaws.com`, as it did before.
 
 ### Notes and limitations
 

@@ -23,7 +23,13 @@ def safeExtGet(prop, fallback) {
     rootProject.hasProperty(prop) ? rootProject.property(prop) : fallback
 }
 
-def telematicsCompileSdk = safeExtGet('TelematicsSdk_compileSdkVersion', 37).toString().toInteger()
+// Follow the host app's compileSdk by default, so a module built into an app on
+// compileSdk 37 is not silently left behind on 36. TelematicsSdk_compileSdkVersion
+// still wins when set, for apps that need to pin this module specifically.
+def telematicsCompileSdk = safeExtGet(
+    'TelematicsSdk_compileSdkVersion',
+    safeExtGet('compileSdkVersion', 36)
+).toString().toInteger()
 
 android {
     namespace "com.reactnativetelematicssdk"
@@ -67,13 +73,35 @@ android {
     }
 }
 
-if (telematicsCompileSdk < 37) {
+// com.telematicssdk:tracking:4.1.0 declares minCompileSdk=37 in its AAR metadata, so
+// AGP refuses it on compileSdk 36 by default. That declaration comes from the compileSdk
+// Damoov happened to build the AAR with, NOT from anything the AAR actually needs:
+// its highest transitive requirement is 36 (androidx.activity 1.13.0), its bytecode
+// references no class added in API 37, and its resources stop at values-v31. Android SDK
+// Platform 37 is preview-channel only, which cannot be installed on EAS/CI workers, so
+// requiring it makes remote Android builds impossible.
+//
+// Telling AGP to skip the AAR metadata compileSdk check lets the whole thing build on
+// stable compileSdk 36 -- verified by building example/ as debug AND release.
+if (telematicsCompileSdk < 36) {
     throw new GradleException(
-        "react-native-telematics requires compileSdk 37 or higher because " +
-        "com.telematicssdk:tracking:4.1.0 requires Android API 37. " +
-        "Set TelematicsSdk_compileSdkVersion (or the app compileSdk) to 37 or higher, " +
-        "and add android.suppressUnsupportedCompileSdk=37.0 to gradle.properties, " +
-        "since AGP 8.12 warns for compileSdk 37."
+        "react-native-telematics requires compileSdk 36 or higher. " +
+        "Set TelematicsSdk_compileSdkVersion (or the app compileSdk) to 36 or higher."
+    )
+}
+
+if (telematicsCompileSdk < 37 &&
+    !((rootProject.findProperty('android.experimental.disableCompileSdkChecks') ?: 'false').toString().toBoolean())) {
+    throw new GradleException(
+        "react-native-telematics builds on compileSdk ${telematicsCompileSdk}, but " +
+        "com.telematicssdk:tracking:4.1.0 declares minCompileSdk=37 in its AAR metadata. " +
+        "Add this line to your app's android/gradle.properties:\n\n" +
+        "    android.experimental.disableCompileSdkChecks=true\n\n" +
+        "That skips the AAR metadata compileSdk check. The SDK does not use any API 37 " +
+        "class or resource, so compileSdk 36 is enough; requiring 37 would force the " +
+        "preview-channel Android SDK Platform 37, which cannot be installed on EAS/CI " +
+        "workers. The Expo config plugin sets this property for you. Alternatively set " +
+        "compileSdk to 37 (and android.suppressUnsupportedCompileSdk=37.0)."
     )
 }
 

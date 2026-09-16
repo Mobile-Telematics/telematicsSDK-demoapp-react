@@ -2,6 +2,27 @@
 
 All notable changes to this repository are documented here.
 
+## [Unreleased]
+- Fixed Android builds failing on EAS and other hosted CI while succeeding
+  locally. `com.telematicssdk:tracking:4.1.0` declares `minCompileSdk=37` in its
+  AAR metadata, which forced `compileSdk 37` — and Android SDK Platform 37 is
+  preview-channel only, installable locally with `sdkmanager --channel=3` but
+  not on Expo's build machines. Nothing in the AAR actually needs API 37: its
+  highest transitive requirement is 36 (`androidx.activity 1.13.0`), its
+  bytecode references no class added in API 37, and its resources stop at
+  `values-v31`. The package now targets stable `compileSdk 36` and skips the AAR
+  metadata check via `android.experimental.disableCompileSdkChecks=true`, which
+  the Expo config plugin sets automatically. Verified by building the example
+  app in both debug and release, and by building Expo SDK 55 and Expo SDK 57
+  apps through `expo prebuild` against an Android SDK installation with
+  Platform 37 removed. Apps that prefer `compileSdk 37` can still use it by
+  setting `TelematicsSdk_compileSdkVersion=37`.
+- Fixed the Android module ignoring the host app's `compileSdk`. It read only
+  `TelematicsSdk_compileSdkVersion` and otherwise fell back to a hard-coded
+  value, so an app on `compileSdk 37` still built this module on the fallback.
+  It now inherits the app's `compileSdkVersion` when no module-specific
+  override is set.
+
 ## [3.1.1]
 - Added support for React Native 0.83 and newer, covering Expo SDK 55, 56 and
   57. Verified building and running on React Native 0.83.10, 0.85.3 and 0.86.3
