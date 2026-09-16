@@ -2,7 +2,7 @@
 
 A React Native wrapper for tracking the person's driving behavior such as speeding, turning, braking and several other things on iOS and Android.
 
-## Version 3.1.1 compatibility
+## Version 3.1.2 compatibility
 
 ---
 
@@ -456,7 +456,7 @@ Remove from your app AndroidManifest.xml line:
     android:allowBackup="true"
 ```
 
-Version 3.1.1 brings the Android SDK transitively through the React Native
+Version 3.1.2 brings the Android SDK transitively through the React Native
 plugin; do not add a separate `com.telematicssdk:tracking` dependency to the
 host app. Complete the following checklist in the host app's Gradle files.
 None of these settings are inherited from the SDK's own module, so every
@@ -1346,7 +1346,7 @@ const autoStartEnabled = await TelematicsSdk.isAndroidAutoStartEnabled();
 
 ## Expo config plugin
 
-Version 3.1.1 ships a config plugin so Expo projects using [Continuous Native
+Version 3.1.2 ships a config plugin so Expo projects using [Continuous Native
 Generation](https://docs.expo.dev/workflow/continuous-native-generation/)
 (`expo prebuild`) get a working integration without hand-editing the
 generated `ios`/`android` directories. It automates everything described

@@ -2,7 +2,7 @@
 
 All notable changes to this repository are documented here.
 
-## [Unreleased]
+## [3.1.2]
 - Fixed Android builds failing on EAS and other hosted CI while succeeding
   locally. `com.telematicssdk:tracking:4.1.0` declares `minCompileSdk=37` in its
   AAR metadata, which forced `compileSdk 37` — and Android SDK Platform 37 is
