@@ -2,19 +2,29 @@
 
 A React Native wrapper for tracking the person's driving behavior such as speeding, turning, braking and several other things on iOS and Android.
 
-## Version 3.1.2 compatibility
+> **3.2.0 is a pre-release.** On iOS it ships TelematicsSDK **7.3.0-rc10**
+> inside the package (`ios/Frameworks/TelematicsSDK.xcframework`) because that
+> SDK is not published yet. Android is unchanged (`tracking:4.1.0`); the new
+> 7.3.0 APIs reject with `PLATFORM_ERROR` there for now. See
+> [CHANGELOG](CHANGELOG.md) for the API changes.
+
+## Version 3.2.0 compatibility
 
 ---
 
-| React Native | Expo SDK |
-| --- | --- |
-| `0.83.10` | 55 |
-| `0.85.3` | 56 |
-| `0.86.3` | 57 |
+| React Native | Expo SDK | 3.2.0 pre-release check (Xcode 27.2, iOS 27.2 simulator) |
+| --- | --- | --- |
+| `0.83.10` | 55 | iOS builds; does not launch on iOS 27 (see below) |
+| `0.85.3` | 56 | not re-checked for 3.2.0 |
+| `0.86.x` | 57 | example app: iOS builds and runs, Android builds |
+| `0.88.1` | 58 | iOS builds and launches |
 
-The example app is built and validated on React Native `0.86.3`. All three
-rows above were verified building and running on both an Android emulator and
-an iOS simulator for this release.
+**Expo SDK 55 and Xcode 27.** The Expo SDK 55 template has no UIScene
+lifecycle. Apps built with the iOS 27 SDK must adopt it, so on iOS 27 such an
+app stops at launch with "UIScene life cycle is required for apps built with
+this SDK". This comes from the template, not from this package. Build Expo 55
+apps with Xcode 26, or move the app to the scene lifecycle (see [iOS scene
+lifecycle](#ios-scene-lifecycle)).
 
 Android builds need **no preview-channel SDK component**: every row above was
 additionally verified by `expo prebuild` plus a release build against an Android
@@ -22,7 +32,7 @@ SDK installation with Platform 37 removed, which is what hosted CI workers
 (EAS and similar) look like. See the `compileSdk` step of the checklist under
 [Getting started > Android](#android).
 
-- iOS native SDK: `7.2.0`; iOS deployment target: `15.1`
+- iOS native SDK: `7.3.0-rc10` (vendored xcframework); iOS deployment target: `15.1`
 - Android native SDK: `4.1.0`; `compileSdk 36`, `minSdk 24`, and `targetSdk 36`
 - The example app uses the React Native 0.86 Android toolchain (Gradle `9.3.1`
   and Android Gradle Plugin `8.12.0`), and validates this combination on stable
@@ -644,6 +654,15 @@ pod install
 
 #### iOS dependency manager notes (CocoaPods + Swift Package Manager)
 
+> **3.2.0 pre-release: skip the manual SPM step below.** TelematicsSDK
+> 7.3.0-rc10 ships inside this package as a vendored xcframework, and CocoaPods
+> embeds it into the app on `pod install`. Keep `use_frameworks! :linkage =>
+> :dynamic`, but do **not** add the `telematicsSDK-iOS-new-SPM` package to your
+> app target: that would add a second, older copy of TelematicsSDK. If an
+> earlier version of this package made you add it, remove it from the app
+> project's **Package Dependencies**. The instructions below apply again once
+> 7.3.0 is published.
+
 This React Native wrapper uses **CocoaPods** for React Native iOS integration, but the native **TelematicsSDK** itself is pulled via **Swift Package Manager** (SPM) using React Native's `spm_dependency` support.
 
 Because TelematicsSDK is a **dynamic framework**, and many apps call TelematicsSDK from both:
@@ -1189,7 +1208,9 @@ const clearResult = await TelematicsSdk.removeAllFutureTrackTags();
 ### Accident detection
 
 ```js
-// Enable or disable accident detection
+// Enable or disable accident detection.
+// iOS (SDK 7.3.0+): no-op, accident detection comes from the server-side SDK
+// configuration (see "SDK configuration" below).
 await TelematicsSdk.setAccidentDetectionEnabled(true);
 await TelematicsSdk.setAccidentDetectionEnabled(false);
 ```
@@ -1215,8 +1236,31 @@ await TelematicsSdk.setAccidentDetectionSensitivity(
 ### RTLD (Real-Time tracking)
 
 ```js
-// Check whether RTLD (real-time data logging) is enabled
+// Check whether RTLD (real-time data logging) is enabled.
+// iOS (SDK 7.3.0+): deprecated, use (await TelematicsSdk.getSdkConfigs()).liveTracking.enabled
 const rtldEnabled = await TelematicsSdk.isRTLDEnabled();
+```
+
+### SDK configuration (iOS, SDK 7.3.0+)
+
+The Damoov backend assigns each device a configuration that drives accident
+detection, heartbeats, live tracking and sensor rates. Android rejects these
+calls with `PLATFORM_ERROR` until its pre-release SDK is integrated.
+
+```js
+import { SdkUserStatus } from 'react-native-telematics';
+
+const configs = await TelematicsSdk.getSdkConfigs();
+if (configs.user.status === SdkUserStatus.Active && configs.accidents.enabled) {
+  // accident detection is on for this device
+}
+
+// Ask the SDK to refetch it; read it again later with getSdkConfigs()
+await TelematicsSdk.refreshSdkConfig();
+
+// Heartbeats bookkeeping
+const heartbeats = await TelematicsSdk.getHeartbeatsCount();
+const lastSync = await TelematicsSdk.getLastHeartbeatsSyncDate(); // epoch ms or null
 ```
 
 ### Speed violations
@@ -1310,14 +1354,21 @@ await TelematicsSdk.setApiLanguage(ApiLanguage.english);
 ```
 
 ```js
-// Aggressive heartbeat mode (iOS only)
-const aggressive = await TelematicsSdk.isAggressiveHeartbeats();
-await TelematicsSdk.setAggressiveHeartbeats(true);
-await TelematicsSdk.setAggressiveHeartbeats(false);
+// Automatic trip start (iOS only, SDK 7.3.0+)
+await TelematicsSdk.setIosAutoStartEnabled(false);
+const autoStart = await TelematicsSdk.isIosAutoStartEnabled();
 ```
 
 ```js
-// Disable user-initiated tracking (iOS only)
+// Deprecated (iOS only): aggressive heartbeat mode. Deprecated in SDK 7.3.0
+// without a replacement; the mode now comes from getSdkConfigs().heartbeats.
+const aggressive = await TelematicsSdk.isAggressiveHeartbeats();
+await TelematicsSdk.setAggressiveHeartbeats(true);
+```
+
+```js
+// Deprecated (iOS only): use setIosAutoStartEnabled / isIosAutoStartEnabled.
+// setDisableTracking(true) turns automatic start off AND stops the active trip.
 await TelematicsSdk.setDisableTracking(true);
 const isDisabled = await TelematicsSdk.isDisableTracking();
 ```
@@ -1416,7 +1467,9 @@ the common case.
   Podfile template this is done through `ios.useFrameworks` in
   `Podfile.properties.json` rather than editing the Podfile itself, so it
   can't conflict with another plugin's edits to that file.
-- **Swift Package Manager app-target fix**: adds the TelematicsSDK Swift
+- **Swift Package Manager app-target fix** (switched off in the 3.2.0
+  pre-release, which vendors the SDK instead; see the note in [iOS dependency
+  manager notes](#ios-dependency-manager-notes-cocoapods--swift-package-manager)): adds the TelematicsSDK Swift
   Package product (exact version `7.2.0`) to the application target itself,
   not just the CocoaPods pod target, via a `post_install` hook injected into
   the generated Podfile (marked `@react-native-telematics-sdk

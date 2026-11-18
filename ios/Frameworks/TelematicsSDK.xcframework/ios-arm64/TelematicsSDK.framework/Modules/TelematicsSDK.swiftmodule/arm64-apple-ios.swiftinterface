@@ -1,0 +1,895 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.4.2 effective-5.10 (swiftlang-6.4.2.1.9 clang-2100.4.1.1)
+// swift-module-flags: -target arm64-apple-ios15.0 -enable-objc-interop -enable-library-evolution -language-mode 5 -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name TelematicsSDK
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -formal-cxx-interoperability-mode=off -interface-compiler-version 6.4.2
+import BackgroundTasks
+import Combine
+import CommonCrypto
+import CoreData
+import CoreLocation
+import CoreMotion
+import CryptoKit
+import Dispatch
+import Foundation
+import MetricKit
+import Network
+import Swift
+import SwiftUI
+@_exported import TelematicsSDK
+import UIKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+import zlib
+@_hasMissingDesignatedInitializers @objc(RPGeoPoint) final public class RPGeoPoint : ObjectiveC::NSObject, Swift::Codable {
+  @objc final public let latitude: Foundation::Decimal
+  @objc final public let longitude: Foundation::Decimal
+  @objc public init(latitude: Swift::Double, longitude: Swift::Double)
+  required convenience public init(from decoder: any Swift::Decoder) throws
+  final public func encode(to encoder: any Swift::Encoder) throws
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc final public class RPRawTrackPoint : ObjectiveC::NSObject {
+  @objc final public var number: Swift::Int
+  @objc final public var latitude: Swift::Double
+  @objc final public var longitude: Swift::Double
+  @objc final public var timestamp: Swift::Int
+  @objc final public var pointTimestampMs: Swift::Int
+  @objc final public var speedKmh: Swift::Double
+  @objc final public var course: Swift::Double
+  @objc final public var height: Swift::Double
+  @objc final public var acceleration: Swift::Double
+  @objc final public var deceleration: Swift::Double
+  @objc final public var lateral: Swift::Double
+  @objc final public var yaw: Swift::Double
+  @objc final public var totalMeters: Swift::Double
+  @objc final public var calcSpeed: Swift::Double
+  @objc final public var tickTimestamp: Swift::Int
+  @objc final public var tickTimestampMs: Swift::Int
+  @objc final public var accelerationX: Swift::Double
+  @objc final public var accelerationY: Swift::Double
+  @objc final public var accelerationZ: Swift::Double
+  @objc final public var gyroX: Swift::Double
+  @objc final public var gyroY: Swift::Double
+  @objc final public var gyroZ: Swift::Double
+  @objc final public var accelerationXRaw: Swift::Double
+  @objc final public var accelerationYRaw: Swift::Double
+  @objc final public var accelerationZRaw: Swift::Double
+  @objc final public var gyroXRaw: Swift::Double
+  @objc final public var gyroYRaw: Swift::Double
+  @objc final public var gyroZRaw: Swift::Double
+  @objc final public var horizontalAccuracy: Swift::Double
+  @objc final public var verticalAccuracy: Swift::Double
+  @objc final public var speedAccuracy: Swift::Double
+  @objc final public var courseAccuracy: Swift::Double
+  @objc final public var screenenabled: Swift::Bool
+  @objc final public var quantile: TelematicsSDK::RPQuantile?
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc public class RPBuffer : ObjectiveC::NSObject, Swift::Codable {
+  @objc public init(uuid: Swift::String, timestart: Swift::Int64, beforeList: [TelematicsSDK::RPBufferPoint], afterList: [TelematicsSDK::RPBufferPoint], deviceId: Swift::String?, trackToken: Swift::String?)
+  required public init(from decoder: any Swift::Decoder) throws
+  public func encode(to encoder: any Swift::Encoder) throws
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class RPBufferPoint : ObjectiveC::NSObject, Swift::Codable {
+  @objc public init(accX: Swift::Double, accY: Swift::Double, accZ: Swift::Double, gyroX: Swift::Double, gyroY: Swift::Double, gyroZ: Swift::Double, gpsSpeed: Swift::Double, time: Swift::Int64, index: Swift::Int64)
+  required public init(from decoder: any Swift::Decoder) throws
+  public func encode(to encoder: any Swift::Encoder) throws
+  @objc deinit
+}
+@objc public protocol RPRTLDDelegate {
+  @objc func rtldColectedData()
+}
+@_hasMissingDesignatedInitializers @objc public class RPEntry : ObjectiveC::NSObject {
+  @objc public static func isInitialized() -> Swift::Bool
+  @objc public class var instance: TelematicsSDK::RPEntry {
+    @objc get
+  }
+  @objc deinit
+  @objc final public let api: TelematicsSDK::RPAPIEntry
+  @objc public func getSdkVersion() -> Swift::String
+  @objc public func setDeviceID(deviceId: Swift::String) throws
+  @objc public func getDeviceId() -> Swift::String
+  @objc public func getApiLanguage() -> TelematicsSDK::RPApiLanguage
+  @objc public func setApiLanguage(apiLanguage: TelematicsSDK::RPApiLanguage)
+  @objc public func setAccidentDetectionSensitivity(sensitivity: TelematicsSDK::RPAccidentDetectionSensitivity)
+  @objc public func getAccidentDetectionSensitivity() -> TelematicsSDK::RPAccidentDetectionSensitivity
+  @available(*, deprecated, message: "'getDeviceIdRegistrationState()' is deprecated and will be removed in future versions. Use RPEntry.instance.getSdkConfigs() instead: its `user.status` and `deviceId` describe the registration state of the current device id.")
+  @objc public func getDeviceIdRegistrationState() -> TelematicsSDK::RPDeviceIdRegistrationState
+  @objc public func getTrackingState(completion: @escaping (_ state: TelematicsSDK::RPTrackingState) -> Swift::Void)
+  @objc weak public var speedLimitDelegate: (any TelematicsSDK::RPSpeedLimitDelegate)?
+  @objc weak public var trackingStateDelegate: (any TelematicsSDK::RPTrackingStateListenerDelegate)?
+  @objc weak public var accuracyAuthorizationDelegate: (any TelematicsSDK::RPAccuracyAuthorizationDelegate)?
+  @objc weak public var lowPowerModeDelegate: (any TelematicsSDK::RPLowPowerModeDelegate)?
+  @objc weak public var rtldDelegate: (any TelematicsSDK::RPRTLDDelegate)?
+  @objc weak public var locationDelegate: (any TelematicsSDK::RPLocationDelegate)?
+  @objc public func isWrongAccuracyState() -> Swift::Bool
+  @objc public class func initializeSDK()
+  @objc public func clearDeviceID()
+  @objc public func logout()
+  @objc public func sendCustomHeartbeat(_ reason: Swift::String)
+  @objc public func uploadUnsentTrips()
+  @objc public func getUnsentTripCount(completion: @escaping (_ unsentTripsCount: Swift::Int) -> Swift::Void)
+  @objc public func getUnsentLogsCount() -> Swift::Int
+  @objc public func getUnsentBufferCount(completion: @escaping (_ unsentBuffersCount: Swift::Int) -> Swift::Void)
+  @objc public func startTracking()
+  @objc public func startTrackAsPersistent()
+  @objc public func stopTracking()
+  @objc public func setMaxPersistentTrackingInterval(minutes: Swift::Int) throws
+  @objc public func getMaxPersistentTrackingInterval() -> Swift::Int
+  @objc public func setTrackingMode(_ trackingMode: TelematicsSDK::RPTrackingMode)
+  @objc public func getTrackingMode() -> TelematicsSDK::RPTrackingMode
+  @objc public func requestLocationAlwaysPermission()
+  @objc public func requestMotionPermission()
+  @objc public func application(_ application: UIKit::UIApplication, didFinishLaunchingWithOptions launchOptions: [UIKit::UIApplication.UIKit::LaunchOptionsKey : Any]?)
+  @objc public func application(_ application: UIKit::UIApplication, handleEventsForBackgroundURLSession identifier: Swift::String, completionHandler: @escaping () -> Swift::Void)
+  @objc public func applicationDidBecomeActive(_ application: UIKit::UIApplication)
+  @objc public func sceneDidBecomeActive(_ scene: UIKit::UIScene)
+  @objc public func applicationDidEnterBackground(_ application: UIKit::UIApplication)
+  @objc public func sceneDidEnterBackground(_ scene: UIKit::UIScene)
+  @objc public func applicationWillEnterForeground(_ application: UIKit::UIApplication)
+  @objc public func sceneWillEnterForeground(_ scene: UIKit::UIScene)
+  @objc public func applicationDidReceiveMemoryWarning(_ application: UIKit::UIApplication)
+  @objc public func applicationWillTerminate(_ application: UIKit::UIApplication)
+  @objc public func application(_ application: UIKit::UIApplication, performFetchWithCompletionHandler completionHandler: @escaping () -> Swift::Void)
+  @objc public func isAllRequiredPermissionsAndSensorsGranted() -> Swift::Bool
+  @objc public func refreshSdkConfig()
+  @objc public func getSdkConfigs() -> TelematicsSDK::RPSdkConfigs
+  @objc public func isTracking() -> Swift::Bool
+  @available(*, deprecated, message: "'setAggressiveHeartbeats(_:)' is deprecated and will be removed in future versions.")
+  @objc public func setAggressiveHeartbeats(_ aggressive: Swift::Bool)
+  @available(*, deprecated, message: "'isAggressiveHeartbeats()' is deprecated and will be removed in future versions.")
+  @objc public func isAggressiveHeartbeats() -> Swift::Bool
+  @objc public func setEnableSdk(_ enabled: Swift::Bool)
+  @objc public func isSDKEnabled() -> Swift::Bool
+  @available(*, deprecated, message: "'setAccidentDetectionEnabled(_:)' is deprecated and will be removed in future versions. It does nothing: accident detection is enabled by the SDK configuration, see RPEntry.instance.getSdkConfigs().accidents.enabled.")
+  @objc public func setAccidentDetectionEnabled(_ enabled: Swift::Bool)
+  @available(*, deprecated, message: "'isAccidentDetectionEnabled()' is deprecated and will be removed in future versions. Use RPEntry.instance.getSdkConfigs() instead: accident detection is on when `accidents.enabled` is true and `user.status` is active.")
+  @objc public func isAccidentDetectionEnabled() -> Swift::Bool
+  @objc public func setSubUnits(dict: [Swift::String : Swift::String]) throws
+  @objc public func clearSubUnits()
+  @objc public func getSubUnits() -> [Swift::String : Swift::String]
+  @objc public func setProperties(dict: [Swift::String : Swift::String]) throws
+  @objc public func clearProperties()
+  @objc public func getProperties() -> [Swift::String : Swift::String]
+  @objc public func addActivityLog(text: Swift::String, data: [Swift::String : Swift::String]) throws
+  @objc public func setAutoStartEnabled(_ enabled: Swift::Bool)
+  @objc public func isAutoStartEnabled() -> Swift::Bool
+  @available(*, deprecated, message: "Use setAutoStartEnabled(_:) instead. The meaning is inverted: setDisableTracking(disableTracking: true) == setAutoStartEnabled(false). Unlike setAutoStartEnabled(_:), this method also stops the active track. Will be removed in the next release.")
+  @objc public func setDisableTracking(disableTracking: Swift::Bool)
+  @available(*, deprecated, message: "Use isAutoStartEnabled() instead. The meaning is inverted: isDisableTracking() == !isAutoStartEnabled().")
+  @objc public func isDisableTracking() -> Swift::Bool
+  @objc public func getHeartbeatsCount(callResult: @escaping (_ heartbeatsCount: Swift::Int) -> Swift::Void)
+  @objc public func getLastHeartbeatsSyncDate() -> Foundation::Date?
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc final public class RPSystem : ObjectiveC::NSObject {
+  @objc public static let instance: TelematicsSDK::RPSystem
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class RPAPIEntry : ObjectiveC::NSObject {
+  @objc deinit
+  @objc public func getTrackWithTrackToken(_ token: Swift::String, completion: @escaping (_ track: TelematicsSDK::RPTrackProcessed?, _ error: (any Swift::Error)?) -> Swift::Void)
+  @objc public func getTrackOrigins(completion: @escaping (_ trackOrigins: TelematicsSDK::RPTrackOrigins?, _ error: (any Swift::Error)?) -> Swift::Void)
+  @objc public func changeTrackOrigin(_ originCode: TelematicsSDK::RPTrackOriginCode, forTrackToken token: Swift::String, completion: @escaping (_ code: TelematicsSDK::RPStatusCodeResponse?, _ error: (any Swift::Error)?) -> Swift::Void)
+  @objc public func makeTrack(_ token: Swift::String, shared: Swift::Bool, completion: @escaping (_ code: TelematicsSDK::RPStatusCodeResponse?, _ error: (any Swift::Error)?) -> Swift::Void)
+  @objc public func getSharedTrack(with token: Swift::String, completion: @escaping (_ track: TelematicsSDK::RPTrackProcessed?, _ error: (any Swift::Error)?) -> Swift::Void)
+  @objc public func getTracksWithOffset(_ offset: Swift::UInt, limit: Swift::UInt, startDate: Foundation::Date? = nil, endDate: Foundation::Date? = nil, completion: @escaping (_ tracks: [TelematicsSDK::RPTrackProcessed], _ error: (any Swift::Error)?) -> Swift::Void)
+  @objc public func getTrackTags(_ trackToken: Swift::String, completion: @escaping (_ tags: [TelematicsSDK::RPTag], _ error: (any Swift::Error)?) -> Swift::Void)
+  @objc public func removeTrackTags(_ tags: [TelematicsSDK::RPTag], from trackToken: Swift::String, completion: @escaping (_ tags: [TelematicsSDK::RPTag], _ error: (any Swift::Error)?) -> Swift::Void)
+  @objc public func addTrackTags(_ tags: [TelematicsSDK::RPTag], to trackToken: Swift::String, completion: @escaping (_ tags: [TelematicsSDK::RPTag], _ error: (any Swift::Error)?) -> Swift::Void)
+  @available(*, deprecated, message: "'getFutureTrackTag(_:completion:)' is deprecated and will be removed in future versions. Use RPEntry.instance.setProperties(dict:), RPEntry.instance.clearProperties(), and RPEntry.instance.getProperties() instead.")
+  @objc public func getFutureTrackTag(_ date: Foundation::Date? = nil, completion: @escaping (_ status: TelematicsSDK::RPTagStatus, _ tags: [TelematicsSDK::RPFutureTag]) -> Swift::Void)
+  @available(*, deprecated, message: "'addFutureTrackTag(_:completion:)' is deprecated and will be removed in future versions. Use RPEntry.instance.setProperties(dict:), RPEntry.instance.clearProperties(), and RPEntry.instance.getProperties() instead.")
+  @objc public func addFutureTrackTag(_ tag: TelematicsSDK::RPFutureTag, completion: @escaping (_ status: TelematicsSDK::RPTagStatus, _ error: (any Swift::Error)?) -> Swift::Void)
+  @available(*, deprecated, message: "'removeFutureTrackTag(_:completion:)' is deprecated and will be removed in future versions. Use RPEntry.instance.setProperties(dict:), RPEntry.instance.clearProperties(), and RPEntry.instance.getProperties() instead.")
+  @objc public func removeFutureTrackTag(_ tag: TelematicsSDK::RPFutureTag, completion: @escaping (_ status: TelematicsSDK::RPTagStatus, _ error: (any Swift::Error)?) -> Swift::Void)
+  @available(*, deprecated, message: "'removeAllFutureTrackTags(completion:)' is deprecated and will be removed in future versions. Use RPEntry.instance.setProperties(dict:), RPEntry.instance.clearProperties(), and RPEntry.instance.getProperties() instead.")
+  @objc public func removeAllFutureTrackTags(completion: @escaping (_ status: TelematicsSDK::RPTagStatus, _ error: (any Swift::Error)?) -> Swift::Void)
+}
+@objc public protocol RPLowPowerModeDelegate {
+  @objc func lowPowerMode(_ state: Swift::Bool)
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc(RPWrappedLocation) public class RPWrappedLocation : ObjectiveC::NSObject, Foundation::NSCoding, Foundation::NSCopying, Foundation::NSSecureCoding {
+  @objc public static var supportsSecureCoding: Swift::Bool {
+    @objc get
+  }
+  @objc public var coordinate: _LocationEssentials::CLLocationCoordinate2D {
+    get
+  }
+  @objc public var altitude: _LocationEssentials::CLLocationDistance {
+    get
+  }
+  @objc public var ellipsoidalAltitude: _LocationEssentials::CLLocationDistance {
+    get
+  }
+  @objc public var horizontalAccuracy: _LocationEssentials::CLLocationAccuracy {
+    get
+  }
+  @objc public var verticalAccuracy: _LocationEssentials::CLLocationAccuracy {
+    get
+  }
+  @objc public var speedAccuracy: _LocationEssentials::CLLocationSpeedAccuracy {
+    get
+  }
+  @objc public var courseAccuracy: _LocationEssentials::CLLocationDirectionAccuracy {
+    get
+  }
+  @objc public var course: _LocationEssentials::CLLocationDirection {
+    get
+  }
+  @objc public var speed: _LocationEssentials::CLLocationSpeed {
+    get
+  }
+  @objc public var calculatedSpeed: _LocationEssentials::CLLocationSpeed {
+    get
+  }
+  @objc public var timestampSince1970: Foundation::TimeInterval {
+    get
+  }
+  @objc public var sourceInfo: _LocationEssentials::CLLocationSourceInformation? {
+    @objc get
+  }
+  @objc required public init?(coder: Foundation::NSCoder)
+  @objc public func encode(with coder: Foundation::NSCoder)
+  @objc public func copy(with zone: ObjectiveC::NSZone? = nil) -> Any
+  @objc override dynamic public var description: Swift::String {
+    @objc get
+  }
+  @objc deinit
+}
+@objc(RPMotionVector) final public class RPMotionVector : ObjectiveC::NSObject {
+  @objc final public let x: Swift::Double
+  @objc final public let y: Swift::Double
+  @objc final public let z: Swift::Double
+  @objc final public let timeIntervalSinceReboot: Swift::Double
+  @objc final public let timeIntervalSince1970: Swift::Double
+  @objc public init(x: Swift::Double, y: Swift::Double, z: Swift::Double, timeIntervalSinceReboot: Swift::Double, timeIntervalSince1970: Swift::Double)
+  @objc deinit
+}
+@objc public protocol RPLocationDelegate {
+  @objc func onLocationChanged(_ location: _LocationEssentials::CLLocation)
+  @objc func onNewEvents(_ events: [TelematicsSDK::RPEventPoint])
+}
+@objc final public class RPTrackOrigins : ObjectiveC::NSObject, Swift::Codable {
+  @objc final public let trackOrigins: [TelematicsSDK::RPTrackOrigin]
+  required public init(from decoder: any Swift::Decoder) throws
+  @objc deinit
+  final public func encode(to encoder: any Swift::Encoder) throws
+}
+@objc final public class RPTrackOrigin : ObjectiveC::NSObject, Swift::Codable {
+  @objc final public let displayName: Swift::String
+  @objc final public let trackOriginCode: TelematicsSDK::RPTrackOriginCode
+  @objc final public let canBeSelected: Swift::Bool
+  required public init(from decoder: any Swift::Decoder) throws
+  @objc deinit
+  final public func encode(to encoder: any Swift::Encoder) throws
+}
+@objc public enum RPApiLanguage : Swift::Int {
+  case none = 0
+  case english = 1
+  case russian = 2
+  case portuguese = 3
+  case spanish = 4
+  public init?(rawValue: Swift::Int)
+  public typealias RawValue = Swift::Int
+  public var rawValue: Swift::Int {
+    get
+  }
+}
+@objc public protocol RPAccuracyAuthorizationDelegate {
+  @objc func wrongAccuracyAuthorization()
+}
+@objc public enum RPAccidentDetectionSensitivity : Swift::Int {
+  case normal = 0
+  case sensitive = 1
+  case tough = 2
+  public init?(rawValue: Swift::Int)
+  public typealias RawValue = Swift::Int
+  public var rawValue: Swift::Int {
+    get
+  }
+}
+@objc(RPQuantile) final public class RPQuantile : ObjectiveC::NSObject, Swift::Codable {
+  @objc final public let accX: TelematicsSDK::RPEventValue
+  @objc final public let accY: TelematicsSDK::RPEventValue
+  @objc final public let accZ: TelematicsSDK::RPEventValue
+  @objc final public let gyroX: TelematicsSDK::RPEventValue
+  @objc final public let gyroY: TelematicsSDK::RPEventValue
+  @objc final public let gyroZ: TelematicsSDK::RPEventValue
+  @objc public init(accX: TelematicsSDK::RPEventValue, accY: TelematicsSDK::RPEventValue, accZ: TelematicsSDK::RPEventValue, gyroX: TelematicsSDK::RPEventValue, gyroY: TelematicsSDK::RPEventValue, gyroZ: TelematicsSDK::RPEventValue)
+  required convenience public init(from decoder: any Swift::Decoder) throws
+  final public func encode(to encoder: any Swift::Encoder) throws
+  @objc deinit
+}
+@objc public enum RPTrackOriginCode : Swift::Int, Swift::Codable {
+  case originalDriver = 0
+  case bicycle = 1
+  case bus = 2
+  case motorcycle = 3
+  case other = 4
+  case passenger = 5
+  case running = 6
+  case taxi = 7
+  case train = 8
+  case walking = 9
+  case unknown = 10
+  public init?(rawValue: Swift::Int)
+  public typealias RawValue = Swift::Int
+  public var rawValue: Swift::Int {
+    get
+  }
+}
+@_inheritsConvenienceInitializers @objc final public class RPTrackOriginCodeHelper : ObjectiveC::NSObject {
+  @objc public static func originCode(byName name: Swift::String) -> TelematicsSDK::RPTrackOriginCode
+  @objc public static func originCodeString(byOriginCode originCode: TelematicsSDK::RPTrackOriginCode) -> Swift::String
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class RPTrackingState : ObjectiveC::NSObject, Swift::Codable {
+  @objc public var automaticTrackingStatus: TelematicsSDK::RPTrackingStatus {
+    get
+  }
+  @objc public var manualTrackingStatus: TelematicsSDK::RPTrackingStatus {
+    get
+  }
+  @objc deinit
+  public func encode(to encoder: any Swift::Encoder) throws
+  required public init(from decoder: any Swift::Decoder) throws
+}
+@objc public enum RPTrackingStatus : Swift::Int, Swift::Codable {
+  case enabled = 0
+  case deviceIdNotSet = 1
+  case sdkDisabled = 2
+  case disabledBySettings = 3
+  case disabledByServer = 4
+  case disabledBySchedule = 5
+  public init?(rawValue: Swift::Int)
+  public typealias RawValue = Swift::Int
+  public var rawValue: Swift::Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc final public class RPTag : ObjectiveC::NSObject, Swift::Codable {
+  @objc final public let tag: Swift::String
+  @objc final public let type: Swift::String
+  @objc final public let source: Swift::String?
+  @objc public init(tag: Swift::String, source: Swift::String?)
+  required public init(from decoder: any Swift::Decoder) throws
+  @objc deinit
+  final public func encode(to encoder: any Swift::Encoder) throws
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc final public class RPLogger : ObjectiveC::NSObject {
+  @objc(shared) public static let shared: TelematicsSDK::RPLogger
+  @objc final public func logInfo(file: Swift::String = #fileID, function: Swift::String = #function, string: Swift::String)
+  @objc final public func logWarn(file: Swift::String = #fileID, function: Swift::String = #function, string: Swift::String)
+  @objc final public func logError(file: Swift::String = #fileID, function: Swift::String = #function, string: Swift::String)
+  @objc final public func logFatal(file: Swift::String = #fileID, function: Swift::String = #function, string: Swift::String)
+  @objc final public func logEntry(file: Swift::String = #fileID, function: Swift::String = #function)
+  @objc deinit
+}
+@objc final public class RPTrackProcessed : ObjectiveC::NSObject, Swift::Codable {
+  @objc final public let startDate: Foundation::Date
+  @objc final public let endDate: Foundation::Date
+  @objc final public var trackToken: Swift::String {
+    get
+  }
+  @objc final public let addressStart: Swift::String
+  @objc final public let addressEnd: Swift::String
+  @objc final public let distance: Swift::Double
+  @objc final public let duration: Swift::Double
+  @objc final public let accelerationCount: Swift::Int
+  @objc final public let decelerationCount: Swift::Int
+  @objc final public let rating: Swift::Double
+  @objc final public let ratingCornering: Swift::Double
+  @objc final public let ratingAcceleration: Swift::Double
+  @objc final public let ratingBraking: Swift::Double
+  @objc final public let ratingSpeeding: Swift::Double
+  @objc final public let ratingPhoneUsage: Swift::Double
+  @objc final public let ratingTimeOfDay: Swift::Double
+  @objc final public let ratingReason: Swift::String
+  @objc final public let phoneUsage: Swift::Double
+  @objc final public let midOverSpeedMileage: Swift::Double
+  @objc final public let highOverSpeedMileage: Swift::Double
+  @objc final public var trackOriginCode: TelematicsSDK::RPTrackOriginCode {
+    get
+  }
+  @objc final public var originChanged: Swift::Bool {
+    get
+  }
+  @objc final public let shareType: Swift::String
+  @objc final public let cityStart: Swift::String
+  @objc final public let cityFinish: Swift::String
+  @objc final public let rating100: Swift::Double
+  @objc final public let ratingCornering100: Swift::Double
+  @objc final public let ratingAcceleration100: Swift::Double
+  @objc final public let ratingBraking100: Swift::Double
+  @objc final public let ratingSpeeding100: Swift::Double
+  @objc final public let ratingPhoneUsage100: Swift::Double
+  @objc final public let ratingTimeOfDay100: Swift::Double
+  @objc final public let addressStartParts: TelematicsSDK::RPAddressParts?
+  @objc final public let addressFinishParts: TelematicsSDK::RPAddressParts?
+  @objc final public var tags: [TelematicsSDK::RPTag] {
+    get
+  }
+  @objc final public let points: [TelematicsSDK::RPTrackPointProcessed]
+  @objc final public func setTrackOriginCode(trackOriginCode: TelematicsSDK::RPTrackOriginCode)
+  @objc final public func setTrackToken(trackToken: Swift::String)
+  @objc final public func setOriginChanged(originChanged: Swift::Bool)
+  @objc final public func setTags(tags: [TelematicsSDK::RPTag])
+  required public init(from decoder: any Swift::Decoder) throws
+  @objc public init(startDate: Foundation::Date, endDate: Foundation::Date, trackToken: Swift::String, addressStart: Swift::String, addressEnd: Swift::String, distance: Swift::Double, duration: Swift::Double, accelerationCount: Swift::Int, decelerationCount: Swift::Int, rating: Swift::Double, ratingCornering: Swift::Double, ratingAcceleration: Swift::Double, ratingBraking: Swift::Double, ratingSpeeding: Swift::Double, ratingPhoneUsage: Swift::Double, ratingTimeOfDay: Swift::Double, ratingReason: Swift::String, phoneUsage: Swift::Double, midOverSpeedMileage: Swift::Double, highOverSpeedMileage: Swift::Double, trackOriginCode: TelematicsSDK::RPTrackOriginCode, originChanged: Swift::Bool, shareType: Swift::String, cityStart: Swift::String, cityFinish: Swift::String, rating100: Swift::Double, ratingCornering100: Swift::Double, ratingAcceleration100: Swift::Double, ratingBraking100: Swift::Double, ratingSpeeding100: Swift::Double, ratingPhoneUsage100: Swift::Double, ratingTimeOfDay100: Swift::Double, addressStartParts: TelematicsSDK::RPAddressParts?, addressFinishParts: TelematicsSDK::RPAddressParts?, tags: [TelematicsSDK::RPTag], points: [TelematicsSDK::RPTrackPointProcessed], dateUpdated: Swift::Int = 0)
+  @objc public init(withJSON json: [Swift::String : Any])
+  @objc deinit
+  final public func encode(to encoder: any Swift::Encoder) throws
+}
+@objc public enum RPSpeedType : Swift::Int, Swift::Codable {
+  case normal = 0
+  case medium = 1
+  case high = 2
+  public init?(rawValue: Swift::Int)
+  public typealias RawValue = Swift::Int
+  public var rawValue: Swift::Int {
+    get
+  }
+}
+@objc public enum RPAlertType : Swift::Int, Swift::Codable {
+  case none = 0
+  case acceleration = 1
+  case deceleration = 2
+  public init?(rawValue: Swift::Int)
+  public typealias RawValue = Swift::Int
+  public var rawValue: Swift::Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc final public class RPTrackPointProcessed : ObjectiveC::NSObject, Swift::Codable {
+  @objc final public let number: Swift::Int
+  @objc final public let totalMeters: Swift::Double
+  @objc final public let speed: Swift::Double
+  @objc final public let pointDate: Foundation::Date
+  @objc final public let latitude: Swift::Double
+  @objc final public let longitude: Swift::Double
+  @objc final public let height: Swift::Double
+  @objc final public let course: Swift::Double
+  @objc final public let yaw: Swift::Double
+  @objc final public let lateral: Swift::Double
+  @objc final public let alertType: TelematicsSDK::RPAlertType
+  @objc final public let alertValue: Swift::Double
+  @objc final public let speedType: TelematicsSDK::RPSpeedType
+  @objc final public let speedLimit: Swift::Double
+  @objc final public let phoneUsage: Swift::Bool
+  @objc final public let cornering: Swift::Bool
+  @objc public init(number: Swift::Int, totalMeters: Swift::Double, speed: Swift::Double, pointDate: Foundation::Date, latitude: Swift::Double, longitude: Swift::Double, height: Swift::Double, course: Swift::Double, yaw: Swift::Double, lateral: Swift::Double, alertType: TelematicsSDK::RPAlertType, alertValue: Swift::Double, speedType: TelematicsSDK::RPSpeedType, speedLimit: Swift::Double, phoneUsage: Swift::Bool, cornering: Swift::Bool)
+  required public init(from decoder: any Swift::Decoder) throws
+  @objc deinit
+  final public func encode(to encoder: any Swift::Encoder) throws
+}
+@_hasMissingDesignatedInitializers @objc public class RPSdkConfigs : ObjectiveC::NSObject {
+  @objc public var accidents: TelematicsSDK::RPSdkAccidentsConfig {
+    get
+  }
+  @objc public var debug: TelematicsSDK::RPSdkDebugConfig {
+    get
+  }
+  @objc public var heartbeats: TelematicsSDK::RPSdkHeartbeatsConfig {
+    get
+  }
+  @objc public var liveTracking: TelematicsSDK::RPSdkLiveTrackingConfig {
+    get
+  }
+  @objc public var schedule: TelematicsSDK::RPSdkScheduleConfig {
+    get
+  }
+  @objc public var sensors: TelematicsSDK::RPSdkSensorsConfig {
+    get
+  }
+  @objc public var tripsTracking: TelematicsSDK::RPSdkTripsTrackingConfig {
+    get
+  }
+  @objc public var user: TelematicsSDK::RPSdkUserConfig {
+    get
+  }
+  @objc public var deviceId: Swift::String {
+    get
+  }
+  @objc public var isFetchedFromServer: Swift::Bool {
+    get
+  }
+  @objc public var configFetchedAt: Foundation::Date? {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class RPSdkAccidentsConfig : ObjectiveC::NSObject {
+  @objc(isEnabled) public var enabled: Swift::Bool {
+    get
+  }
+  @objc(isBufferRawSamplesEnabled) public var enableBufferRawSamples: Swift::Bool {
+    get
+  }
+  @objc public var bufferRawSamplesMode: TelematicsSDK::RPAccidentRawBufferMode {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class RPSdkSensorsConfig : ObjectiveC::NSObject {
+  @objc public var accelerometer: TelematicsSDK::RPSdkSensorConfig {
+    get
+  }
+  @objc public var gyroscope: TelematicsSDK::RPSdkSensorConfig {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class RPSdkSensorConfig : ObjectiveC::NSObject {
+  @objc public var rateHz: Swift::Double {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class RPSdkTripsTrackingConfig : ObjectiveC::NSObject {
+  @objc(isEnabled) public var enabled: Swift::Bool {
+    get
+  }
+  @objc(isPointQuantilesEnabled) public var enablePointQuantiles: Swift::Bool {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class RPSdkScheduleConfig : ObjectiveC::NSObject {
+  @objc(isEnabled) public var enabled: Swift::Bool {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class RPSdkDebugConfig : ObjectiveC::NSObject {
+  @objc public var logs: TelematicsSDK::RPSdkLogsConfig {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class RPSdkLogsConfig : ObjectiveC::NSObject {
+  @objc(isEnabled) public var enabled: Swift::Bool {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class RPSdkHeartbeatsConfig : ObjectiveC::NSObject {
+  @objc public var mode: TelematicsSDK::RPSdkHeartbeatsMode {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class RPSdkUserConfig : ObjectiveC::NSObject {
+  @objc public var status: TelematicsSDK::RPSdkUserStatus {
+    get
+  }
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc public class RPSdkLiveTrackingConfig : ObjectiveC::NSObject {
+  @objc(isEnabled) public var enabled: Swift::Bool {
+    get
+  }
+  @objc public var endpoint: Swift::String? {
+    get
+  }
+  @objc public var frqSec: Foundation::NSNumber? {
+    get
+  }
+  @objc public var imei: Swift::String? {
+    get
+  }
+  @objc public var port: Foundation::NSNumber? {
+    get
+  }
+  @objc public var topic: Swift::String? {
+    get
+  }
+  @objc public var type: Foundation::NSNumber? {
+    get
+  }
+  @objc deinit
+}
+@objc public enum RPSdkUserStatus : Swift::Int {
+  case unknown = 0
+  case active = 1
+  case deactivated = 2
+  case deleted = 3
+  case suspended = 4
+  case notFound = 5
+  public init?(rawValue: Swift::Int)
+  public typealias RawValue = Swift::Int
+  public var rawValue: Swift::Int {
+    get
+  }
+}
+@objc public enum RPSdkHeartbeatsMode : Swift::Int {
+  case disabled = 0
+  case standard = 1
+  case extended = 2
+  public init?(rawValue: Swift::Int)
+  public typealias RawValue = Swift::Int
+  public var rawValue: Swift::Int {
+    get
+  }
+}
+@objc public protocol RPTrackingStateListenerDelegate {
+  @objc func trackingStateChanged(_ state: Swift::Bool)
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc public class RPDeviceIdRegistrationState : ObjectiveC::NSObject, Swift::Codable {
+  @objc public var status: TelematicsSDK::RPDeviceIdRegistrationStatus {
+    get
+  }
+  @objc public var checkedAt: Foundation::TimeInterval {
+    get
+  }
+  @objc deinit
+  public func encode(to encoder: any Swift::Encoder) throws
+  required public init(from decoder: any Swift::Decoder) throws
+}
+@objc public enum RPDeviceIdRegistrationStatus : Swift::Int, Swift::Codable {
+  case notSet = 0
+  case unknown = 1
+  case registered = 2
+  case notRegistered = 3
+  public init?(rawValue: Swift::Int)
+  public typealias RawValue = Swift::Int
+  public var rawValue: Swift::Int {
+    get
+  }
+}
+@objc public protocol RPSpeedLimitDelegate {
+  @objc var timeThreshold: Foundation::TimeInterval { get }
+  @objc var speedLimit: Swift::Double { get }
+  @objc func speedLimitNotification(_ speedLimit: Swift::Double, speed: Swift::Double, latitude: Swift::Double, longitude: Swift::Double, date: Foundation::Date)
+}
+@_inheritsConvenienceInitializers @objc(RPPermissionsWizardConfiguration) final public class RPPermissionsWizardConfiguration : ObjectiveC::NSObject {
+  @objc final public let locationWhenInUse: TelematicsSDK::RPPermissionsWizardPageConfiguration
+  @objc final public let locationAlways: TelematicsSDK::RPPermissionsWizardPageConfiguration
+  @objc final public let motion: TelematicsSDK::RPPermissionsWizardPageConfiguration
+  @objc final public let status: TelematicsSDK::RPPermissionsWizardStatusConfiguration
+  @objc final public let lightTheme: TelematicsSDK::RPPermissionsWizardTheme
+  @objc final public let darkTheme: TelematicsSDK::RPPermissionsWizardTheme
+  @objc override dynamic public init()
+  @objc public init(locationWhenInUse: TelematicsSDK::RPPermissionsWizardPageConfiguration, locationAlways: TelematicsSDK::RPPermissionsWizardPageConfiguration, motion: TelematicsSDK::RPPermissionsWizardPageConfiguration, status: TelematicsSDK::RPPermissionsWizardStatusConfiguration, lightTheme: TelematicsSDK::RPPermissionsWizardTheme, darkTheme: TelematicsSDK::RPPermissionsWizardTheme)
+  @objc public static func defaultConfiguration() -> TelematicsSDK::RPPermissionsWizardConfiguration
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(RPPermissionsWizardTheme) final public class RPPermissionsWizardTheme : ObjectiveC::NSObject {
+  @objc final public let backgroundColor: UIKit::UIColor
+  @objc final public let gradientStartColor: UIKit::UIColor
+  @objc final public let gradientEndColor: UIKit::UIColor
+  @objc final public let titleTextColor: UIKit::UIColor
+  @objc final public let bodyTextColor: UIKit::UIColor
+  @objc final public let primaryElementColor: UIKit::UIColor
+  @objc final public let secondaryElementColor: UIKit::UIColor
+  @objc final public let buttonTextColor: UIKit::UIColor
+  @objc final public let cardBackgroundColor: UIKit::UIColor
+  @objc final public let successElementColor: UIKit::UIColor
+  @objc final public let warningElementColor: UIKit::UIColor
+  @objc final public let secondaryButtonTextColor: UIKit::UIColor
+  @objc final public let secondaryButtonBackgroundColor: UIKit::UIColor
+  @objc final public let statusIndicatorTextColor: UIKit::UIColor
+  @objc final public let modalScrimColor: UIKit::UIColor
+  @objc override dynamic public init()
+  @objc public init(backgroundColor: UIKit::UIColor, gradientStartColor: UIKit::UIColor, gradientEndColor: UIKit::UIColor, titleTextColor: UIKit::UIColor, bodyTextColor: UIKit::UIColor, primaryElementColor: UIKit::UIColor, secondaryElementColor: UIKit::UIColor, buttonTextColor: UIKit::UIColor, cardBackgroundColor: UIKit::UIColor, successElementColor: UIKit::UIColor, warningElementColor: UIKit::UIColor, secondaryButtonTextColor: UIKit::UIColor, secondaryButtonBackgroundColor: UIKit::UIColor, statusIndicatorTextColor: UIKit::UIColor, modalScrimColor: UIKit::UIColor)
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(RPPermissionsWizardPageConfiguration) final public class RPPermissionsWizardPageConfiguration : ObjectiveC::NSObject {
+  @objc final public let title: Swift::String
+  @objc final public let body: Swift::String
+  @objc final public let primaryButtonTitle: Swift::String
+  @objc final public let hintLead: Swift::String
+  @objc final public let permissionHint: Swift::String
+  @objc override dynamic public init()
+  @objc public init(title: Swift::String, body: Swift::String, primaryButtonTitle: Swift::String, hintLead: Swift::String, permissionHint: Swift::String)
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @_hasMissingDesignatedInitializers @objc(RPPermissionsWizard) final public class RPPermissionsWizard : ObjectiveC::NSObject {
+  @objc public static let instance: TelematicsSDK::RPPermissionsWizard
+  @objc final public func setAppName(_ appName: Swift::String)
+  @objc final public func configure(_ configuration: TelematicsSDK::RPPermissionsWizardConfiguration)
+  @objc final public func configureMissingPermissionsAlert(_ configuration: TelematicsSDK::RPPermissionsWizardMissingPermissionsAlertConfiguration)
+  @objc final public func setMissingPermissionsAlertEnabled(_ enabled: Swift::Bool)
+  @objc final public func launch(completion: ((Swift::Bool) -> Swift::Void)? = nil)
+  @objc deinit
+}
+@objc public enum RPTrackingMode : Swift::Int, Swift::Codable {
+  case standard = 0
+  case persistent = 1
+  public init?(rawValue: Swift::Int)
+  public typealias RawValue = Swift::Int
+  public var rawValue: Swift::Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(RPEventValue) final public class RPEventValue : ObjectiveC::NSObject, Swift::Codable {
+  @objc final public let max: Foundation::Decimal
+  @objc final public let min: Foundation::Decimal
+  @objc final public let quantile95: Foundation::Decimal
+  @objc final public let median: Foundation::Decimal
+  @objc final public let quantile05: Foundation::Decimal
+  @objc final public let quantile25: Foundation::Decimal
+  @objc final public let quantile75: Foundation::Decimal
+  @objc public init(max: Swift::Double, median: Swift::Double, min: Swift::Double, quantile95: Swift::Double, quantile05: Swift::Double, quantile25: Swift::Double, quantile75: Swift::Double)
+  required convenience public init(from decoder: any Swift::Decoder) throws
+  final public func encode(to encoder: any Swift::Encoder) throws
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(RPPermissionsWizardMissingPermissionsAlertConfiguration) final public class RPPermissionsWizardMissingPermissionsAlertConfiguration : ObjectiveC::NSObject {
+  @objc final public let title: Swift::String
+  @objc final public let body: Swift::String
+  @objc final public let locationTitle: Swift::String
+  @objc final public let motionTitle: Swift::String
+  @objc final public let locationEnabledText: Swift::String
+  @objc final public let locationAlwaysRequiredText: Swift::String
+  @objc final public let locationPreciseRequiredText: Swift::String
+  @objc final public let locationActionNeededText: Swift::String
+  @objc final public let motionEnabledText: Swift::String
+  @objc final public let motionActionNeededText: Swift::String
+  @objc final public let fixInSettingsButtonTitle: Swift::String
+  @objc final public let isBlocking: Swift::Bool
+  @objc final public let skipButtonTitle: Swift::String
+  @objc final public let lightTheme: TelematicsSDK::RPPermissionsWizardTheme
+  @objc final public let darkTheme: TelematicsSDK::RPPermissionsWizardTheme
+  @objc override dynamic public init()
+  @objc public init(title: Swift::String, body: Swift::String, locationTitle: Swift::String, motionTitle: Swift::String, locationEnabledText: Swift::String, locationAlwaysRequiredText: Swift::String, locationPreciseRequiredText: Swift::String, locationActionNeededText: Swift::String, motionEnabledText: Swift::String, motionActionNeededText: Swift::String, fixInSettingsButtonTitle: Swift::String, isBlocking: Swift::Bool, skipButtonTitle: Swift::String, lightTheme: TelematicsSDK::RPPermissionsWizardTheme, darkTheme: TelematicsSDK::RPPermissionsWizardTheme)
+  @objc public static func defaultConfiguration() -> TelematicsSDK::RPPermissionsWizardMissingPermissionsAlertConfiguration
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(RPPermissionsWizardStatusConfiguration) final public class RPPermissionsWizardStatusConfiguration : ObjectiveC::NSObject {
+  @objc final public let title: Swift::String
+  @objc final public let body: Swift::String
+  @objc final public let locationTitle: Swift::String
+  @objc final public let motionTitle: Swift::String
+  @objc final public let locationEnabledText: Swift::String
+  @objc final public let locationAlwaysRequiredText: Swift::String
+  @objc final public let locationPreciseRequiredText: Swift::String
+  @objc final public let locationActionNeededText: Swift::String
+  @objc final public let motionEnabledText: Swift::String
+  @objc final public let motionActionNeededText: Swift::String
+  @objc final public let fixInSettingsButtonTitle: Swift::String
+  @objc final public let skipButtonTitle: Swift::String
+  @objc override dynamic public init()
+  @objc public init(title: Swift::String, body: Swift::String, locationTitle: Swift::String, motionTitle: Swift::String, locationEnabledText: Swift::String, locationAlwaysRequiredText: Swift::String, locationPreciseRequiredText: Swift::String, locationActionNeededText: Swift::String, motionEnabledText: Swift::String, motionActionNeededText: Swift::String, fixInSettingsButtonTitle: Swift::String, skipButtonTitle: Swift::String)
+  @objc deinit
+}
+@objc(RPEventPointType) public enum RPEventPointType : Swift::Int {
+  case cornering = 0
+  case braking = 1
+  case acceleration = 2
+  case accident = 3
+  public init?(rawValue: Swift::Int)
+  public typealias RawValue = Swift::Int
+  public var rawValue: Swift::Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(RPEventPoint) final public class RPEventPoint : ObjectiveC::NSObject, Swift::Codable {
+  @objc final public let type: TelematicsSDK::RPEventPointType
+  @objc final public let timeStart: Swift::Int
+  @objc final public let duration: Swift::Int
+  @objc final public let pureDuration: Swift::Int
+  @objc final public let reliability: Foundation::Decimal
+  @objc final public let speedStart: Foundation::Decimal
+  @objc final public let speedStop: Foundation::Decimal
+  @objc final public let speedMedian: Foundation::Decimal
+  @objc final public let prevEventSpeed: Foundation::Decimal
+  @objc final public let accelerationDirect: Foundation::Decimal
+  @objc final public let accelerationLateral: Foundation::Decimal
+  @objc final public let accelerationVertical: Foundation::Decimal
+  @objc final public let accelerationDirectEnd: Foundation::Decimal
+  @objc final public let accelerationLateralEnd: Foundation::Decimal
+  @objc final public let accelerationVerticalEnd: Foundation::Decimal
+  @objc final public let startPoint: TelematicsSDK::RPGeoPoint
+  @objc final public let endPoint: TelematicsSDK::RPGeoPoint
+  @objc final public let rangeDirect: TelematicsSDK::RPEventValue
+  @objc final public let rangeLateral: TelematicsSDK::RPEventValue
+  @objc final public let rangeVertical: TelematicsSDK::RPEventValue
+  @objc final public let accuracy: TelematicsSDK::RPEventValue
+  @objc final public let speed: TelematicsSDK::RPEventValue
+  @objc final public let speedBefore10s: TelematicsSDK::RPEventValue
+  @objc final public let speedBefore20s: TelematicsSDK::RPEventValue
+  @objc final public let speedAfter10s: TelematicsSDK::RPEventValue
+  @objc final public let speedAfter20s: TelematicsSDK::RPEventValue
+  @objc final public let accidentTrigger: Swift::String
+  @objc final public let theId: Swift::String
+  @objc public init(type: TelematicsSDK::RPEventPointType, timeStart: Swift::Int, duration: Swift::Int, pureDuration: Swift::Int, reliability: Swift::Double, speedStart: Swift::Double, speedStop: Swift::Double, speedMedian: Swift::Double, prevEventSpeed: Swift::Double, accelerationDirect: Swift::Double, accelerationLateral: Swift::Double, accelerationVertical: Swift::Double, accelerationDirectEnd: Swift::Double, accelerationLateralEnd: Swift::Double, accelerationVerticalEnd: Swift::Double, startPoint: TelematicsSDK::RPGeoPoint, endPoint: TelematicsSDK::RPGeoPoint, rangeDirect: TelematicsSDK::RPEventValue, rangeLateral: TelematicsSDK::RPEventValue, rangeVertical: TelematicsSDK::RPEventValue, accuracy: TelematicsSDK::RPEventValue, speed: TelematicsSDK::RPEventValue, speedBefore10s: TelematicsSDK::RPEventValue, speedBefore20s: TelematicsSDK::RPEventValue, speedAfter10s: TelematicsSDK::RPEventValue, speedAfter20s: TelematicsSDK::RPEventValue, accidentTrigger: Swift::String, theId: Swift::String)
+  required convenience public init(from decoder: any Swift::Decoder) throws
+  final public func encode(to encoder: any Swift::Encoder) throws
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc final public class RPAddressParts : ObjectiveC::NSObject, Swift::Codable {
+  @objc final public let countryCode: Swift::String?
+  @objc final public let country: Swift::String?
+  @objc final public let county: Swift::String?
+  @objc final public let postalCode: Swift::String?
+  @objc final public let state: Swift::String?
+  @objc final public let city: Swift::String?
+  @objc final public let district: Swift::String?
+  @objc final public let street: Swift::String?
+  @objc final public let house: Swift::String?
+  required public init(from decoder: any Swift::Decoder) throws
+  @objc deinit
+  final public func encode(to encoder: any Swift::Encoder) throws
+}
+@objc final public class RPFutureTag : ObjectiveC::NSObject, Swift::Codable {
+  @objc final public let tag: Swift::String
+  @objc final public let type: Swift::String
+  @objc final public let source: Swift::String?
+  @objc final public var timestamp: Foundation::Date {
+    get
+  }
+  @objc public init(tag: Swift::String, source: Swift::String?)
+  required public init(from decoder: any Swift::Decoder) throws
+  @objc deinit
+  final public func encode(to encoder: any Swift::Encoder) throws
+}
+@objc final public class RPStatusCodeResponse : ObjectiveC::NSObject, Swift::Codable {
+  @objc final public let code: Swift::Int
+  @objc final public let message: Swift::String?
+  required public init(from decoder: any Swift::Decoder) throws
+  @objc deinit
+  final public func encode(to encoder: any Swift::Encoder) throws
+}
+@objc public enum RPTagStatus : Swift::Int {
+  case success = 0
+  case offline = 1
+  case errorTagOperation = 2
+  case invalidDeviceId = 3
+  public init?(rawValue: Swift::Int)
+  public typealias RawValue = Swift::Int
+  public var rawValue: Swift::Int {
+    get
+  }
+}
+@objc public enum RPAccidentRawBufferMode : Swift::Int {
+  case confirmedOnly = 0
+  case allCandidates = 1
+  public init?(rawValue: Swift::Int)
+  public typealias RawValue = Swift::Int
+  public var rawValue: Swift::Int {
+    get
+  }
+}
+extension TelematicsSDK::RPApiLanguage : Swift::Equatable {}
+extension TelematicsSDK::RPApiLanguage : Swift::Hashable {}
+extension TelematicsSDK::RPApiLanguage : Swift::RawRepresentable {}
+extension TelematicsSDK::RPAccidentDetectionSensitivity : Swift::Equatable {}
+extension TelematicsSDK::RPAccidentDetectionSensitivity : Swift::Hashable {}
+extension TelematicsSDK::RPAccidentDetectionSensitivity : Swift::RawRepresentable {}
+extension TelematicsSDK::RPTrackOriginCode : Swift::Equatable {}
+extension TelematicsSDK::RPTrackOriginCode : Swift::Hashable {}
+extension TelematicsSDK::RPTrackOriginCode : Swift::RawRepresentable {}
+extension TelematicsSDK::RPTrackingStatus : Swift::Equatable {}
+extension TelematicsSDK::RPTrackingStatus : Swift::Hashable {}
+extension TelematicsSDK::RPTrackingStatus : Swift::RawRepresentable {}
+extension TelematicsSDK::RPSpeedType : Swift::Equatable {}
+extension TelematicsSDK::RPSpeedType : Swift::Hashable {}
+extension TelematicsSDK::RPSpeedType : Swift::RawRepresentable {}
+extension TelematicsSDK::RPAlertType : Swift::Equatable {}
+extension TelematicsSDK::RPAlertType : Swift::Hashable {}
+extension TelematicsSDK::RPAlertType : Swift::RawRepresentable {}
+extension TelematicsSDK::RPSdkUserStatus : Swift::Equatable {}
+extension TelematicsSDK::RPSdkUserStatus : Swift::Hashable {}
+extension TelematicsSDK::RPSdkUserStatus : Swift::RawRepresentable {}
+extension TelematicsSDK::RPSdkHeartbeatsMode : Swift::Equatable {}
+extension TelematicsSDK::RPSdkHeartbeatsMode : Swift::Hashable {}
+extension TelematicsSDK::RPSdkHeartbeatsMode : Swift::RawRepresentable {}
+extension TelematicsSDK::RPDeviceIdRegistrationStatus : Swift::Equatable {}
+extension TelematicsSDK::RPDeviceIdRegistrationStatus : Swift::Hashable {}
+extension TelematicsSDK::RPDeviceIdRegistrationStatus : Swift::RawRepresentable {}
+extension TelematicsSDK::RPTrackingMode : Swift::Equatable {}
+extension TelematicsSDK::RPTrackingMode : Swift::Hashable {}
+extension TelematicsSDK::RPTrackingMode : Swift::RawRepresentable {}
+extension TelematicsSDK::RPEventPointType : Swift::Equatable {}
+extension TelematicsSDK::RPEventPointType : Swift::Hashable {}
+extension TelematicsSDK::RPEventPointType : Swift::RawRepresentable {}
+extension TelematicsSDK::RPTagStatus : Swift::Equatable {}
+extension TelematicsSDK::RPTagStatus : Swift::Hashable {}
+extension TelematicsSDK::RPTagStatus : Swift::RawRepresentable {}
+extension TelematicsSDK::RPAccidentRawBufferMode : Swift::Equatable {}
+extension TelematicsSDK::RPAccidentRawBufferMode : Swift::Hashable {}
+extension TelematicsSDK::RPAccidentRawBufferMode : Swift::RawRepresentable {}

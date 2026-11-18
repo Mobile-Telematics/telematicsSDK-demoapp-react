@@ -13,7 +13,6 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		A9A5A06EA7716C46C2DEC257 /* Pods_TelematicsSdkExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C68D80F99494FF2621BB70F1 /* Pods_TelematicsSdkExample.framework */; };
 		CFE8391B7C398F53CE134238 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 51CEAF9A64F8635FE6F0EBBC /* PrivacyInfo.xcprivacy */; };
-		E32585E82FA9F6EC00861A08 /* TelematicsSDK in Frameworks */ = {isa = PBXBuildFile; productRef = E32585E72FA9F6EC00861A08 /* TelematicsSDK */; };
 		E336561E2F32052700A412EF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E336561D2F32052700A412EF /* AppDelegate.swift */; };
 		E336561F2F32052700A412EF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E336561D2F32052700A412EF /* AppDelegate.swift */; };
 		E336562A2F3218EE00A412EF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E33656292F3218EE00A412EF /* SceneDelegate.swift */; };
@@ -72,7 +71,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E32585E82FA9F6EC00861A08 /* TelematicsSDK in Frameworks */,
 				A9A5A06EA7716C46C2DEC257 /* Pods_TelematicsSdkExample.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -276,9 +274,6 @@
 				Base,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
-			packageReferences = (
-				E32585E62FA9F6EC00861A08 /* XCRemoteSwiftPackageReference "telematicsSDK-iOS-new-SPM" */,
-			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -1007,25 +1002,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		E32585E62FA9F6EC00861A08 /* XCRemoteSwiftPackageReference "telematicsSDK-iOS-new-SPM" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Mobile-Telematics/telematicsSDK-iOS-new-SPM.git";
-			requirement = {
-				kind = exactVersion;
-				version = 7.2.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		E32585E72FA9F6EC00861A08 /* TelematicsSDK */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E32585E62FA9F6EC00861A08 /* XCRemoteSwiftPackageReference "telematicsSDK-iOS-new-SPM" */;
-			productName = TelematicsSDK;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
 }

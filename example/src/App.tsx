@@ -476,6 +476,52 @@ export default function App() {
     }
   };
 
+  // TelematicsSDK 7.3.0+ (iOS only for now; Android rejects with PLATFORM_ERROR)
+  const getSdkConfigs = async () => {
+    try {
+      const configs = await TelematicsSdk.getSdkConfigs();
+      showInfoAlert(`getSdkConfigs:\n${JSON.stringify(configs, null, 2)}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const refreshSdkConfig = async () => {
+    try {
+      await TelematicsSdk.refreshSdkConfig();
+      showInfoAlert('refreshSdkConfig requested');
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const getHeartbeatsInfo = async () => {
+    try {
+      const count = await TelematicsSdk.getHeartbeatsCount();
+      const lastSync = await TelematicsSdk.getLastHeartbeatsSyncDate();
+      showInfoAlert(
+        `getHeartbeatsCount: ${count}\ngetLastHeartbeatsSyncDate: ${
+          lastSync == null ? 'never' : new Date(lastSync).toISOString()
+        }`
+      );
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
+  const iosCheckAutoStart = async () => {
+    try {
+      if (Platform.OS !== 'ios') {
+        Alert.alert('iOS only', 'This method is only available on iOS');
+        return;
+      }
+      const v = await TelematicsSdk.isIosAutoStartEnabled();
+      showInfoAlert(`isIosAutoStartEnabled: ${v}`);
+    } catch (e: any) {
+      showErrorAlert(e);
+    }
+  };
+
   const iosCheckWrongAccuracyState = async () => {
     try {
       if (Platform.OS !== 'ios') {
@@ -1092,6 +1138,9 @@ export default function App() {
                 onPress={getPersistentTrackingInterval}
               />
               <Button text="Is RTLD enabled" onPress={checkRtld} />
+              <Button text="Get SDK configs" onPress={getSdkConfigs} />
+              <Button text="Refresh SDK config" onPress={refreshSdkConfig} />
+              <Button text="Heartbeats info" onPress={getHeartbeatsInfo} />
               <Button
                 text="Enable accidents"
                 onPress={() => setAccidentDetectionEnabled(true)}
@@ -1147,6 +1196,10 @@ export default function App() {
                 <Button
                   text="iOS: isDisableTracking"
                   onPress={iosCheckDisableTracking}
+                />
+                <Button
+                  text="iOS: isIosAutoStartEnabled"
+                  onPress={iosCheckAutoStart}
                 />
                 <Button
                   text="iOS: isWrongAccuracyState"

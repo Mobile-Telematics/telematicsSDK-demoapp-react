@@ -120,6 +120,18 @@ export interface Spec extends TurboModule {
   setDisableTracking(value: boolean): Promise<void>;
   /** iOS only: returns whether user-initiated tracking is disabled. */
   isDisableTracking(): Promise<boolean>;
+  /** iOS only (TelematicsSDK 7.3.0+): enables or disables automatic trip start. */
+  setIosAutoStartEnabled(enable: boolean): Promise<void>;
+  /** iOS only (TelematicsSDK 7.3.0+): returns whether automatic trip start is enabled. */
+  isIosAutoStartEnabled(): Promise<boolean>;
+  /** iOS only for now: returns the SDK configuration snapshot. */
+  getSdkConfigs(): Promise<Object>;
+  /** iOS only for now: asks the SDK to refetch its configuration from the server. */
+  refreshSdkConfig(): Promise<void>;
+  /** iOS only for now: returns the number of heartbeats stored by the SDK. */
+  getHeartbeatsCount(): Promise<Int32>;
+  /** iOS only for now: returns the last heartbeats sync time in epoch ms, or null. */
+  getLastHeartbeatsSyncDate(): Promise<Double | null>;
   /** iOS only: returns whether current location accuracy is insufficient. */
   isWrongAccuracyState(): Promise<boolean>;
   /** iOS only: requests "Always" location permission from the system. */

@@ -5,6 +5,7 @@ import type {
   DeviceIdRegistrationState,
   IosMissingPermissionsAlertConfiguration,
   IosPermissionWizardConfiguration,
+  SdkConfigs,
   StringDictionary,
   Tag,
   TrackingState,
@@ -42,7 +43,12 @@ export interface TelematicsSdk {
   /** Returns the current virtual device identifier (token) configured in the native SDK. */
   getDeviceId(): Promise<string>;
 
-  /** Returns the latest known device identifier registration state. */
+  /**
+   * Returns the latest known device identifier registration state.
+   *
+   * @deprecated On iOS (TelematicsSDK 7.3.0+) prefer {@link getSdkConfigs}: its
+   * `user.status` and `deviceId` describe the registration of the current device id.
+   */
   getDeviceIdRegistrationState(): Promise<DeviceIdRegistrationState>;
 
   /**
@@ -224,14 +230,55 @@ export interface TelematicsSdk {
     accidentDetectionSensitivity: AccidentDetectionSensitivity
   ): Promise<void>;
 
-  /** Returns whether RTLD (real-time data logging) is enabled in the native SDK. */
+  /**
+   * Returns whether RTLD (real-time data logging) is enabled in the native SDK.
+   *
+   * @deprecated On iOS (TelematicsSDK 7.3.0+) real-time data is controlled by the
+   * SDK configuration: read {@link getSdkConfigs} (`liveTracking.enabled`) instead.
+   * This method still returns that value on iOS and stays supported on Android.
+   */
   isRTLDEnabled(): Promise<boolean>;
 
-  /** Enables or disables accident detection in the native SDK. */
+  /**
+   * Enables or disables accident detection in the native SDK.
+   *
+   * @deprecated On iOS (TelematicsSDK 7.3.0+) this does nothing: accident detection
+   * is controlled by the server-side SDK configuration, see {@link getSdkConfigs}
+   * (`accidents.enabled`). Still effective on Android.
+   */
   setAccidentDetectionEnabled(enable: boolean): Promise<void>;
 
-  /** Returns whether accident detection is enabled in the native SDK. */
+  /**
+   * Returns whether accident detection is enabled in the native SDK.
+   *
+   * On iOS (TelematicsSDK 7.3.0+) this is `true` when the SDK configuration has
+   * `accidents.enabled` and the user status is `ACTIVE`.
+   */
   isAccidentDetectionEnabled(): Promise<boolean>;
+
+  // SDK configuration (TelematicsSDK 7.3.0+)
+
+  /**
+   * iOS only for now (Android rejects with `PLATFORM_ERROR`): returns the SDK
+   * configuration snapshot that the Damoov backend assigned to this device.
+   */
+  getSdkConfigs(): Promise<SdkConfigs>;
+
+  /**
+   * iOS only for now (Android rejects with `PLATFORM_ERROR`): asks the SDK to
+   * refetch its configuration. Resolves once the request is scheduled, not when
+   * the new configuration arrives; read it later with {@link getSdkConfigs}.
+   */
+  refreshSdkConfig(): Promise<void>;
+
+  /** iOS only for now (Android rejects with `PLATFORM_ERROR`): number of heartbeats stored by the SDK. */
+  getHeartbeatsCount(): Promise<number>;
+
+  /**
+   * iOS only for now (Android rejects with `PLATFORM_ERROR`): time of the last
+   * heartbeats sync in epoch milliseconds, or `null` if there has been none.
+   */
+  getLastHeartbeatsSyncDate(): Promise<number | null>;
 
   // Tags
 
@@ -277,17 +324,39 @@ export interface TelematicsSdk {
 
   // iOS only
 
-  /** iOS only: returns whether aggressive heartbeat mode is enabled. */
+  /**
+   * iOS only: returns whether aggressive heartbeat mode is enabled.
+   * @deprecated Deprecated in TelematicsSDK 7.3.0 without a replacement; the
+   * heartbeats mode now comes from {@link getSdkConfigs} (`heartbeats.mode`).
+   */
   isAggressiveHeartbeats(): Promise<boolean>;
 
-  /** iOS only: enables or disables aggressive heartbeat mode. */
+  /**
+   * iOS only: enables or disables aggressive heartbeat mode.
+   * @deprecated Deprecated in TelematicsSDK 7.3.0 without a replacement; the
+   * heartbeats mode now comes from {@link getSdkConfigs} (`heartbeats.mode`).
+   */
   setAggressiveHeartbeats(enable: boolean): Promise<void>;
 
-  /** iOS only: disables or enables user-initiated tracking. */
+  /**
+   * iOS only: `true` turns automatic trip start off and stops the active trip;
+   * `false` turns automatic trip start back on.
+   * @deprecated Use {@link setIosAutoStartEnabled} (inverted meaning, and it does
+   * not stop the active trip; call `stopManualTracking()` for that).
+   */
   setDisableTracking(value: boolean): Promise<void>;
 
-  /** iOS only: returns whether user-initiated tracking is disabled. */
+  /**
+   * iOS only: returns whether automatic trip start is turned off.
+   * @deprecated Use {@link isIosAutoStartEnabled} (inverted meaning).
+   */
   isDisableTracking(): Promise<boolean>;
+
+  /** iOS only (TelematicsSDK 7.3.0+): enables or disables automatic trip start. */
+  setIosAutoStartEnabled(enable: boolean): Promise<void>;
+
+  /** iOS only (TelematicsSDK 7.3.0+): returns whether automatic trip start is enabled. */
+  isIosAutoStartEnabled(): Promise<boolean>;
 
   /** iOS only: returns whether the native SDK considers current location accuracy insufficient. */
   isWrongAccuracyState(): Promise<boolean>;
@@ -518,6 +587,24 @@ class TelematicsSdkImpl implements TelematicsSdk {
   }
   isDisableTracking() {
     return this.native.isDisableTracking();
+  }
+  setIosAutoStartEnabled(enable: boolean) {
+    return this.native.setIosAutoStartEnabled(enable);
+  }
+  isIosAutoStartEnabled() {
+    return this.native.isIosAutoStartEnabled();
+  }
+  getSdkConfigs() {
+    return this.native.getSdkConfigs() as Promise<SdkConfigs>;
+  }
+  refreshSdkConfig() {
+    return this.native.refreshSdkConfig();
+  }
+  getHeartbeatsCount() {
+    return this.native.getHeartbeatsCount();
+  }
+  getLastHeartbeatsSyncDate() {
+    return this.native.getLastHeartbeatsSyncDate();
   }
   isWrongAccuracyState() {
     return this.native.isWrongAccuracyState();

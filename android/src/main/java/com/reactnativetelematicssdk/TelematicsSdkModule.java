@@ -621,6 +621,39 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   }
 
   @Override
+  public void setIosAutoStartEnabled(boolean enable, Promise promise) {
+    promise.reject("PLATFORM_ERROR", "setIosAutoStartEnabled is not available on Android");
+  }
+
+  @Override
+  public void isIosAutoStartEnabled(Promise promise) {
+    promise.reject("PLATFORM_ERROR", "isIosAutoStartEnabled is not available on Android");
+  }
+
+  // TelematicsSDK 7.3.0 configuration/heartbeats API: iOS only until the
+  // Android pre-release SDK is integrated (phase 2 of the 3.2.0 pre-release).
+
+  @Override
+  public void getSdkConfigs(Promise promise) {
+    promise.reject("PLATFORM_ERROR", "getSdkConfigs is not available on Android");
+  }
+
+  @Override
+  public void refreshSdkConfig(Promise promise) {
+    promise.reject("PLATFORM_ERROR", "refreshSdkConfig is not available on Android");
+  }
+
+  @Override
+  public void getHeartbeatsCount(Promise promise) {
+    promise.reject("PLATFORM_ERROR", "getHeartbeatsCount is not available on Android");
+  }
+
+  @Override
+  public void getLastHeartbeatsSyncDate(Promise promise) {
+    promise.reject("PLATFORM_ERROR", "getLastHeartbeatsSyncDate is not available on Android");
+  }
+
+  @Override
   public void isWrongAccuracyState(Promise promise) {
     promise.reject("PLATFORM_ERROR", "isWrongAccuracyState is not available on Android");
   }

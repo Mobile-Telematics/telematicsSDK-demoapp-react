@@ -537,7 +537,10 @@ public class TelematicsSdk: RCTEventEmitter {
     reject: @escaping RCTPromiseRejectBlock
   ) {
     guard requireInitialized(reject) else { return }
-    resolve(RPEntry.instance.isRTLDEnabled())
+    // TelematicsSDK 7.3.0 removed RPEntry.isRTLDEnabled(): real-time data is
+    // now controlled by the server-side SDK configuration (liveTracking).
+    // Kept for backwards compatibility; apps should read getSdkConfigs().
+    resolve(RPEntry.instance.getSdkConfigs().liveTracking.enabled)
   }
 
   @objc(setAccidentDetectionEnabled:resolve:reject:)
@@ -547,7 +550,9 @@ public class TelematicsSdk: RCTEventEmitter {
     reject: @escaping RCTPromiseRejectBlock
   ) {
     guard requireInitialized(reject) else { return }
-    RPEntry.instance.setAccidentDetectionEnabled(enable)
+    // TelematicsSDK 7.3.0 turned setAccidentDetectionEnabled(_:) into a no-op:
+    // accident detection is driven by the server-side SDK configuration
+    // (getSdkConfigs().accidents.enabled). Kept so existing JS callers resolve.
     resolve(nil)
   }
 
@@ -557,7 +562,52 @@ public class TelematicsSdk: RCTEventEmitter {
     reject: @escaping RCTPromiseRejectBlock
   ) {
     guard requireInitialized(reject) else { return }
-    resolve(RPEntry.instance.isAccidentDetectionEnabled())
+    // Same rule the deprecated RPEntry.isAccidentDetectionEnabled() points to in 7.3.0.
+    let configs = RPEntry.instance.getSdkConfigs()
+    resolve(configs.accidents.enabled && configs.user.status == .active)
+  }
+
+  // MARK: - SDK configuration (TelematicsSDK 7.3.0+)
+
+  @objc(getSdkConfigs:reject:)
+  public func getSdkConfigs(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard requireInitialized(reject) else { return }
+    resolve(sdkConfigsPayload(RPEntry.instance.getSdkConfigs()))
+  }
+
+  @objc(refreshSdkConfig:reject:)
+  public func refreshSdkConfig(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard requireInitialized(reject) else { return }
+    RPEntry.instance.refreshSdkConfig()
+    resolve(nil)
+  }
+
+  // MARK: - Heartbeats (TelematicsSDK 7.3.0+)
+
+  @objc(getHeartbeatsCount:reject:)
+  public func getHeartbeatsCount(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard requireInitialized(reject) else { return }
+    RPEntry.instance.getHeartbeatsCount { count in
+      resolve(count)
+    }
+  }
+
+  @objc(getLastHeartbeatsSyncDate:reject:)
+  public func getLastHeartbeatsSyncDate(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard requireInitialized(reject) else { return }
+    resolve(millis(RPEntry.instance.getLastHeartbeatsSyncDate()))
   }
 
   // MARK: - Tags API
@@ -680,7 +730,13 @@ public class TelematicsSdk: RCTEventEmitter {
     reject: @escaping RCTPromiseRejectBlock
   ) {
     guard requireInitialized(reject) else { return }
-    RPEntry.instance.setDisableTracking(disableTracking: value)
+    // RPEntry.setDisableTracking(disableTracking:) is deprecated in 7.3.0 and
+    // slated for removal. Equivalent: autostart off, plus stopping the active
+    // track, which the old call also did and setAutoStartEnabled(_:) does not.
+    RPEntry.instance.setAutoStartEnabled(!value)
+    if value && RPEntry.instance.isTracking() {
+      RPEntry.instance.stopTracking()
+    }
     resolve(nil)
   }
 
@@ -690,7 +746,27 @@ public class TelematicsSdk: RCTEventEmitter {
     reject: @escaping RCTPromiseRejectBlock
   ) {
     guard requireInitialized(reject) else { return }
-    resolve(RPEntry.instance.isDisableTracking())
+    resolve(!RPEntry.instance.isAutoStartEnabled())
+  }
+
+  @objc(setIosAutoStartEnabled:resolve:reject:)
+  public func setIosAutoStartEnabled(
+    _ enable: Bool,
+    resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard requireInitialized(reject) else { return }
+    RPEntry.instance.setAutoStartEnabled(enable)
+    resolve(nil)
+  }
+
+  @objc(isIosAutoStartEnabled:reject:)
+  public func isIosAutoStartEnabled(
+    _ resolve: @escaping RCTPromiseResolveBlock,
+    reject: @escaping RCTPromiseRejectBlock
+  ) {
+    guard requireInitialized(reject) else { return }
+    resolve(RPEntry.instance.isAutoStartEnabled())
   }
 
   @objc(isWrongAccuracyState:reject:)
@@ -997,6 +1073,85 @@ public class TelematicsSdk: RCTEventEmitter {
       "tag": tag,
       "source": source as Any? ?? NSNull(),
     ]
+  }
+
+  // MARK: - SDK configuration payload (TelematicsSDK 7.3.0+)
+
+  /// Unix epoch milliseconds, or NSNull so the key is still present in JS.
+  private func millis(_ date: Date?) -> Any {
+    guard let date = date else { return NSNull() }
+    return Int((date.timeIntervalSince1970 * 1000).rounded())
+  }
+
+  private func sdkConfigsPayload(_ c: RPSdkConfigs) -> [String: Any] {
+    // Built piece by piece with explicit types: one big heterogeneous literal
+    // makes the Swift type checker give up.
+    let live = c.liveTracking
+    let liveTracking: [String: Any] = [
+      "enabled": live.enabled,
+      "endpoint": live.endpoint ?? NSNull(),
+      "frqSec": live.frqSec ?? NSNull(),
+      "imei": live.imei ?? NSNull(),
+      "port": live.port ?? NSNull(),
+      "topic": live.topic ?? NSNull(),
+      "type": live.type ?? NSNull(),
+    ]
+    let accidents: [String: Any] = [
+      "enabled": c.accidents.enabled,
+      "bufferRawSamplesEnabled": c.accidents.enableBufferRawSamples,
+      "bufferRawSamplesMode": accidentRawBufferModeString(c.accidents.bufferRawSamplesMode),
+    ]
+    let tripsTracking: [String: Any] = [
+      "enabled": c.tripsTracking.enabled,
+      "pointQuantilesEnabled": c.tripsTracking.enablePointQuantiles,
+    ]
+    let sensors: [String: Any] = [
+      "accelerometerRateHz": c.sensors.accelerometer.rateHz,
+      "gyroscopeRateHz": c.sensors.gyroscope.rateHz,
+    ]
+    var payload: [String: Any] = [:]
+    payload["deviceId"] = c.deviceId
+    payload["isFetchedFromServer"] = c.isFetchedFromServer
+    payload["configFetchedAtMillis"] = millis(c.configFetchedAt)
+    payload["user"] = ["status": sdkUserStatusString(c.user.status)]
+    payload["accidents"] = accidents
+    payload["heartbeats"] = ["mode": sdkHeartbeatsModeString(c.heartbeats.mode)]
+    payload["tripsTracking"] = tripsTracking
+    payload["schedule"] = ["enabled": c.schedule.enabled]
+    payload["sensors"] = sensors
+    payload["debug"] = ["logsEnabled": c.debug.logs.enabled]
+    payload["liveTracking"] = liveTracking
+    return payload
+  }
+
+
+  private func sdkUserStatusString(_ status: RPSdkUserStatus) -> String {
+    switch status {
+    case .unknown: return "UNKNOWN"
+    case .active: return "ACTIVE"
+    case .deactivated: return "DEACTIVATED"
+    case .deleted: return "DELETED"
+    case .suspended: return "SUSPENDED"
+    case .notFound: return "NOT_FOUND"
+    @unknown default: return "UNKNOWN"
+    }
+  }
+
+  private func sdkHeartbeatsModeString(_ mode: RPSdkHeartbeatsMode) -> String {
+    switch mode {
+    case .disabled: return "DISABLED"
+    case .standard: return "STANDARD"
+    case .extended: return "EXTENDED"
+    @unknown default: return "UNKNOWN"
+    }
+  }
+
+  private func accidentRawBufferModeString(_ mode: RPAccidentRawBufferMode) -> String {
+    switch mode {
+    case .confirmedOnly: return "CONFIRMED_ONLY"
+    case .allCandidates: return "ALL_CANDIDATES"
+    @unknown default: return "UNKNOWN"
+    }
   }
 }
 

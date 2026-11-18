@@ -4,7 +4,13 @@ const withTelematicsAppDelegate = require('./ios/withAppDelegate');
 const withTelematicsSceneDelegate = require('./ios/withSceneDelegate');
 const withTelematicsInfoPlist = require('./ios/withInfoPlist');
 const withTelematicsPodfile = require('./ios/withPodfile');
-const withTelematicsPodfileSpmAppTarget = require('./ios/withPodfileSpmAppTarget');
+// TEMPORARY (pre-release 3.2.0): TelematicsSDK 7.3.0-rc10 ships vendored in
+// ios/Frameworks, and CocoaPods embeds it like any other pod framework, so the
+// SPM app-target fix must NOT run: it would attach the remote 7.2.0 package to
+// the app target and the bundle would end up with two TelematicsSDK copies.
+// Restore this require and the call below once the podspec is back on
+// spm_dependency with the released 7.3.0.
+// const withTelematicsPodfileSpmAppTarget = require('./ios/withPodfileSpmAppTarget');
 const withTelematicsGradleProperties = require('./android/withGradleProperties');
 const withTelematicsProjectBuildGradle = require('./android/withProjectBuildGradle');
 const withTelematicsAppBuildGradle = require('./android/withAppBuildGradle');
@@ -26,11 +32,11 @@ const pkg = require('../package.json');
  *    forwards, in place of the AppDelegate-level ones.
  *  - Info.plist: UIBackgroundModes, BGTaskSchedulerPermittedIdentifiers, and
  *    (unless skipped) the three usage description strings.
- *  - Podfile: `use_frameworks! :linkage => :dynamic`, plus a `post_install`
- *    hook that attaches the TelematicsSDK Swift package product to the app
- *    target directly, so it is embedded into the app bundle (without this,
- *    the app links but crashes at launch with a dyld "Library not loaded"
- *    error; see plugin/ios/withPodfileSpmAppTarget.js).
+ *  - Podfile: `use_frameworks! :linkage => :dynamic`. (With the SPM build of
+ *    the SDK there is also a `post_install` hook that attaches the
+ *    TelematicsSDK Swift package product to the app target, see
+ *    plugin/ios/withPodfileSpmAppTarget.js; it is switched off while the
+ *    pre-release ships the SDK as a vendored xcframework.)
  *
  * Android:
  *  - gradle.properties: `android.suppressUnsupportedCompileSdk=37.0`.
@@ -61,7 +67,7 @@ function withTelematicsSDK(config, options = {}) {
   config = withTelematicsSceneDelegate(config);
   config = withTelematicsInfoPlist(config, options);
   config = withTelematicsPodfile(config);
-  config = withTelematicsPodfileSpmAppTarget(config);
+  // config = withTelematicsPodfileSpmAppTarget(config); // TEMPORARY, see require above
 
   config = withTelematicsGradleProperties(config);
   config = withTelematicsProjectBuildGradle(config);

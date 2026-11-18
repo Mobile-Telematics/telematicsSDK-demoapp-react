@@ -2,6 +2,40 @@
 
 All notable changes to this repository are documented here.
 
+## [3.2.0] - pre-release
+Pre-release for early integration. **iOS only** is updated in this release;
+Android still uses `com.telematicssdk:tracking:4.1.0` and gets the matching
+pre-release SDK in a follow-up.
+
+- iOS: moved to TelematicsSDK **7.3.0-rc10**. It is not published to the SPM
+  repository yet, so the package ships it as a vendored
+  `ios/Frameworks/TelematicsSDK.xcframework` (CocoaPods embeds it like any other
+  pod framework) instead of pulling it with `spm_dependency`. The Expo config
+  plugin no longer adds the SPM app-target fix to the Podfile for this release:
+  it would attach the old remote 7.2.0 package and put two copies of
+  TelematicsSDK into the app. Both return once 7.3.0 is published.
+- Added `getSdkConfigs()` (returns `SdkConfigs`) and `refreshSdkConfig()`: the
+  server-side SDK configuration that now drives accident detection, heartbeats,
+  live tracking and sensor rates on iOS.
+- Added `getHeartbeatsCount()` and `getLastHeartbeatsSyncDate()`.
+- Added `setIosAutoStartEnabled()` / `isIosAutoStartEnabled()`.
+- The methods above are iOS only for now; on Android they reject with
+  `PLATFORM_ERROR` until the Android pre-release SDK is integrated.
+- iOS: `setDisableTracking()` / `isDisableTracking()` are deprecated in favour of
+  `setIosAutoStartEnabled()` / `isIosAutoStartEnabled()` (inverted meaning) and
+  now run on the new native API. `setDisableTracking(true)` still stops the
+  active trip, as before.
+- iOS: `setAccidentDetectionEnabled()` is now a no-op, because SDK 7.3.0 decides
+  accident detection from the server configuration. `isAccidentDetectionEnabled()`
+  returns `accidents.enabled && user.status == ACTIVE` from that configuration.
+- iOS: `isRTLDEnabled()` is deprecated. SDK 7.3.0 removed the native method and
+  controls real-time data through the SDK configuration; read
+  `getSdkConfigs().liveTracking.enabled` instead. For compatibility the method
+  still returns that value on iOS; Android is unchanged.
+- iOS: `getDeviceIdRegistrationState()`, `isAggressiveHeartbeats()` and
+  `setAggressiveHeartbeats()` are deprecated (deprecated in SDK 7.3.0); they keep
+  working for now. Prefer `getSdkConfigs()`.
+
 ## [3.1.2]
 - Fixed Android builds failing on EAS and other hosted CI while succeeding
   locally. `com.telematicssdk:tracking:4.1.0` declares `minCompileSdk=37` in its

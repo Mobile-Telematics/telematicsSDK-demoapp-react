@@ -36,6 +36,64 @@ export type DeviceIdRegistrationState = {
   checkedAtMillis: number;
 };
 
+/** Status of the current user in the SDK configuration (TelematicsSDK 7.3.0+). */
+export enum SdkUserStatus {
+  Unknown = 'UNKNOWN',
+  Active = 'ACTIVE',
+  Deactivated = 'DEACTIVATED',
+  Deleted = 'DELETED',
+  Suspended = 'SUSPENDED',
+  NotFound = 'NOT_FOUND',
+}
+
+/** Heartbeats mode from the SDK configuration (TelematicsSDK 7.3.0+). */
+export enum SdkHeartbeatsMode {
+  Disabled = 'DISABLED',
+  Standard = 'STANDARD',
+  Extended = 'EXTENDED',
+  Unknown = 'UNKNOWN',
+}
+
+/** Which accident candidates get raw sensor buffers uploaded (TelematicsSDK 7.3.0+). */
+export enum AccidentRawBufferMode {
+  ConfirmedOnly = 'CONFIRMED_ONLY',
+  AllCandidates = 'ALL_CANDIDATES',
+  Unknown = 'UNKNOWN',
+}
+
+/**
+ * SDK configuration snapshot returned by {@link TelematicsSdk.getSdkConfigs}.
+ * The values come from the Damoov backend; the app cannot change them.
+ */
+export type SdkConfigs = {
+  /** Device identifier the configuration belongs to. */
+  deviceId: string;
+  /** `false` while the SDK still uses its built-in defaults. */
+  isFetchedFromServer: boolean;
+  /** When the configuration was fetched, epoch milliseconds, or `null` if never. */
+  configFetchedAtMillis: number | null;
+  user: { status: SdkUserStatus };
+  accidents: {
+    enabled: boolean;
+    bufferRawSamplesEnabled: boolean;
+    bufferRawSamplesMode: AccidentRawBufferMode;
+  };
+  heartbeats: { mode: SdkHeartbeatsMode };
+  tripsTracking: { enabled: boolean; pointQuantilesEnabled: boolean };
+  schedule: { enabled: boolean };
+  sensors: { accelerometerRateHz: number; gyroscopeRateHz: number };
+  debug: { logsEnabled: boolean };
+  liveTracking: {
+    enabled: boolean;
+    endpoint: string | null;
+    frqSec: number | null;
+    imei: string | null;
+    port: number | null;
+    topic: string | null;
+    type: number | null;
+  };
+};
+
 /** Reason why automatic or manual tracking is currently unavailable. */
 export enum TrackingStatus {
   Enabled = 'ENABLED',

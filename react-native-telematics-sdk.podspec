@@ -22,9 +22,17 @@ Pod::Spec.new do |s|
     raise "react-native-telematics requires React Native 0.83 or newer, which provides spm_dependency in react_native_pods.rb."
   end
 
-  spm_dependency(s,
-    url: 'https://github.com/Mobile-Telematics/telematicsSDK-iOS-new-SPM.git',
-    requirement: { kind: 'exactVersion', version: '7.2.0' },
-    products: ['TelematicsSDK']
-  )
+  # TEMPORARY (pre-release 3.2.0): TelematicsSDK 7.3.0-rc10 is not published to
+  # the SPM repository yet, so the plugin ships it as a vendored xcframework.
+  # When 7.3.0 is released: delete ios/Frameworks, drop the two lines below and
+  # restore the spm_dependency block with the released version. Also re-enable
+  # withPodfileSpmAppTarget in plugin/index.js (see the note there).
+  s.vendored_frameworks = "ios/Frameworks/TelematicsSDK.xcframework"
+  s.preserve_paths = "ios/Frameworks/TelematicsSDK-LICENSE.txt"
+
+  # spm_dependency(s,
+  #   url: 'https://github.com/Mobile-Telematics/telematicsSDK-iOS-new-SPM.git',
+  #   requirement: { kind: 'exactVersion', version: '7.2.0' },
+  #   products: ['TelematicsSDK']
+  # )
 end

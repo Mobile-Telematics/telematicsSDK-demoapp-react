@@ -17,8 +17,11 @@ import { createTelematicsSdk } from './TelematicsSdk';
 import type { TelematicsSdk } from './TelematicsSdk';
 import {
   AccidentDetectionSensitivity,
+  AccidentRawBufferMode,
   ApiLanguage,
   DeviceIdRegistrationStatus,
+  SdkHeartbeatsMode,
+  SdkUserStatus,
   TrackingMode,
   TrackingStatus,
 } from './types';
@@ -27,8 +30,11 @@ const NativeTelematicsSdk = getNativeTelematicsSdk();
 
 export {
   AccidentDetectionSensitivity,
+  AccidentRawBufferMode,
   ApiLanguage,
   DeviceIdRegistrationStatus,
+  SdkHeartbeatsMode,
+  SdkUserStatus,
   TrackingMode,
   TrackingStatus,
 };
@@ -41,6 +47,7 @@ export type {
   IosPermissionWizardPageConfiguration,
   IosPermissionWizardStatusConfiguration,
   IosPermissionWizardTheme,
+  SdkConfigs,
   StringDictionary,
   TrackingState,
 } from './types';

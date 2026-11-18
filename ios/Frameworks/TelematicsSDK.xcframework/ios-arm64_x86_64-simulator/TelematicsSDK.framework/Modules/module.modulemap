@@ -1,0 +1,10 @@
+framework module TelematicsSDK {
+  umbrella header "TelematicsSDK.h"
+  export *
+
+  module * { export * }
+}
+
+module TelematicsSDK.Swift {
+  header "TelematicsSDK-Swift.h"
+}
