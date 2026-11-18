@@ -54,13 +54,6 @@ export enum SdkHeartbeatsMode {
   Unknown = 'UNKNOWN',
 }
 
-/** Which accident candidates get raw sensor buffers uploaded (TelematicsSDK 7.3.0+). */
-export enum AccidentRawBufferMode {
-  ConfirmedOnly = 'CONFIRMED_ONLY',
-  AllCandidates = 'ALL_CANDIDATES',
-  Unknown = 'UNKNOWN',
-}
-
 /**
  * SDK configuration snapshot returned by {@link TelematicsSdk.getSdkConfigs}.
  * The values come from the Damoov backend; the app cannot change them.
@@ -81,8 +74,13 @@ export type SdkConfigs = {
   heartbeats: { mode: SdkHeartbeatsMode };
   tripsTracking: { enabled: boolean; pointQuantilesEnabled: boolean };
   schedule: { enabled: boolean };
-  sensors: { accelerometerRateHz: number; gyroscopeRateHz: number };
+  /** Sensor sampling rates the SDK uses, in Hz. */
+  sensors: {
+    accelerometer: { rateHz: number };
+    gyroscope: { rateHz: number };
+  };
   debug: { logsEnabled: boolean };
+  /** On Android unset values come back as empty strings / 0 rather than `null`. */
   liveTracking: {
     enabled: boolean;
     endpoint: string | null;
@@ -93,6 +91,13 @@ export type SdkConfigs = {
     type: number | null;
   };
 };
+
+/** Which accident candidates get raw sensor buffers uploaded. */
+export enum AccidentRawBufferMode {
+  ConfirmedOnly = 'CONFIRMED_ONLY',
+  AllCandidates = 'ALL_CANDIDATES',
+  Unknown = 'UNKNOWN',
+}
 
 /** Reason why automatic or manual tracking is currently unavailable. */
 export enum TrackingStatus {

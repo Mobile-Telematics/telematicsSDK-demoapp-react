@@ -56,9 +56,16 @@ react {
 }
 
 repositories {
+    // TEMPORARY (pre-release 3.2.0): local Maven repository shipped inside
+    // react-native-telematics, see the README. Restore the S3 URL below once
+    // com.telematicssdk:tracking:4.2.0 is published.
     maven {
-        url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/"
+        url = uri("${project(':react-native-telematics').projectDir}/maven")
+        content { includeGroup("com.telematicssdk") }
     }
+    // maven {
+    //     url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/"
+    // }
 }
 
 /**

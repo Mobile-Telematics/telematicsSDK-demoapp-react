@@ -3,38 +3,69 @@
 All notable changes to this repository are documented here.
 
 ## [3.2.0] - pre-release
-Pre-release for early integration. **iOS only** is updated in this release;
-Android still uses `com.telematicssdk:tracking:4.1.0` and gets the matching
-pre-release SDK in a follow-up.
+Pre-release for early integration, built on native SDKs that are not published
+yet: TelematicsSDK **7.3.0-rc10** (iOS) and `com.telematicssdk:tracking`
+**4.2.0** (Android). Both ship inside the package; the switch back to the
+public SPM and Maven repositories happens once they are released.
 
-- iOS: moved to TelematicsSDK **7.3.0-rc10**. It is not published to the SPM
-  repository yet, so the package ships it as a vendored
-  `ios/Frameworks/TelematicsSDK.xcframework` (CocoaPods embeds it like any other
-  pod framework) instead of pulling it with `spm_dependency`. The Expo config
-  plugin no longer adds the SPM app-target fix to the Podfile for this release:
-  it would attach the old remote 7.2.0 package and put two copies of
-  TelematicsSDK into the app. Both return once 7.3.0 is published.
-- Added `getSdkConfigs()` (returns `SdkConfigs`) and `refreshSdkConfig()`: the
-  server-side SDK configuration that now drives accident detection, heartbeats,
-  live tracking and sensor rates on iOS.
-- Added `getHeartbeatsCount()` and `getLastHeartbeatsSyncDate()`.
-- Added `setIosAutoStartEnabled()` / `isIosAutoStartEnabled()`.
-- The methods above are iOS only for now; on Android they reject with
-  `PLATFORM_ERROR` until the Android pre-release SDK is integrated.
-- iOS: `setDisableTracking()` / `isDisableTracking()` are deprecated in favour of
-  `setIosAutoStartEnabled()` / `isIosAutoStartEnabled()` (inverted meaning) and
-  now run on the new native API. `setDisableTracking(true)` still stops the
+**Native SDKs**
+- iOS: TelematicsSDK 7.3.0-rc10 is vendored as
+  `ios/Frameworks/TelematicsSDK.xcframework` instead of being pulled with
+  `spm_dependency`; CocoaPods embeds it like any other pod framework. The Expo
+  config plugin no longer adds the SPM app-target fix to the Podfile, which
+  would otherwise attach the old remote package and put two copies of
+  TelematicsSDK into the app. **Expo projects upgrading from 3.1.x should run
+  `npx expo prebuild --clean`**; without it the plugin removes the 3.1.x
+  Podfile block and the package reference on the next `pod install`.
+- Android: `tracking:4.2.0` ships as a local Maven repository in
+  `android/maven`. The host app must declare it (see README, Android step 2);
+  the Expo config plugin does this for you in place of the S3 repository.
+
+**Android: initialize the SDK in `Application.onCreate()`**
+- Added `TelematicsSdkInitializer.initialize(context)`. Call it from
+  `MainApplication.onCreate()`; the Expo config plugin adds the call. The SDK's
+  tracking service can be restarted by the system with no UI and no JS (a
+  sticky restart after the process was killed, a reboot), and with JS-only
+  initialization that process crashed in a loop with "SDK not initialized".
+  `initializeSdk()` from JS still works; once this ran it no longer
+  initializes anything.
+
+**New API (both platforms)**
+- `getSdkConfigs()` returns `SdkConfigs`: the server-side configuration that
+  now drives accident detection, heartbeats, live tracking and sensor sampling
+  rates (`sensors.accelerometer.rateHz`, `sensors.gyroscope.rateHz`,
+  `accidents.bufferRawSamplesMode`).
+- `refreshSdkConfig()` asks the SDK to refetch it and resolves a boolean:
+  on Android `false` when the device ID is invalid or a refresh was already
+  queued within the last minute; on iOS always `true`.
+- `getHeartbeatsCount()` and `getLastHeartbeatsSyncDate()`.
+- iOS only: `setIosAutoStartEnabled()` / `isIosAutoStartEnabled()` (Android
+  keeps `setAndroidAutoStartEnabled()` / `isAndroidAutoStartEnabled()`).
+
+**Android: R8 consumer rules**
+- The module now ships `consumer-rules.pro` with `-dontwarn` rules for the
+  optional netty modules and logging backends that the SDK's MQTT client
+  references but does not use. Without them R8 failed with "Missing classes
+  detected" on every minified release build, e.g. on Expo SDK 58, whose
+  template enables minification by default. Not new in 4.2.0: 4.1.0 had the
+  same gap.
+
+**Breaking**
+- Removed `isRTLDEnabled()`. Both SDKs now control real-time data through the
+  SDK configuration; read `(await getSdkConfigs()).liveTracking.enabled`.
+
+**Changed / deprecated**
+- `setAccidentDetectionEnabled()` is a no-op on both platforms: accident
+  detection comes from the SDK configuration. `isAccidentDetectionEnabled()`
+  returns the effective value.
+- `getDeviceIdRegistrationState()` is deprecated in favour of `getSdkConfigs()`
+  (`user.status`, `deviceId`).
+- iOS: `setDisableTracking()` / `isDisableTracking()` are deprecated in favour
+  of `setIosAutoStartEnabled()` / `isIosAutoStartEnabled()` (inverted meaning)
+  and run on the new native API; `setDisableTracking(true)` still stops the
   active trip, as before.
-- iOS: `setAccidentDetectionEnabled()` is now a no-op, because SDK 7.3.0 decides
-  accident detection from the server configuration. `isAccidentDetectionEnabled()`
-  returns `accidents.enabled && user.status == ACTIVE` from that configuration.
-- iOS: `isRTLDEnabled()` is deprecated. SDK 7.3.0 removed the native method and
-  controls real-time data through the SDK configuration; read
-  `getSdkConfigs().liveTracking.enabled` instead. For compatibility the method
-  still returns that value on iOS; Android is unchanged.
-- iOS: `getDeviceIdRegistrationState()`, `isAggressiveHeartbeats()` and
-  `setAggressiveHeartbeats()` are deprecated (deprecated in SDK 7.3.0); they keep
-  working for now. Prefer `getSdkConfigs()`.
+- iOS: `isAggressiveHeartbeats()` / `setAggressiveHeartbeats()` are deprecated
+  (deprecated in SDK 7.3.0 without a replacement); they keep working for now.
 
 ## [3.1.2]
 - Fixed Android builds failing on EAS and other hosted CI while succeeding

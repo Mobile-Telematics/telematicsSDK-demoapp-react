@@ -531,18 +531,6 @@ public class TelematicsSdk: RCTEventEmitter {
     resolve(nil)
   }
 
-  @objc(isRTLDEnabled:reject:)
-  public func isRTLDEnabled(
-    _ resolve: @escaping RCTPromiseResolveBlock,
-    reject: @escaping RCTPromiseRejectBlock
-  ) {
-    guard requireInitialized(reject) else { return }
-    // TelematicsSDK 7.3.0 removed RPEntry.isRTLDEnabled(): real-time data is
-    // now controlled by the server-side SDK configuration (liveTracking).
-    // Kept for backwards compatibility; apps should read getSdkConfigs().
-    resolve(RPEntry.instance.getSdkConfigs().liveTracking.enabled)
-  }
-
   @objc(setAccidentDetectionEnabled:resolve:reject:)
   public func setAccidentDetectionEnabled(
     _ enable: Bool,
@@ -585,7 +573,8 @@ public class TelematicsSdk: RCTEventEmitter {
   ) {
     guard requireInitialized(reject) else { return }
     RPEntry.instance.refreshSdkConfig()
-    resolve(nil)
+    // iOS gives no feedback; Android reports whether the fetch was queued.
+    resolve(true)
   }
 
   // MARK: - Heartbeats (TelematicsSDK 7.3.0+)
@@ -1101,13 +1090,13 @@ public class TelematicsSdk: RCTEventEmitter {
       "bufferRawSamplesEnabled": c.accidents.enableBufferRawSamples,
       "bufferRawSamplesMode": accidentRawBufferModeString(c.accidents.bufferRawSamplesMode),
     ]
+    let sensors: [String: Any] = [
+      "accelerometer": ["rateHz": c.sensors.accelerometer.rateHz],
+      "gyroscope": ["rateHz": c.sensors.gyroscope.rateHz],
+    ]
     let tripsTracking: [String: Any] = [
       "enabled": c.tripsTracking.enabled,
       "pointQuantilesEnabled": c.tripsTracking.enablePointQuantiles,
-    ]
-    let sensors: [String: Any] = [
-      "accelerometerRateHz": c.sensors.accelerometer.rateHz,
-      "gyroscopeRateHz": c.sensors.gyroscope.rateHz,
     ]
     var payload: [String: Any] = [:]
     payload["deviceId"] = c.deviceId
@@ -1137,19 +1126,19 @@ public class TelematicsSdk: RCTEventEmitter {
     }
   }
 
+  private func accidentRawBufferModeString(_ mode: RPAccidentRawBufferMode) -> String {
+    switch mode {
+    case .confirmedOnly: return "CONFIRMED_ONLY"
+    case .allCandidates: return "ALL_CANDIDATES"
+    @unknown default: return "UNKNOWN"
+    }
+  }
+
   private func sdkHeartbeatsModeString(_ mode: RPSdkHeartbeatsMode) -> String {
     switch mode {
     case .disabled: return "DISABLED"
     case .standard: return "STANDARD"
     case .extended: return "EXTENDED"
-    @unknown default: return "UNKNOWN"
-    }
-  }
-
-  private func accidentRawBufferModeString(_ mode: RPAccidentRawBufferMode) -> String {
-    switch mode {
-    case .confirmedOnly: return "CONFIRMED_ONLY"
-    case .allCandidates: return "ALL_CANDIDATES"
     @unknown default: return "UNKNOWN"
     }
   }

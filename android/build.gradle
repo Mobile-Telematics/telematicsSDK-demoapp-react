@@ -37,6 +37,8 @@ android {
     defaultConfig {
         minSdk safeExtGet('TelematicsSdk_minSdkVersion', 24)
         targetSdk safeExtGet('TelematicsSdk_targetSdkVersion', 36)
+        // Propagated to the host app's R8 config, see consumer-rules.pro.
+        consumerProguardFiles 'consumer-rules.pro'
         versionCode 3
         versionName "1.0"
 
@@ -73,7 +75,7 @@ android {
     }
 }
 
-// com.telematicssdk:tracking:4.1.0 declares minCompileSdk=37 in its AAR metadata, so
+// com.telematicssdk:tracking:4.2.0 declares minCompileSdk=37 in its AAR metadata, so
 // AGP refuses it on compileSdk 36 by default. That declaration comes from the compileSdk
 // Damoov happened to build the AAR with, NOT from anything the AAR actually needs:
 // its highest transitive requirement is 36 (androidx.activity 1.13.0), its bytecode
@@ -94,7 +96,7 @@ if (telematicsCompileSdk < 37 &&
     !((rootProject.findProperty('android.experimental.disableCompileSdkChecks') ?: 'false').toString().toBoolean())) {
     throw new GradleException(
         "react-native-telematics builds on compileSdk ${telematicsCompileSdk}, but " +
-        "com.telematicssdk:tracking:4.1.0 declares minCompileSdk=37 in its AAR metadata. " +
+        "com.telematicssdk:tracking:4.2.0 declares minCompileSdk=37 in its AAR metadata. " +
         "Add this line to your app's android/gradle.properties:\n\n" +
         "    android.experimental.disableCompileSdkChecks=true\n\n" +
         "That skips the AAR metadata compileSdk check. The SDK does not use any API 37 " +
@@ -105,7 +107,7 @@ if (telematicsCompileSdk < 37 &&
     )
 }
 
-// com.telematicssdk:tracking:4.1.0 ships Kotlin metadata 2.3.0. React Native pins the
+// com.telematicssdk:tracking:4.2.0 ships Kotlin metadata 2.3.0. React Native pins the
 // Kotlin Gradle Plugin well below that (2.1.20 on 0.83/0.85/0.86), so bare (non-Expo)
 // integrators must override KGP on the root buildscript classpath. This is only a WARNING,
 // not a hard failure: Expo apps correctly stay on an older KGP that Expo itself pins (it
@@ -138,7 +140,7 @@ gradle.projectsEvaluated {
                 (actual[0] == required[0] && actual[1] < required[1])
             )) {
                 logger.warn(
-                    "[react-native-telematics] com.telematicssdk:tracking:4.1.0 ships Kotlin metadata 2.3.0. " +
+                    "[react-native-telematics] com.telematicssdk:tracking:4.2.0 ships Kotlin metadata 2.3.0. " +
                     "Kotlin Gradle Plugin ${kgpVersion} on the root buildscript classpath cannot read it as-is. " +
                     "This is expected and harmless on Expo apps using '-Xskip-metadata-version-check' " +
                     "(added automatically by this package's Expo config plugin). If this is a bare " +
@@ -156,14 +158,25 @@ gradle.projectsEvaluated {
 }
 
 repositories {
+    // TEMPORARY (pre-release 3.2.0): com.telematicssdk:tracking:4.2.0 is not
+    // published yet, so the package ships it as a local Maven repository in
+    // android/maven. The host app must declare the same repository (Gradle
+    // resolves a library's transitive dependencies with the app's
+    // repositories); the Expo config plugin does that, bare apps add one line,
+    // see the README. When 4.2.0 is released: delete android/maven, drop this
+    // block and restore the S3 repository below.
     maven {
-        url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/"
+        url = uri("${projectDir}/maven")
+        content { includeGroup("com.telematicssdk") }
     }
+    // maven {
+    //     url "https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/"
+    // }
 }
 
 dependencies {
     //noinspection GradleDynamicVersion
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
     implementation("com.facebook.react:react-android")
-    implementation("com.telematicssdk:tracking:4.1.0")
+    implementation("com.telematicssdk:tracking:4.2.0")
 }

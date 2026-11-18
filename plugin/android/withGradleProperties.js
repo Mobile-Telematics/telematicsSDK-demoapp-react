@@ -61,7 +61,7 @@ function isAtLeast(value, minParts) {
 /**
  * Ensures android/gradle.properties has:
  *  - `android.experimental.disableCompileSdkChecks=true`, so AGP accepts
- *    com.telematicssdk:tracking:4.1.0 (which declares minCompileSdk=37 in its
+ *    com.telematicssdk:tracking:4.2.0 (which declares minCompileSdk=37 in its
  *    AAR metadata) on stable compileSdk 36. Android SDK Platform 37 is
  *    preview-channel only and cannot be installed on EAS workers, so without
  *    this every remote Android build fails even though the SDK itself uses no

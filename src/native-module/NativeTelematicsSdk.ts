@@ -87,8 +87,6 @@ export interface Spec extends TurboModule {
   // Accidents / RTLD
   /** Sets accident detection sensitivity (enum value). */
   setAccidentDetectionSensitivity(value: Int32): Promise<void>;
-  /** Returns whether RTLD (real-time data logging) is enabled. */
-  isRTLDEnabled(): Promise<boolean>;
   /** Enables or disables accident detection. */
   setAccidentDetectionEnabled(enable: boolean): Promise<void>;
   /** Returns whether accident detection is enabled. */
@@ -124,13 +122,13 @@ export interface Spec extends TurboModule {
   setIosAutoStartEnabled(enable: boolean): Promise<void>;
   /** iOS only (TelematicsSDK 7.3.0+): returns whether automatic trip start is enabled. */
   isIosAutoStartEnabled(): Promise<boolean>;
-  /** iOS only for now: returns the SDK configuration snapshot. */
+  /** Returns the server-side SDK configuration snapshot. */
   getSdkConfigs(): Promise<Object>;
-  /** iOS only for now: asks the SDK to refetch its configuration from the server. */
-  refreshSdkConfig(): Promise<void>;
-  /** iOS only for now: returns the number of heartbeats stored by the SDK. */
+  /** Asks the SDK to refetch its configuration; resolves whether the fetch was queued. */
+  refreshSdkConfig(): Promise<boolean>;
+  /** Returns the number of heartbeats stored by the SDK. */
   getHeartbeatsCount(): Promise<Int32>;
-  /** iOS only for now: returns the last heartbeats sync time in epoch ms, or null. */
+  /** Returns the last heartbeats sync time in epoch ms, or null. */
   getLastHeartbeatsSyncDate(): Promise<Double | null>;
   /** iOS only: returns whether current location accuracy is insufficient. */
   isWrongAccuracyState(): Promise<boolean>;

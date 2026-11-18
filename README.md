@@ -2,42 +2,48 @@
 
 A React Native wrapper for tracking the person's driving behavior such as speeding, turning, braking and several other things on iOS and Android.
 
-> **3.2.0 is a pre-release.** On iOS it ships TelematicsSDK **7.3.0-rc10**
-> inside the package (`ios/Frameworks/TelematicsSDK.xcframework`) because that
-> SDK is not published yet. Android is unchanged (`tracking:4.1.0`); the new
-> 7.3.0 APIs reject with `PLATFORM_ERROR` there for now. See
+> **3.2.0 is a pre-release.** It is built on native SDKs that are not
+> published yet and ships them inside the package: TelematicsSDK
+> **7.3.0-rc10** on iOS (`ios/Frameworks/TelematicsSDK.xcframework`) and
+> `com.telematicssdk:tracking` **4.2.0** on Android (`android/maven`, see
+> [Getting started > Android](#android), step 2). See
 > [CHANGELOG](CHANGELOG.md) for the API changes.
 
 ## Version 3.2.0 compatibility
 
 ---
 
-| React Native | Expo SDK | 3.2.0 pre-release check (Xcode 27.2, iOS 27.2 simulator) |
-| --- | --- | --- |
-| `0.83.10` | 55 | iOS builds; does not launch on iOS 27 (see below) |
-| `0.85.3` | 56 | not re-checked for 3.2.0 |
-| `0.86.x` | 57 | example app: iOS builds and runs, Android builds |
-| `0.88.1` | 58 | iOS builds and launches |
+Checked for the 3.2.0 pre-release with Xcode 27.2 (iOS 27.2 simulator) and an
+Android API 34 emulator. "Builds" means a Release build from a fresh
+`expo prebuild --clean` of a blank app with this package installed from the
+packed tarball.
 
-**Expo SDK 55 and Xcode 27.** The Expo SDK 55 template has no UIScene
-lifecycle. Apps built with the iOS 27 SDK must adopt it, so on iOS 27 such an
-app stops at launch with "UIScene life cycle is required for apps built with
-this SDK". This comes from the template, not from this package. Build Expo 55
-apps with Xcode 26, or move the app to the scene lifecycle (see [iOS scene
+| React Native | Expo SDK | AGP | iOS | Android |
+| --- | --- | --- | --- | --- |
+| `0.83.10` | 55 | 8.12.0 | builds; does not launch on iOS 27 (see below) | release builds |
+| `0.85.3` | 56 | 8.12.0 | builds; does not launch on iOS 27 (see below) | release builds |
+| `0.86.3` | 57 | 8.12.0 | builds; does not launch on iOS 27 (see below) | release builds |
+| `0.88.1` | 58 | 9.2.1 | builds and launches | release builds with R8 (the template default); runs, SDK config fetched |
+| `0.86.0` | bare (example app) | 8.12.0 | runs (Metro, new architecture); new APIs exercised | debug and release run on the emulator; new APIs exercised |
+
+**Expo SDK 55–57 and Xcode 27.** These Expo templates are not scene-based.
+Apps built with the iOS 27 SDK must adopt the UIScene lifecycle, so on iOS 27
+they stop at launch with "UIScene life cycle is required for apps built with
+this SDK". This comes from the templates, not from this package. Build them
+with Xcode 26, or move the app to the scene lifecycle (see [iOS scene
 lifecycle](#ios-scene-lifecycle)).
 
-Android builds need **no preview-channel SDK component**: every row above was
-additionally verified by `expo prebuild` plus a release build against an Android
-SDK installation with Platform 37 removed, which is what hosted CI workers
-(EAS and similar) look like. See the `compileSdk` step of the checklist under
-[Getting started > Android](#android).
+Android builds need **no preview-channel SDK component** (verified for 3.1.2
+by building against an Android SDK installation with Platform 37 removed,
+which is what hosted CI workers such as EAS look like). See the `compileSdk`
+step of the checklist under [Getting started > Android](#android).
 
 - iOS native SDK: `7.3.0-rc10` (vendored xcframework); iOS deployment target: `15.1`
-- Android native SDK: `4.1.0`; `compileSdk 36`, `minSdk 24`, and `targetSdk 36`
+- Android native SDK: `4.2.0` (local Maven repository in the package); `compileSdk 36`, `minSdk 24`, and `targetSdk 36`
 - The example app uses the React Native 0.86 Android toolchain (Gradle `9.3.1`
   and Android Gradle Plugin `8.12.0`), and validates this combination on stable
   `compileSdk 36`.
-- `com.telematicssdk:tracking:4.1.0` brings in `kotlin-stdlib` 2.3.x, which
+- `com.telematicssdk:tracking:4.2.0` brings in `kotlin-stdlib` 2.3.x, which
   requires a Kotlin toolchain change in the host app. The required settings
   differ depending on whether the host app is bare React Native or Expo, and
   the two paths are **not interchangeable**: see the Kotlin toolchain step of
@@ -113,6 +119,13 @@ edited directly, is on the bare React Native path.
    Use `npx expo prebuild --clean` to regenerate `ios`/`android` from scratch,
    for example after upgrading the package or changing plugin options.
 
+   **Upgrading from 3.1.x to the 3.2.0 pre-release: use `--clean`.** 3.1.x
+   attached the TelematicsSDK Swift package to the app target; 3.2.0 vendors
+   the SDK instead, and both together put two TelematicsSDK frameworks into the
+   app. `--clean` regenerates `ios/` without it. Without `--clean`, 3.2.0
+   removes the 3.1.x Podfile block and deletes the package from the app
+   project on the next `pod install`.
+
    iOS 26 and newer require apps to adopt the UIScene lifecycle, and whether
    `expo prebuild` sets this up for you depends on your Expo SDK version. See
    [iOS scene lifecycle](#ios-scene-lifecycle) before you build for iOS.
@@ -160,7 +173,7 @@ edited directly, is on the bare React Native path.
    Bare apps must add every one of these by hand -- the [Expo config
    plugin](#expo-config-plugin) does not run outside Expo. The one most easily
    missed is the `gradle.properties` line above; without it the build stops
-   with *"Dependency 'com.telematicssdk:tracking:4.1.0' requires libraries and
+   with *"Dependency 'com.telematicssdk:tracking:4.2.0' requires libraries and
    applications that depend on it to compile against version 37 or later of the
    Android APIs"*.
 
@@ -481,7 +494,7 @@ plugin](#expo-config-plugin) adds each of them automatically during
    android.experimental.disableCompileSdkChecks=true
    ```
 
-   `com.telematicssdk:tracking:4.1.0` declares `minCompileSdk=37` in its AAR
+   `com.telematicssdk:tracking:4.2.0` declares `minCompileSdk=37` in its AAR
    metadata, so without this Android Gradle Plugin refuses it on `compileSdk 36`
    with *"Dependency ... requires libraries and applications that depend on it
    to compile against version 37 or later of the Android APIs"*.
@@ -517,7 +530,21 @@ plugin](#expo-config-plugin) adds each of them automatically during
    `android.suppressUnsupportedCompileSdk=37.0`, since AGP 8.12 warns for 37.
    Remote builds will then need the platform available on the worker.
 
-2. **Telematics Maven repository**, in `android/app/build.gradle`:
+2. **Telematics Maven repository**, in `android/app/build.gradle`.
+
+   **3.2.0 pre-release:** `tracking:4.2.0` is not published yet and ships
+   inside this package as a local Maven repository. Point the app at it:
+
+   ```groovy
+   repositories {
+     maven {
+       url = uri("${project(':react-native-telematics').projectDir}/maven")
+       content { includeGroup("com.telematicssdk") }
+     }
+   }
+   ```
+
+   Once 4.2.0 is published this goes back to the public repository:
 
    ```groovy
    repositories {
@@ -526,11 +553,13 @@ plugin](#expo-config-plugin) adds each of them automatically during
    ```
 
    If the host uses `RepositoriesMode.PREFER_SETTINGS` in
-   `android/settings.gradle`, add the same Maven repository to
-   `dependencyResolutionManagement.repositories` instead. The Expo config
-   plugin adds this repository for you.
+   `android/settings.gradle`, add the repository to
+   `dependencyResolutionManagement.repositories` instead. Project paths are not
+   available in `settings.gradle`, so point at the package folder directly:
+   `maven { url = uri(file("../node_modules/react-native-telematics/android/maven")) }`.
+   The Expo config plugin adds the repository to `app/build.gradle` for you.
 
-3. **Kotlin toolchain.** `com.telematicssdk:tracking:4.1.0` brings in
+3. **Kotlin toolchain.** `com.telematicssdk:tracking:4.2.0` brings in
    `kotlin-stdlib` 2.3.x. What to do about it depends on whether the host app
    is bare React Native or Expo -- these two paths are **not
    interchangeable**:
@@ -576,7 +605,7 @@ plugin](#expo-config-plugin) adds each of them automatically during
 4. **Core library desugaring**, or the build fails with:
 
    ```
-   Dependency 'com.telematicssdk:tracking:4.1.0' requires core library desugaring to be enabled for :app.
+   Dependency 'com.telematicssdk:tracking:4.2.0' requires core library desugaring to be enabled for :app.
    ```
 
    ```groovy
@@ -612,6 +641,58 @@ plugin](#expo-config-plugin) adds each of them automatically during
    ```
 
    The Expo config plugin adds these excludes for you.
+
+6. **Initialize the SDK in `Application.onCreate()`.** The SDK's tracking
+   service can be started by the system with no UI and no JS running: a sticky
+   restart after the process was killed, a reboot, background trip detection.
+   Calling `initializeSdk()` from JS alone is too late for that case, and the
+   service then runs against an uninitialized SDK. Add one call right after
+   `super.onCreate()` in `android/app/src/main/java/.../MainApplication.kt`:
+
+   ```kotlin
+   import com.reactnativetelematicssdk.TelematicsSdkInitializer
+
+   override fun onCreate() {
+     super.onCreate()
+     TelematicsSdkInitializer.initialize(this)
+     loadReactNative(this)
+   }
+   ```
+
+   `initializeSdk()` from JS stays valid: it no longer initializes anything
+   once this ran, and only registers the module's tags-processing callback.
+   The Expo config plugin adds this call for you.
+
+7. **R8 / ProGuard (minified release builds): nothing to add, normally.** The
+   SDK's MQTT client (`hivemq-mqtt-client`) references optional netty modules
+   and logging backends that are not part of the app and are never used. R8
+   treats those references as errors, so a minified release build fails with
+   `Missing classes detected while running R8` and a list of `io.netty.*`,
+   `org.slf4j.*` and `org.apache.logging.log4j.*` classes. This package ships
+   the matching `-dontwarn` rules as consumer rules
+   ([android/consumer-rules.pro](android/consumer-rules.pro)), and Gradle
+   applies them to the app automatically. This matters on Expo SDK 58 and newer,
+   whose template enables `android.enableMinifyInReleaseBuilds` by default, and
+   on any bare app with `minifyEnabled true`.
+
+   Add them to `android/app/proguard-rules.pro` yourself only if your build
+   does not apply library consumer rules (for example a custom R8 setup):
+
+   ```proguard
+   -dontwarn io.netty.channel.epoll.**
+   -dontwarn io.netty.handler.codec.http.**
+   -dontwarn io.netty.handler.proxy.**
+   -dontwarn io.netty.internal.tcnative.**
+   -dontwarn org.apache.log4j.**
+   -dontwarn org.apache.logging.log4j.**
+   -dontwarn org.slf4j.**
+   -dontwarn org.eclipse.jetty.alpn.**
+   -dontwarn org.eclipse.jetty.npn.**
+   -dontwarn reactor.blockhound.**
+   ```
+
+   Verified on Expo SDK 58 with minification on: the release build succeeds,
+   and the SDK starts, syncs heartbeats and fetches its configuration.
 
 ### iOS
 
@@ -1209,8 +1290,8 @@ const clearResult = await TelematicsSdk.removeAllFutureTrackTags();
 
 ```js
 // Enable or disable accident detection.
-// iOS (SDK 7.3.0+): no-op, accident detection comes from the server-side SDK
-// configuration (see "SDK configuration" below).
+// No-op since TelematicsSDK 7.3.0 / tracking 4.2.0: accident detection comes
+// from the server-side SDK configuration (see "SDK configuration" below).
 await TelematicsSdk.setAccidentDetectionEnabled(true);
 await TelematicsSdk.setAccidentDetectionEnabled(false);
 ```
@@ -1233,19 +1314,12 @@ await TelematicsSdk.setAccidentDetectionSensitivity(
 );
 ```
 
-### RTLD (Real-Time tracking)
-
-```js
-// Check whether RTLD (real-time data logging) is enabled.
-// iOS (SDK 7.3.0+): deprecated, use (await TelematicsSdk.getSdkConfigs()).liveTracking.enabled
-const rtldEnabled = await TelematicsSdk.isRTLDEnabled();
-```
-
-### SDK configuration (iOS, SDK 7.3.0+)
+### SDK configuration
 
 The Damoov backend assigns each device a configuration that drives accident
-detection, heartbeats, live tracking and sensor rates. Android rejects these
-calls with `PLATFORM_ERROR` until its pre-release SDK is integrated.
+detection, heartbeats, live tracking and sensor sampling rates. Real-time data, which replaces the
+removed `isRTLDEnabled()`, is `liveTracking.enabled`. Requires TelematicsSDK
+7.3.0+ on iOS and `tracking` 4.2.0+ on Android.
 
 ```js
 import { SdkUserStatus } from 'react-native-telematics';
@@ -1255,8 +1329,9 @@ if (configs.user.status === SdkUserStatus.Active && configs.accidents.enabled) {
   // accident detection is on for this device
 }
 
-// Ask the SDK to refetch it; read it again later with getSdkConfigs()
-await TelematicsSdk.refreshSdkConfig();
+// Ask the SDK to refetch it; read it again later with getSdkConfigs().
+// Android resolves false if a refresh was already queued in the last minute.
+const queued = await TelematicsSdk.refreshSdkConfig();
 
 // Heartbeats bookkeeping
 const heartbeats = await TelematicsSdk.getHeartbeatsCount();
@@ -1480,9 +1555,11 @@ the common case.
 
 **Android**
 
+- `MainApplication`: adds `TelematicsSdkInitializer.initialize(this)` right
+  after `super.onCreate()` (see Android step 6 under "Getting started").
 - `android/gradle.properties`: sets
   `android.experimental.disableCompileSdkChecks=true`, so the build accepts
-  `com.telematicssdk:tracking:4.1.0` (which declares `minCompileSdk=37`) on
+  `com.telematicssdk:tracking:4.2.0` (which declares `minCompileSdk=37`) on
   stable `compileSdk 36` — see item 1 under "Android" in "Getting started" for
   why requiring 37 breaks EAS builds. It also sets `android.compileSdkVersion`
   (raised to `36` if lower, left alone if already higher). On current Expo
@@ -1502,7 +1579,8 @@ the common case.
   check`) that adds `-Xskip-metadata-version-check` to every Kotlin compile
   task -- this is what actually fixes the Expo build; see "Android" under
   "Getting started" above for the failure messages it avoids.
-- `android/app/build.gradle`: adds the Telematics Maven repository, core
+- `android/app/build.gradle`: adds the Telematics Maven repository (in the
+  3.2.0 pre-release the local one shipped in the package, `android/maven`), core
   library desugaring (`compileOptions { coreLibraryDesugaringEnabled true }`
   plus the `coreLibraryDesugaring` dependency), and the netty `META-INF`
   packaging excludes -- see "Android" under "Getting started" above for why
@@ -1524,7 +1602,7 @@ Verified against the published templates for each SDK:
 | --- | --- | --- |
 | 55, 56 | None. The generated `Info.plist` has no `UIApplicationSceneManifest`, and no `SceneDelegate.swift` is produced. | Nothing -- it adds the three app-level lifecycle forwards to AppDelegate instead. Build these with the Xcode version the SDK supports. Starting React Native from a scene is Expo's own responsibility here; reimplementing it in the plugin would be fragile. |
 | 57 | Opt-in through `expo-build-properties`. Once enabled, Expo wires up its own `EXExpoAppSceneDelegate` and generates **no** `SceneDelegate.swift`. | `expo prebuild` fails with an explanatory error (below). The SDK needs `sceneDidBecomeActive`, `sceneWillEnterForeground`, and `sceneDidEnterBackground`, and iOS stops delivering the app-level equivalents once an app is scene-based, so there is no file to add the forwards to, and falling back to the app-level methods would fail silently. |
-| 58 and newer (currently in preview) | `expo prebuild` generates both `SceneDelegate.swift` and the scene manifest itself. | Picked up automatically, no extra work. |
+| 58 and newer | `expo prebuild` generates both `SceneDelegate.swift` and the scene manifest itself. | Picked up automatically, no extra work. |
 | Bare React Native | You own both delegates. | Not applicable -- see [Lifecycle handlers](#lifecycle-handlers). The example app in this repo adopts scenes, which is why it runs on current Xcode. |
 
 If you opted into the scene lifecycle on Expo SDK 57, `expo prebuild` stops
@@ -1556,7 +1634,7 @@ the netty packaging excludes, `-Xskip-metadata-version-check`, and the two
 `gradle.properties` lines listed above -- no SDK platform, build-tools or NDK
 version beyond what the Expo template already pins.
 
-This matters because `com.telematicssdk:tracking:4.1.0` declares
+This matters because `com.telematicssdk:tracking:4.2.0` declares
 `minCompileSdk=37`, and Android SDK Platform 37 ships on the preview channel
 only. A developer can install it locally with
 `sdkmanager --channel=3 "platforms;android-37"`; a hosted worker cannot install
@@ -1564,11 +1642,12 @@ anything, so a build that insists on 37 fails remotely while succeeding locally.
 Skipping the AAR metadata check (see the `compileSdk` step of the checklist
 under [Getting started > Android](#android)) keeps the build on stable
 `compileSdk 36`, which is what the Expo/React Native template already uses. This
-was verified by building Expo SDK 55, 56 and 57 apps against an Android SDK
+was verified for 3.1.2 by building Expo SDK 55, 56 and 57 apps against an Android SDK
 installation with Platform 37 removed.
 
-The worker does need network access to the Telematics Maven repository at
-`s3.us-east-2.amazonaws.com`, as it did before.
+In the 3.2.0 pre-release the SDK comes from the local Maven repository inside
+the package, so the worker needs no access to the Telematics Maven repository.
+Once 4.2.0 is published it will again need `s3.us-east-2.amazonaws.com`.
 
 ### Notes and limitations
 

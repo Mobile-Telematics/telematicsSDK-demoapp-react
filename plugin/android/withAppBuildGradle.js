@@ -1,5 +1,10 @@
 const { withAppBuildGradle } = require('@expo/config-plugins');
-const { MAVEN_URL, DESUGAR_JDK_LIBS, PACKAGING_EXCLUDES } = require('../constants');
+const {
+  // MAVEN_URL, // TEMPORARY: see LOCAL_MAVEN_REPO_URL in ../constants
+  LOCAL_MAVEN_REPO_URL,
+  DESUGAR_JDK_LIBS,
+  PACKAGING_EXCLUDES,
+} = require('../constants');
 
 const DEPENDENCIES_REGEX = /dependencies\s*\{/;
 const TOP_LEVEL_DEPENDENCIES_REGEX = /\n\s*dependencies\s*\{/;
@@ -52,11 +57,25 @@ function findBlock(contents, headerRegex, rangeStart = 0, rangeEnd = contents.le
 }
 
 function ensureMavenRepository(contents) {
-  if (contents.includes(MAVEN_URL)) {
+  // TEMPORARY (pre-release 3.2.0): point at the local Maven repository shipped
+  // in the package instead of MAVEN_URL. Restore the commented S3 variant once
+  // com.telematicssdk:tracking:4.2.0 is published.
+  //
+  // if (contents.includes(MAVEN_URL)) {
+  //   return contents;
+  // }
+  // const repoBlock = `\nrepositories {\n    maven {\n        url "${MAVEN_URL}"\n    }\n}\n`;
+  if (contents.includes(LOCAL_MAVEN_REPO_URL)) {
     return contents;
   }
 
-  const repoBlock = `\nrepositories {\n    maven {\n        url "${MAVEN_URL}"\n    }\n}\n`;
+  const repoBlock =
+    '\nrepositories {\n' +
+    '    maven {\n' +
+    `        url = ${LOCAL_MAVEN_REPO_URL}\n` +
+    '        content { includeGroup("com.telematicssdk") }\n' +
+    '    }\n' +
+    '}\n';
 
   // Insert right before the top-level "dependencies { ... }" block, matching
   // the layout the README documents for android/app/build.gradle.
@@ -80,9 +99,9 @@ function noAndroidBlockError(whatToAddManually) {
  *  - android { compileOptions { coreLibraryDesugaringEnabled true } }
  *  - dependencies { coreLibraryDesugaring("<DESUGAR_JDK_LIBS>") }
  *
- * com.telematicssdk:tracking:4.1.0 requires this in the HOST app; it is not
+ * com.telematicssdk:tracking:4.2.0 requires this in the HOST app; it is not
  * inherited from the library module. Without it the build fails with:
- *   "Dependency 'com.telematicssdk:tracking:4.1.0' requires core library
+ *   "Dependency 'com.telematicssdk:tracking:4.2.0' requires core library
  *   desugaring to be enabled for :app."
  */
 function ensureCoreLibraryDesugaring(contents) {
@@ -256,7 +275,7 @@ function ensurePackagingExcludes(contents) {
 /**
  * Ensures android/app/build.gradle:
  *  - declares the Telematics Maven repository
- *  - enables core library desugaring, required by com.telematicssdk:tracking:4.1.0
+ *  - enables core library desugaring, required by com.telematicssdk:tracking:4.2.0
  *  - excludes the netty META-INF entries that collide during packaging
  *
  * Deliberately does NOT add a kotlin-bom platform dependency: this plugin no

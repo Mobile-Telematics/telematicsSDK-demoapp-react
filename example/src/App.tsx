@@ -365,15 +365,6 @@ export default function App() {
     }
   };
 
-  const checkRtld = async () => {
-    try {
-      const v = await TelematicsSdk.isRTLDEnabled();
-      showInfoAlert(`isRTLDEnabled: ${v}`);
-    } catch (e: any) {
-      showErrorAlert(e);
-    }
-  };
-
   const setAccidentDetectionEnabled = async (enable: boolean) => {
     try {
       await TelematicsSdk.setAccidentDetectionEnabled(enable);
@@ -476,7 +467,7 @@ export default function App() {
     }
   };
 
-  // TelematicsSDK 7.3.0+ (iOS only for now; Android rejects with PLATFORM_ERROR)
+  // SDK configuration and heartbeats (TelematicsSDK 7.3.0+ / tracking 4.2.0+)
   const getSdkConfigs = async () => {
     try {
       const configs = await TelematicsSdk.getSdkConfigs();
@@ -488,8 +479,8 @@ export default function App() {
 
   const refreshSdkConfig = async () => {
     try {
-      await TelematicsSdk.refreshSdkConfig();
-      showInfoAlert('refreshSdkConfig requested');
+      const queued = await TelematicsSdk.refreshSdkConfig();
+      showInfoAlert(`refreshSdkConfig queued: ${queued}`);
     } catch (e: any) {
       showErrorAlert(e);
     }
@@ -1137,7 +1128,6 @@ export default function App() {
                 text="Get max persistent interval"
                 onPress={getPersistentTrackingInterval}
               />
-              <Button text="Is RTLD enabled" onPress={checkRtld} />
               <Button text="Get SDK configs" onPress={getSdkConfigs} />
               <Button text="Refresh SDK config" onPress={refreshSdkConfig} />
               <Button text="Heartbeats info" onPress={getHeartbeatsInfo} />

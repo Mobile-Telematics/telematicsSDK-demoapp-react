@@ -93,8 +93,6 @@ RCT_EXTERN_METHOD(addActivityLog:(NSString *)text
 RCT_EXTERN_METHOD(setAccidentDetectionSensitivity:(double)value
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(isRTLDEnabled:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
 RCT_EXTERN_METHOD(setAccidentDetectionEnabled:(BOOL)enable
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)

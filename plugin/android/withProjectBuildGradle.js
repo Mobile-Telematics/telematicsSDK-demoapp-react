@@ -34,7 +34,7 @@ function ensureCompileSdk(contents) {
  * Why this instead of raising the Kotlin Gradle Plugin (KGP) version: Expo
  * pins its OWN Kotlin compiler version (well below 2.3.x, e.g. 2.1.20 on
  * current Expo SDKs) to build Expo's own modules, independent of whatever
- * this project sets. com.telematicssdk:tracking:4.1.0 brings in kotlin-stdlib
+ * this project sets. com.telematicssdk:tracking:4.2.0 brings in kotlin-stdlib
  * 2.3.x. Raising `android.kotlinVersion`/`kotlinVersion` only changes the
  * stdlib/reflect artifacts on the classpath -- it does NOT change the
  * compiler Expo uses for its own modules, so those modules end up compiled
@@ -53,7 +53,7 @@ function ensureSkipMetadataVersionCheck(contents) {
 
   const block =
     `\n${KOTLIN_METADATA_VERSION_CHECK_MARKER}\n` +
-    '// com.telematicssdk:tracking:4.1.0 brings kotlin-stdlib 2.3.x, but Expo pins its own\n' +
+    '// com.telematicssdk:tracking:4.2.0 brings kotlin-stdlib 2.3.x, but Expo pins its own\n' +
     '// Kotlin compiler to build Expo\'s own modules. Raising the Kotlin Gradle Plugin version\n' +
     '// changes the stdlib on the classpath but not that pinned compiler, so Expo\'s modules end\n' +
     '// up compiled against metadata their compiler can\'t read. Skipping the metadata version\n' +
@@ -75,7 +75,7 @@ function ensureSkipMetadataVersionCheck(contents) {
  *  - has an `allprojects` block making every Kotlin compile task skip its
  *    metadata-version check (see ensureSkipMetadataVersionCheck above)
  *
- * compileSdk 36 is the minimum: com.telematicssdk:tracking:4.1.0 declares
+ * compileSdk 36 is the minimum: com.telematicssdk:tracking:4.2.0 declares
  * minCompileSdk=37 in its AAR metadata, but that check is skipped via
  * android.experimental.disableCompileSdkChecks (see ./withGradleProperties.js),
  * because Android SDK Platform 37 is preview-channel only and cannot be

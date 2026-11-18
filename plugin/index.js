@@ -4,6 +4,7 @@ const withTelematicsAppDelegate = require('./ios/withAppDelegate');
 const withTelematicsSceneDelegate = require('./ios/withSceneDelegate');
 const withTelematicsInfoPlist = require('./ios/withInfoPlist');
 const withTelematicsPodfile = require('./ios/withPodfile');
+const withTelematicsPodfileSpmCleanup = require('./ios/withPodfileSpmCleanup');
 // TEMPORARY (pre-release 3.2.0): TelematicsSDK 7.3.0-rc10 ships vendored in
 // ios/Frameworks, and CocoaPods embeds it like any other pod framework, so the
 // SPM app-target fix must NOT run: it would attach the remote 7.2.0 package to
@@ -14,6 +15,7 @@ const withTelematicsPodfile = require('./ios/withPodfile');
 const withTelematicsGradleProperties = require('./android/withGradleProperties');
 const withTelematicsProjectBuildGradle = require('./android/withProjectBuildGradle');
 const withTelematicsAppBuildGradle = require('./android/withAppBuildGradle');
+const withTelematicsMainApplication = require('./android/withMainApplication');
 
 const pkg = require('../package.json');
 
@@ -36,15 +38,23 @@ const pkg = require('../package.json');
  *    the SDK there is also a `post_install` hook that attaches the
  *    TelematicsSDK Swift package product to the app target, see
  *    plugin/ios/withPodfileSpmAppTarget.js; it is switched off while the
- *    pre-release ships the SDK as a vendored xcframework.)
+ *    pre-release ships the SDK as a vendored xcframework, and
+ *    ./ios/withPodfileSpmCleanup.js removes it from projects prebuilt by
+ *    3.1.x without --clean.)
  *
  * Android:
- *  - gradle.properties: `android.suppressUnsupportedCompileSdk=37.0`.
- *  - root build.gradle: compileSdk >= 37, and an `allprojects` block that
+ *  - MainApplication: `TelematicsSdkInitializer.initialize(this)` right after
+ *    `super.onCreate()`, so the SDK is initialized on every process start,
+ *    including ones where the system starts the tracking service with no JS.
+ *  - gradle.properties: `android.experimental.disableCompileSdkChecks=true`
+ *    and compileSdk >= 36 (`android.suppressUnsupportedCompileSdk=37.0` only
+ *    for apps already on 37); see plugin/android/withGradleProperties.js.
+ *  - root build.gradle: an `allprojects` block that
  *    makes every Kotlin compile task skip its metadata-version check (needed
  *    because the SDK brings a newer Kotlin stdlib than the Kotlin compiler
  *    Expo pins for its own modules; see plugin/android/withProjectBuildGradle.js).
- *  - app/build.gradle: the Telematics Maven repository, core library
+ *  - app/build.gradle: the Telematics Maven repository (the local one in
+ *    android/maven during the 3.2.0 pre-release), core library
  *    desugaring, and the netty packaging excludes.
  *
  * Every mod is idempotent (guarded by checking for its own marker before
@@ -68,10 +78,13 @@ function withTelematicsSDK(config, options = {}) {
   config = withTelematicsInfoPlist(config, options);
   config = withTelematicsPodfile(config);
   // config = withTelematicsPodfileSpmAppTarget(config); // TEMPORARY, see require above
+  // TEMPORARY: undo the 3.1.x SPM fix on projects prebuilt without --clean.
+  config = withTelematicsPodfileSpmCleanup(config);
 
   config = withTelematicsGradleProperties(config);
   config = withTelematicsProjectBuildGradle(config);
   config = withTelematicsAppBuildGradle(config);
+  config = withTelematicsMainApplication(config);
 
   return config;
 }

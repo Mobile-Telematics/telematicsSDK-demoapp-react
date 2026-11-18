@@ -22,7 +22,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import com.telematicssdk.tracking.TrackingApi;
-import com.telematicssdk.tracking.Settings;
+import com.telematicssdk.tracking.model.SdkConfig;
 import com.telematicssdk.tracking.model.track.TrackingMode;
 import com.telematicssdk.tracking.utils.permissions.TrackingPermissionsWizardActivity;
 import com.telematicssdk.tracking.utils.permissions.TrackingPermissionsWizardThemeMode;
@@ -132,7 +132,8 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   @Override
   public void initializeSdk(Promise promise) {
     if (!api.isInitialized()) {
-      api.initialize(this.getReactApplicationContext(), setTelematicsSettings());
+      // Normally already done in Application.onCreate(), see TelematicsSdkInitializer.
+      TelematicsSdkInitializer.initialize(this.getReactApplicationContext());
       api.setLocationListener(locationListener);
       api.registerCallback(trackingStateListener);
       hasListeners = true;
@@ -146,16 +147,6 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
       api.addTagsProcessingCallback(tagsProcessor);
       tagsCallbackRegistered = true;
     }
-  }
-
-  private Settings setTelematicsSettings() {
-    Settings settings = new Settings()
-      .stopTrackingTimeout(Settings.getStopTrackingTimeHigh())
-      .accuracy(Settings.getAccuracyHigh())
-      .autoStartOn(true)
-      .passiveDetectionOn(true);
-    Log.d(TAG, "setTelematicsSettings");
-    return settings;
   }
 
   @Override
@@ -483,13 +474,10 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
   }
 
   @Override
-  public void isRTLDEnabled(Promise promise) {
-    promise.resolve(api.isRtdEnabled());
-  }
-
-  @Override
   public void setAccidentDetectionEnabled(boolean enable, Promise promise) {
-    api.setAccidentDetectionEnabled(enable);
+    // tracking 4.2.0 turned setAccidentDetectionEnabled into a no-op: accident
+    // detection comes from the server-side SDK configuration. Kept so existing
+    // JS callers resolve.
     promise.resolve(null);
   }
 
@@ -630,27 +618,109 @@ public class TelematicsSdkModule extends NativeTelematicsSdkSpec
     promise.reject("PLATFORM_ERROR", "isIosAutoStartEnabled is not available on Android");
   }
 
-  // TelematicsSDK 7.3.0 configuration/heartbeats API: iOS only until the
-  // Android pre-release SDK is integrated (phase 2 of the 3.2.0 pre-release).
+  // MARK: - SDK configuration and heartbeats (tracking 4.2.0+)
+
+  private boolean requireInitialized(Promise promise) {
+    if (api.isInitialized()) {
+      return true;
+    }
+    promise.reject(
+      "SDK_NOT_INITIALIZED",
+      "TelematicsSDK is not initialized. Call initializeSdk() before using this method."
+    );
+    return false;
+  }
 
   @Override
   public void getSdkConfigs(Promise promise) {
-    promise.reject("PLATFORM_ERROR", "getSdkConfigs is not available on Android");
+    if (!requireInitialized(promise)) return;
+    promise.resolve(sdkConfigsPayload(api.getSdkConfig()));
   }
 
   @Override
   public void refreshSdkConfig(Promise promise) {
-    promise.reject("PLATFORM_ERROR", "refreshSdkConfig is not available on Android");
+    if (!requireInitialized(promise)) return;
+    // false when the device ID is invalid or a refresh was already queued
+    // for it within the last minute.
+    promise.resolve(api.refreshSdkConfig());
   }
 
   @Override
   public void getHeartbeatsCount(Promise promise) {
-    promise.reject("PLATFORM_ERROR", "getHeartbeatsCount is not available on Android");
+    if (!requireInitialized(promise)) return;
+    promise.resolve(api.getHeartbeatsCount());
   }
 
   @Override
   public void getLastHeartbeatsSyncDate(Promise promise) {
-    promise.reject("PLATFORM_ERROR", "getLastHeartbeatsSyncDate is not available on Android");
+    if (!requireInitialized(promise)) return;
+    java.util.Date date = api.getLastHeartbeatsSyncDate();
+    if (date == null) {
+      promise.resolve(null);
+    } else {
+      promise.resolve((double) date.getTime());
+    }
+  }
+
+  // Same shape as the iOS payload (see ios/TelematicsSdk.swift sdkConfigsPayload).
+  private WritableMap sdkConfigsPayload(SdkConfig c) {
+    WritableMap user = Arguments.createMap();
+    user.putString("status", c.getUser().getStatus().name());
+
+    WritableMap accidents = Arguments.createMap();
+    accidents.putBoolean("enabled", c.getAccidents().getEnabled());
+    accidents.putBoolean("bufferRawSamplesEnabled", c.getAccidents().getEnableBufferRawSamples());
+    accidents.putString("bufferRawSamplesMode", c.getAccidents().getBufferRawSamplesMode().name());
+
+    WritableMap accelerometer = Arguments.createMap();
+    accelerometer.putDouble("rateHz", c.getSensors().getAccelerometer().getRateHz());
+    WritableMap gyroscope = Arguments.createMap();
+    gyroscope.putDouble("rateHz", c.getSensors().getGyroscope().getRateHz());
+    WritableMap sensors = Arguments.createMap();
+    sensors.putMap("accelerometer", accelerometer);
+    sensors.putMap("gyroscope", gyroscope);
+
+    WritableMap heartbeats = Arguments.createMap();
+    heartbeats.putString("mode", c.getHeartbeats().getMode().name());
+
+    WritableMap tripsTracking = Arguments.createMap();
+    tripsTracking.putBoolean("enabled", c.getTripsTracking().getEnabled());
+    tripsTracking.putBoolean("pointQuantilesEnabled", c.getTripsTracking().getEnablePointQuantiles());
+
+    WritableMap schedule = Arguments.createMap();
+    schedule.putBoolean("enabled", c.getSchedule().getEnabled());
+
+    WritableMap debug = Arguments.createMap();
+    debug.putBoolean("logsEnabled", c.getDebug().getLogs().getEnabled());
+
+    SdkConfig.LiveTracking lt = c.getLiveTracking();
+    WritableMap liveTracking = Arguments.createMap();
+    liveTracking.putBoolean("enabled", lt.getEnabled());
+    liveTracking.putString("endpoint", lt.getEndpoint());
+    liveTracking.putDouble("frqSec", (double) lt.getFrqSec());
+    liveTracking.putString("imei", lt.getImei());
+    liveTracking.putInt("port", lt.getPort());
+    liveTracking.putString("topic", lt.getTopic());
+    liveTracking.putInt("type", lt.getType());
+
+    WritableMap payload = Arguments.createMap();
+    payload.putString("deviceId", c.getDeviceId());
+    payload.putBoolean("isFetchedFromServer", c.isFetchedFromServer());
+    java.util.Date fetchedAt = c.getConfigFetchedAt();
+    if (fetchedAt == null) {
+      payload.putNull("configFetchedAtMillis");
+    } else {
+      payload.putDouble("configFetchedAtMillis", (double) fetchedAt.getTime());
+    }
+    payload.putMap("user", user);
+    payload.putMap("accidents", accidents);
+    payload.putMap("heartbeats", heartbeats);
+    payload.putMap("tripsTracking", tripsTracking);
+    payload.putMap("schedule", schedule);
+    payload.putMap("sensors", sensors);
+    payload.putMap("debug", debug);
+    payload.putMap("liveTracking", liveTracking);
+    return payload;
   }
 
   @Override

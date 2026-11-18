@@ -7,7 +7,7 @@
  * react-native-telematics-sdk.podspec, which are owned outside this plugin.
  */
 module.exports = {
-  // com.telematicssdk:tracking:4.1.0 declares minCompileSdk=37 in its AAR
+  // com.telematicssdk:tracking:4.2.0 declares minCompileSdk=37 in its AAR
   // metadata, but nothing in it actually needs API 37: its highest transitive
   // requirement is 36 (androidx.activity 1.13.0), its bytecode references no
   // class added in API 37, and its resources stop at values-v31. The 37 is
@@ -21,7 +21,7 @@ module.exports = {
   MIN_COMPILE_SDK: 36,
 
   // AGP option that skips the AAR metadata `minCompileSdk` check. Without it,
-  // AGP rejects com.telematicssdk:tracking:4.1.0 on compileSdk 36 with
+  // AGP rejects com.telematicssdk:tracking:4.2.0 on compileSdk 36 with
   // "Dependency ... requires libraries and applications that depend on it to
   // compile against version 37 or later of the Android APIs."
   //
@@ -37,7 +37,7 @@ module.exports = {
   // already; the plugin never raises compileSdk that far by itself.
   COMPILE_SDK_SUPPRESS_VALUE: '37.0',
 
-  // com.telematicssdk:tracking:4.1.0 fails the build unless the HOST app enables
+  // com.telematicssdk:tracking:4.2.0 fails the build unless the HOST app enables
   // core library desugaring: the requirement is not inherited from the library
   // module, so every consuming app has to opt in itself.
   DESUGAR_JDK_LIBS: 'com.android.tools:desugar_jdk_libs:2.1.5',
@@ -52,13 +52,21 @@ module.exports = {
   ],
 
   // Maven repository that hosts com.telematicssdk:tracking.
-  MAVEN_URL: 'https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/',
+  MAVEN_URL:
+    'https://s3.us-east-2.amazonaws.com/android.telematics.sdk.production/',
+
+  // TEMPORARY (pre-release 3.2.0): com.telematicssdk:tracking:4.2.0 is not on
+  // MAVEN_URL yet; the package ships it as a local Maven repository in
+  // android/maven, resolved through the autolinked module's project dir.
+  // Restore MAVEN_URL in withAppBuildGradle once 4.2.0 is published.
+  LOCAL_MAVEN_REPO_URL:
+    'uri("${project(\':react-native-telematics\').projectDir}/maven")',
 
   // Marker comment guarding the idempotent insertion of the
   // "-Xskip-metadata-version-check" Kotlin compiler block into the root
   // android/build.gradle. Also doubles as the human-readable explanation of
   // why the block exists, since it's the first thing a reader sees next to it:
-  // com.telematicssdk:tracking:4.1.0 drags in kotlin-stdlib 2.3.x, but Expo
+  // com.telematicssdk:tracking:4.2.0 drags in kotlin-stdlib 2.3.x, but Expo
   // pins its own Kotlin compiler (well below 2.3.x) to build Expo's own
   // modules. Raising that compiler version breaks Expo's modules, so instead
   // this tells the pinned compiler to accept the newer stdlib metadata rather

@@ -46,8 +46,9 @@ export interface TelematicsSdk {
   /**
    * Returns the latest known device identifier registration state.
    *
-   * @deprecated On iOS (TelematicsSDK 7.3.0+) prefer {@link getSdkConfigs}: its
-   * `user.status` and `deviceId` describe the registration of the current device id.
+   * @deprecated Prefer {@link getSdkConfigs} (deprecated in TelematicsSDK 7.3.0 and
+   * tracking 4.2.0): its `user.status` and `deviceId` describe the registration of
+   * the current device id.
    */
   getDeviceIdRegistrationState(): Promise<DeviceIdRegistrationState>;
 
@@ -223,7 +224,7 @@ export interface TelematicsSdk {
    */
   addActivityLog(text: string, data: StringDictionary): Promise<void>;
 
-  // Accidents / RTLD
+  // Accidents
 
   /** Sets accident detection sensitivity in the native SDK. */
   setAccidentDetectionSensitivity(
@@ -231,52 +232,47 @@ export interface TelematicsSdk {
   ): Promise<void>;
 
   /**
-   * Returns whether RTLD (real-time data logging) is enabled in the native SDK.
-   *
-   * @deprecated On iOS (TelematicsSDK 7.3.0+) real-time data is controlled by the
-   * SDK configuration: read {@link getSdkConfigs} (`liveTracking.enabled`) instead.
-   * This method still returns that value on iOS and stays supported on Android.
-   */
-  isRTLDEnabled(): Promise<boolean>;
-
-  /**
    * Enables or disables accident detection in the native SDK.
    *
-   * @deprecated On iOS (TelematicsSDK 7.3.0+) this does nothing: accident detection
-   * is controlled by the server-side SDK configuration, see {@link getSdkConfigs}
-   * (`accidents.enabled`). Still effective on Android.
+   * @deprecated Does nothing since TelematicsSDK 7.3.0 (iOS) / tracking 4.2.0
+   * (Android): accident detection is controlled by the server-side SDK
+   * configuration, see {@link getSdkConfigs} (`accidents.enabled`).
    */
   setAccidentDetectionEnabled(enable: boolean): Promise<void>;
 
   /**
    * Returns whether accident detection is enabled in the native SDK.
    *
-   * On iOS (TelematicsSDK 7.3.0+) this is `true` when the SDK configuration has
+   * This is the effective value: `true` when the SDK configuration has
    * `accidents.enabled` and the user status is `ACTIVE`.
    */
   isAccidentDetectionEnabled(): Promise<boolean>;
 
-  // SDK configuration (TelematicsSDK 7.3.0+)
+  // SDK configuration (TelematicsSDK 7.3.0+ on iOS, tracking 4.2.0+ on Android)
 
   /**
-   * iOS only for now (Android rejects with `PLATFORM_ERROR`): returns the SDK
-   * configuration snapshot that the Damoov backend assigned to this device.
+   * Returns the SDK configuration snapshot that the Damoov backend assigned to
+   * this device. It replaces `isRTLDEnabled()`: real-time data is
+   * `liveTracking.enabled`.
    */
   getSdkConfigs(): Promise<SdkConfigs>;
 
   /**
-   * iOS only for now (Android rejects with `PLATFORM_ERROR`): asks the SDK to
-   * refetch its configuration. Resolves once the request is scheduled, not when
-   * the new configuration arrives; read it later with {@link getSdkConfigs}.
+   * Asks the SDK to refetch its configuration. Resolves once the request is
+   * handled, not when the new configuration arrives; read it later with
+   * {@link getSdkConfigs}.
+   *
+   * @returns Android: `false` when the device ID is invalid or a refresh was
+   * already queued within the last minute. iOS: always `true`.
    */
-  refreshSdkConfig(): Promise<void>;
+  refreshSdkConfig(): Promise<boolean>;
 
-  /** iOS only for now (Android rejects with `PLATFORM_ERROR`): number of heartbeats stored by the SDK. */
+  /** Number of heartbeats stored by the SDK and not yet synced. */
   getHeartbeatsCount(): Promise<number>;
 
   /**
-   * iOS only for now (Android rejects with `PLATFORM_ERROR`): time of the last
-   * heartbeats sync in epoch milliseconds, or `null` if there has been none.
+   * Time of the last heartbeats sync in epoch milliseconds, or `null` if there
+   * has been none.
    */
   getLastHeartbeatsSyncDate(): Promise<number | null>;
 
@@ -533,9 +529,6 @@ class TelematicsSdkImpl implements TelematicsSdk {
     return this.native.setAccidentDetectionSensitivity(
       accidentDetectionSensitivity
     );
-  }
-  isRTLDEnabled() {
-    return this.native.isRTLDEnabled();
   }
   setAccidentDetectionEnabled(enable: boolean) {
     return this.native.setAccidentDetectionEnabled(enable);
